@@ -431,6 +431,11 @@
                     <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
                 </button>
             </div>
+            
+            <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group">
+                <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span class="text-sm font-bold text-white">Hard Refresh</span>
+            </button>
 
             <div class="flex justify-between items-end mb-4">
                 <h3 class="text-xs font-black text-neutral-500 uppercase tracking-widest">Achievements</h3>
@@ -862,13 +867,25 @@
             
             // Close all overlays first by default
             const settingsOverlay = document.getElementById('settingsOverlay');
-            if (settingsOverlay && settingsOverlay.classList.contains('flex')) closeSettings(null, false);
+            if (settingsOverlay && settingsOverlay.classList.contains('flex')) {
+                document.getElementById('settingsOverlay').classList.replace('flex', 'hidden'); 
+            }
             
             const sessionOverlay = document.getElementById('sessionDetailOverlay');
-            if (sessionOverlay && sessionOverlay.classList.contains('flex')) closeSessionDetail(null, false);
+            if (sessionOverlay && sessionOverlay.classList.contains('flex')) {
+                const sheet = document.getElementById('sessionDetailSheet');
+                sheet.style.transform = 'translateY(100%)';
+                setTimeout(() => sessionOverlay.classList.replace('flex', 'hidden'), 300);
+            }
             
             const minigameOverlay = document.getElementById('minigameOverlay');
-            if (minigameOverlay && minigameOverlay.classList.contains('flex')) closeMinigame(false);
+            if (minigameOverlay && minigameOverlay.classList.contains('flex')) {
+                document.getElementById('minigameOverlay').classList.replace('flex', 'hidden');
+                if (activeBeer) {
+                    activeBeer.remove();
+                    activeBeer = null;
+                }
+            }
 
             if (state && state.overlay) {
                 if (state.overlay === 'settings') openSettings(false);
@@ -877,8 +894,10 @@
             } else if (state && state.tab) {
                 switchTab(state.tab, false);
             } else {
-                // Default fallback
+                // If we hit back and there's no state, we might be at the browser's initial entry.
+                // To prevent gray screen, we force 'log' view and push it back to the history if possible.
                 switchTab('log', false);
+                if (!state) history.replaceState({ tab: 'log' }, '', '#log');
             }
         });
 
