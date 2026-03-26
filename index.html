@@ -1078,7 +1078,12 @@
             const listEl = document.getElementById('historyList');
 
             if (boulderHistory.length === 0) {
-                listEl.innerHTML = '<li class="text-neutral-500 text-sm">No history yet.</li>';
+                listEl.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-20 opacity-30">
+                    <div class="text-6xl mb-4">🏆</div>
+                    <p class="text-sm font-black uppercase tracking-widest">No history yet</p>
+                    <p class="text-[10px] mt-1">Your climbing journey starts here</p>
+                </div>`;
                 return;
             }
 
@@ -1094,33 +1099,61 @@
                 }
 
                 let displayDate = s.date;
-                if (s.date.startsWith(today)) displayDate = 'Today' + s.date.substring(today.length);
-                else if (s.date.startsWith(yesterday)) displayDate = 'Yesterday' + s.date.substring(yesterday.length);
+                if (s.date.startsWith(today)) displayDate = 'Today';
+                else if (s.date.startsWith(yesterday)) displayDate = 'Yesterday';
+                else {
+                   const parts = s.date.split(',');
+                   displayDate = parts[0];
+                }
 
                 const climbCount = s.climbs ? s.climbs.length : 0;
+                
+                // Mini Grade Bar Logic
+                const gradeCounts = {};
+                (s.climbs || []).forEach(c => {
+                    if (c.gradeStr && c.gradeStr !== '🍺') {
+                        gradeCounts[c.gradeStr] = (gradeCounts[c.gradeStr] || 0) + 1;
+                    }
+                });
+                const gradeKeys = Object.keys(gradeCounts).sort((a, b) => fontGrades.indexOf(a) - fontGrades.indexOf(b));
+                const barColors = ['#10b981', '#3b82f6', '#f59e0b', '#a855f7', '#ec4899', '#ef4444', '#06b6d4', '#84cc16'];
+                const miniBarHtml = gradeKeys.map((g, i) => {
+                    const pct = (gradeCounts[g] / Math.max(1, climbCount)) * 100;
+                    return `<div style="width:${pct}%;background:${barColors[i % barColors.length]}" class="h-full opacity-60"></div>`;
+                }).join('');
 
                 return `
-                <li class="flex items-center gap-3 px-4 py-3.5 active:bg-neutral-800/50 transition-colors cursor-pointer" onclick="openSessionDetail(${actualIndex})">
-                    <!-- Score badge -->
-                    <div class="shrink-0 w-14 h-14 rounded-xl bg-neutral-800 flex flex-col items-center justify-center border border-neutral-700/50">
-                        <span class="text-emerald-400 font-black text-sm leading-none">${s.score}</span>
-                        <span class="text-[8px] text-neutral-500 uppercase tracking-wider mt-0.5">pts</span>
-                    </div>
-                    <!-- Info -->
-                    <div class="flex-1 min-w-0">
-                        <span class="text-sm font-bold text-white block truncate">${displayDate}</span>
-                        <div class="flex items-center gap-1.5 mt-1 flex-wrap">
-                            <span class="text-[10px] text-neutral-400">${climbCount} climbs</span>
-                            <span class="text-neutral-700">·</span>
-                            <span class="text-[10px] text-blue-400">${sends} sends</span>
-                            ${s.duration ? `<span class="text-neutral-700">·</span><span class="text-[10px] text-neutral-400 italic">${formatDuration(s.duration)}</span>` : ''}
-                            ${flashes > 0 ? `<span class="text-neutral-700">·</span><span class="text-[10px] text-amber-400">⚡ ${flashes} flash</span>` : ''}
+                <li class="group relative px-5 py-4 active:bg-neutral-800/80 transition-all cursor-pointer border-b border-neutral-800/40" onclick="openSessionDetail(${actualIndex})">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <!-- Date Badge -->
+                            <div class="flex flex-col items-center justify-center w-12 h-12 rounded-2xl bg-neutral-950 border border-neutral-800 shrink-0">
+                                <span class="text-[10px] font-black text-neutral-500 uppercase leading-none">${displayDate.split(' ')[0]}</span>
+                                <span class="text-lg font-black text-white leading-none mt-0.5">${displayDate.split(' ')[1] || ''}</span>
+                            </div>
+                            <!-- Title & Stats -->
+                            <div class="min-w-0">
+                                <h4 class="text-sm font-black text-white uppercase tracking-tight">${displayDate === 'Today' || displayDate === 'Yesterday' ? displayDate + "'s Session" : "Session on " + displayDate}</h4>
+                                <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                    <span class="text-[10px] font-bold text-neutral-500">${climbCount} Climbs</span>
+                                    <span class="text-neutral-800 text-[8px]">●</span>
+                                    <span class="text-[10px] font-bold text-emerald-400">${sends} Sends</span>
+                                    ${flashes > 0 ? ` <span class="text-neutral-800 text-[8px]">●</span> <span class="text-[10px] font-bold text-amber-500">⚡ ${flashes} Flash</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Score & Duration -->
+                        <div class="text-right shrink-0 ml-2">
+                            <div class="text-lg font-black text-white leading-none">${s.score.toLocaleString()}<span class="text-[8px] text-neutral-500 ml-1 uppercase">pts</span></div>
+                            <div class="text-[10px] font-bold text-neutral-500 italic mt-0.5">${formatDuration(s.duration) || '--'}</div>
                         </div>
                     </div>
-                    <!-- Actions -->
-                    <div class="flex items-center gap-1 shrink-0">
-                        <svg class="w-4 h-4 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        <button onclick="event.stopPropagation(); deleteSession(${actualIndex})" class="text-red-500/30 hover:text-red-500 active:scale-90 transition p-2 -mr-2">
+                    
+                    <div class="flex items-center gap-4 mt-3">
+                        <div class="flex-1 h-1.5 bg-neutral-900 rounded-full overflow-hidden flex shadow-inner border border-neutral-800/30">
+                            ${miniBarHtml || '<div class="w-full h-full bg-neutral-950 opacity-20"></div>'}
+                        </div>
+                        <button onclick="event.stopPropagation(); deleteSession(${actualIndex})" class="p-1 text-neutral-700 hover:text-red-500 active:scale-90 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         </button>
                     </div>
@@ -1722,10 +1755,24 @@
             });
         }
 
+        function getTotalScore() {
+            return boulderHistory.reduce((sum, s) => sum + s.score, 0);
+        }
+
+        function deleteSession(index) {
+            if (confirm("Delete this session permanently?")) {
+                boulderHistory.splice(index, 1);
+                localStorage.setItem('boulderHistory', JSON.stringify(boulderHistory));
+                updateAnalytics();
+                renderHistoryList();
+            }
+        }
+
         // Init on load
         updateAnalytics();
         renderHistoryList();
         loadActiveSession();
+        renderAchievements();
 
         // Final sanity check for achievements
         if (boulderHistory.length >= 5) unlockAchievement('consistency');
