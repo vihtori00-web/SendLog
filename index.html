@@ -431,7 +431,7 @@
             
             <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group">
                 <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span class="text-sm font-bold text-white">Hard Refresh (v5)</span>
+                <span class="text-sm font-bold text-white">Hard Refresh (v6)</span>
             </button>
 
             <div class="flex justify-between items-end mb-4">
@@ -992,15 +992,15 @@
             data: {
                 labels: [],
                 datasets: [
-                    { label: 'Score', data: [], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.07)', borderWidth: 2.5, fill: true, tension: 0.4, yAxisID: 'y', pointRadius: 5, pointHoverRadius: 8, pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 1.5 },
-                    { label: 'Avg Grade', data: [], borderColor: '#3b82f6', backgroundColor: 'transparent', borderDash: [5, 5], borderWidth: 2, tension: 0.3, yAxisID: 'y1', pointRadius: 4, pointHoverRadius: 7, pointBackgroundColor: '#3b82f6', pointBorderColor: '#fff', pointBorderWidth: 1.5 }
+                    { label: 'Score', data: [], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.07)', borderWidth: 2, fill: true, tension: 0.4, yAxisID: 'y', pointRadius: 0, hitRadius: 0, hoverRadius: 0 },
+                    { label: 'Avg Grade', data: [], borderColor: '#3b82f6', backgroundColor: 'transparent', borderDash: [5, 5], borderWidth: 1.5, tension: 0.3, yAxisID: 'y1', pointRadius: 0, hitRadius: 0, hoverRadius: 0 }
                 ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: true, position: 'top', labels: { boxWidth: 10, font: { size: 10 }, color: '#525252' } },
-                    tooltip: { mode: 'index', intersect: false, backgroundColor: '#171717', borderColor: '#404040', borderWidth: 1, titleColor: '#fff', bodyColor: '#a3a3a3', padding: 10 },
+                    legend: { display: false },
+                    tooltip: { enabled: false },
                     zoom: {
                         pan: { enabled: true, mode: 'x' },
                         zoom: {
@@ -1010,16 +1010,8 @@
                         }
                     }
                 },
-                interaction: { mode: 'nearest', axis: 'x', intersect: false },
-                onClick: (event, elements) => {
-                    if (elements && elements.length > 0) {
-                        const idx = elements[0].index;
-                        openSessionDetail(idx);
-                    } else {
-                        const points = chart.getElementsAtEventForMode(event, 'nearest', { intersect: false }, true);
-                        if (points.length > 0) openSessionDetail(points[0].index);
-                    }
-                },
+                interaction: { mode: 'index', intersect: false },
+                events: ['mousedown', 'mouseup', 'mousemove', 'touchstart', 'touchend', 'touchmove'], // Only events needed for zoom
                 scales: {
                     y: { beginAtZero: true, position: 'left', grid: { color: '#1a1a1a' }, border: { display: false }, ticks: { font: { size: 9 } } },
                     y1: { position: 'right', grid: { display: false }, border: { display: false }, ticks: { font: { size: 9 }, callback: function (val) { return fontGrades[Math.round(val)] || ''; } } },
@@ -1099,11 +1091,19 @@
 
             listEl.innerHTML = boulderHistory.slice().reverse().map((s, reversedIndex) => {
                 const actualIndex = boulderHistory.length - 1 - reversedIndex;
-                let sends = 0, flashes = 0;
+                let sends = 0, flashes = 0, sumGrades = 0, sendCount = 0;
                 if (s.climbs && s.climbs.length > 0) {
-                    sends = s.climbs.filter(c => c.statusText === 'Top' || c.statusText === 'Flash').length;
-                    flashes = s.climbs.filter(c => c.statusText === 'Flash').length;
+                    s.climbs.forEach(c => {
+                        const gIdx = fontGrades.indexOf(c.gradeStr);
+                        if (c.statusText === 'Top' || c.statusText === 'Flash') {
+                            sends++;
+                            sendCount++;
+                            sumGrades += gIdx;
+                            if (c.statusText === 'Flash') flashes++;
+                        }
+                    });
                 }
+                const avgGrade = sendCount > 0 ? fontGrades[Math.round(sumGrades / sendCount)] : '-';
 
                 let displayDate = s.date;
                 if (s.date.startsWith(today)) displayDate = 'Today';
@@ -1145,6 +1145,8 @@
                                     <span class="text-[10px] font-bold text-neutral-500">${climbCount} Climbs</span>
                                     <span class="text-neutral-800 text-[8px]">●</span>
                                     <span class="text-[10px] font-bold text-emerald-400">${sends} Sends</span>
+                                    <span class="text-neutral-800 text-[8px]">●</span>
+                                    <span class="text-[10px] font-bold text-blue-400">Avg: ${avgGrade}</span>
                                     ${flashes > 0 ? ` <span class="text-neutral-800 text-[8px]">●</span> <span class="text-[10px] font-bold text-amber-500">⚡ ${flashes} Flash</span>` : ''}
                                 </div>
                             </div>
