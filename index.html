@@ -211,7 +211,7 @@
                         </div>
                         <span class="text-[9px] text-neutral-600">Scroll to view more</span>
                     </div>
-                    <ul id="historyList" class="divide-y divide-neutral-800/60 overflow-y-auto">
+                    <ul id="historyList" class="divide-y divide-neutral-800/60 overflow-y-auto touch-pan-y" style="touch-action: pan-y;">
                         <li class="text-neutral-500 text-sm px-4 py-6 text-center">No history yet.</li>
                     </ul>
                 </div>
@@ -1134,7 +1134,7 @@
                 }).join('');
 
                 return `
-                <li class="group relative px-5 py-4 active:bg-neutral-800/80 transition-all cursor-pointer border-b border-neutral-800/40" onclick="openSessionDetail(${actualIndex})">
+                <li class="group relative px-5 py-4 active:bg-neutral-800/80 transition-all cursor-pointer border-b border-neutral-800/40 touch-pan-y" style="touch-action: pan-y;" onclick="openSessionDetail(${actualIndex})">
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-3 min-w-0">
                             <!-- Date Badge -->
@@ -1164,7 +1164,7 @@
                         <div class="flex-1 h-1.5 bg-neutral-900 rounded-full overflow-hidden flex shadow-inner border border-neutral-800/30">
                             ${miniBarHtml || '<div class="w-full h-full bg-neutral-950 opacity-20"></div>'}
                         </div>
-                        <button onclick="event.stopPropagation(); deleteSession(${actualIndex})" class="p-1 text-neutral-700 hover:text-red-500 active:scale-90 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100">
+                        <button onclick="event.stopPropagation(); deleteSession(${actualIndex})" class="p-1 text-neutral-500/40 hover:text-red-500 active:scale-90 transition-all">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         </button>
                     </div>
