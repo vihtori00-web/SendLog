@@ -433,7 +433,7 @@
             
             <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group">
                 <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span class="text-sm font-bold text-white">Hard Refresh</span>
+                <span class="text-sm font-bold text-white">Hard Refresh (v4)</span>
             </button>
 
             <div class="flex justify-between items-end mb-4">
@@ -575,33 +575,48 @@
         }
 
         function saveActiveSession() {
-            const activeSession = {
-                sessionStartTime,
-                sessionScore,
-                sessionClimbs
-            };
-            localStorage.setItem('boulderActiveSession', JSON.stringify(activeSession));
+            try {
+                const activeSession = {
+                    sessionStartTime,
+                    sessionScore,
+                    sessionClimbs
+                };
+                localStorage.setItem('boulderActiveSession', JSON.stringify(activeSession));
+            } catch (e) {
+                console.error("Failed to save session:", e);
+            }
         }
 
         function loadActiveSession() {
-            const data = localStorage.getItem('boulderActiveSession');
-            if (!data) return;
-            const active = JSON.parse(data);
-            if (active.sessionStartTime) {
-                sessionStartTime = active.sessionStartTime;
-                sessionScore = active.sessionScore || 0;
-                sessionClimbs = active.sessionClimbs || [];
-                
-                document.getElementById('sessionTimerDisplay').classList.remove('hidden');
-                sessionTimerInterval = setInterval(updateSessionTimer, 1000);
-                updateSessionTimer();
-                
-                const btnStart = document.getElementById('btnStartSession');
-                const btnEnd = document.getElementById('btnEndSession');
-                if (btnStart) btnStart.classList.add('hidden');
-                if (btnEnd) btnEnd.classList.remove('hidden');
-                
-                renderSessionList();
+            try {
+                const data = localStorage.getItem('boulderActiveSession');
+                if (!data) return;
+                const active = JSON.parse(data);
+                if (active.sessionStartTime || (active.sessionClimbs && active.sessionClimbs.length > 0)) {
+                    sessionStartTime = active.sessionStartTime || Date.now();
+                    sessionScore = active.sessionScore || 0;
+                    sessionClimbs = active.sessionClimbs || [];
+                    
+                    // Restore climbIdCounter to avoid collisions with existing climbs in this session
+                    if (sessionClimbs.length > 0) {
+                        climbIdCounter = Math.max(...sessionClimbs.map(c => c.id)) + 1;
+                    }
+                    
+                    document.getElementById('sessionTimerDisplay').classList.remove('hidden');
+                    if (sessionTimerInterval) clearInterval(sessionTimerInterval);
+                    sessionTimerInterval = setInterval(updateSessionTimer, 1000);
+                    updateSessionTimer();
+                    
+                    const btnStart = document.getElementById('btnStartSession');
+                    const btnEnd = document.getElementById('btnEndSession');
+                    if (btnStart) btnStart.classList.add('hidden');
+                    if (btnEnd) btnEnd.classList.remove('hidden');
+                    
+                    console.log(`Restored session with ${sessionClimbs.length} climbs and score ${sessionScore}`);
+                    renderSessionList();
+                }
+            } catch (e) {
+                console.error("Failed to load session:", e);
             }
         }
 
@@ -781,7 +796,7 @@
                 time: timeStr
             });
 
-            if (sessionClimbs.length === 1 && !sessionStartTime) {
+            if (!sessionStartTime) {
                 startSession();
             }
             if (sessionClimbs.length >= 15) unlockAchievement('volume_day');
