@@ -152,22 +152,16 @@
 
             <section id="page-history" class="flex flex-col w-full shrink-0 h-[100%] overflow-hidden snap-center snap-always relative">
 
-                <!-- Hero stats row -->
-                <div class="grid grid-cols-2 gap-3 p-5 pb-0 shrink-0">
-                    <div class="bg-gradient-to-br from-emerald-950/80 to-neutral-900 border border-emerald-800/40 rounded-2xl p-4 flex flex-col justify-between">
-                        <span class="text-[9px] uppercase font-black tracking-widest text-emerald-600 mb-1">Total Points</span>
-                        <span id="statTotalPoints" class="text-4xl font-black text-emerald-400 leading-none">0</span>
-                        <span class="text-[9px] text-neutral-500 mt-2">All-time score</span>
+                <!-- Small stat chips (now includes Points and Avg Time) -->
+                <div class="flex gap-2 px-5 mt-5 shrink-0 overflow-x-auto pb-1">
+                    <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shrink-0">
+                        <span class="text-emerald-400 text-base font-black" id="statTotalPoints">0</span>
+                        <span class="text-[9px] uppercase font-black tracking-wider text-neutral-500">Points</span>
                     </div>
-                    <div class="bg-gradient-to-br from-blue-950/80 to-neutral-900 border border-blue-800/40 rounded-2xl p-4 flex flex-col justify-between">
-                        <span class="text-[9px] uppercase font-black tracking-widest text-blue-600 mb-1">Hardest Send</span>
-                        <span id="statHardestSend" class="text-4xl font-black text-blue-400 leading-none">-</span>
-                        <span class="text-[9px] text-neutral-500 mt-2">Peak grade</span>
+                    <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shrink-0">
+                        <span class="text-emerald-400 text-base font-black" id="statAvgTime">-</span>
+                        <span class="text-[9px] uppercase font-black tracking-wider text-neutral-500">Avg. Time</span>
                     </div>
-                </div>
-
-                <!-- Small stat chips -->
-                <div class="flex gap-2 px-5 mt-3 shrink-0 overflow-x-auto pb-1">
                     <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shrink-0">
                         <span class="text-emerald-400 text-base font-black" id="statTotalSends">0</span>
                         <span class="text-[9px] uppercase font-black tracking-wider text-neutral-500">Sends</span>
@@ -1070,14 +1064,16 @@
             });
 
             const totalPoints = boulderHistory.reduce((s, h) => s + h.score, 0);
+            const totalDuration = boulderHistory.reduce((s, h) => s + (h.duration || 0), 0);
+            const avgDuration = boulderHistory.length > 0 ? totalDuration / boulderHistory.length : 0;
             const flashRate = totalSends > 0 ? Math.round((totalFlashes / totalSends) * 100) : null;
 
             document.getElementById('statTotalSends').innerText = totalSends;
-            document.getElementById('statHardestSend').innerText = hardestIndex >= 0 ? fontGrades[hardestIndex] : '-';
             document.getElementById('statProjectTries').innerText = totalProjectTries;
             document.getElementById('statTotalPoints').innerText = totalPoints.toLocaleString();
             document.getElementById('statFlashRate').innerText = flashRate !== null ? flashRate + '%' : '-';
             document.getElementById('statSessions').innerText = boulderHistory.length;
+            document.getElementById('statAvgTime').innerText = formatDuration(avgDuration) || '-';
 
             chart.data.labels = chartLabels;
             chart.data.datasets[0].data = scoreData;
