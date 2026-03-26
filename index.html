@@ -859,13 +859,13 @@
             
             // Close all overlays first by default
             const settingsOverlay = document.getElementById('settingsOverlay');
-            if (settingsOverlay.classList.contains('flex')) closeSettings(null, false);
+            if (settingsOverlay && settingsOverlay.classList.contains('flex')) closeSettings(null, false);
             
             const sessionOverlay = document.getElementById('sessionDetailOverlay');
-            if (sessionOverlay.classList.contains('flex')) closeSessionDetail(null, false);
+            if (sessionOverlay && sessionOverlay.classList.contains('flex')) closeSessionDetail(null, false);
             
             const minigameOverlay = document.getElementById('minigameOverlay');
-            if (minigameOverlay.classList.contains('flex')) closeMinigame(false);
+            if (minigameOverlay && minigameOverlay.classList.contains('flex')) closeMinigame(false);
 
             if (state && state.overlay) {
                 if (state.overlay === 'settings') openSettings(false);
@@ -880,7 +880,11 @@
         });
 
         // Initialize first state
-        history.replaceState({ tab: 'log' }, '', '#log');
+        if (!history.state) {
+            history.replaceState({ tab: 'log' }, '', '#log');
+        } else if (history.state.tab) {
+            switchTab(history.state.tab, false);
+        }
 
         setTimeout(() => {
             ['log', 'session', 'history', 'leaderboard'].forEach(id => {
