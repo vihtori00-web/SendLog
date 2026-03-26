@@ -452,7 +452,7 @@
             
             <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group">
                 <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span class="text-sm font-bold text-white">Hard Refresh (v9)</span>
+                <span class="text-sm font-bold text-white">Hard Refresh (v10)</span>
             </button>
 
             <div class="flex justify-between items-end mb-4">
@@ -1100,10 +1100,12 @@
             const flashRate = totalSends > 0 ? Math.round((totalFlashes / totalSends) * 100) : 0;
             document.getElementById('statFlashRate').innerText = flashRate + '%';
 
-            const avgDur = filteredHistory.length > 0 ? Math.round(totalDuration / filteredHistory.length) : 0;
+            const sessionsWithTime = filteredHistory.filter(s => (s.duration || 0) > 0);
+            const avgDur = sessionsWithTime.length > 0 ? Math.round(totalDuration / sessionsWithTime.length) : 0;
             document.getElementById('statAvgTime').innerText = avgDur + 'm';
 
-            const avgSends = filteredHistory.length > 0 ? (totalSends / filteredHistory.length).toFixed(1) : '0';
+            const sessionsWithClimbs = filteredHistory.filter(s => s.climbs && s.climbs.length > 0);
+            const avgSends = sessionsWithClimbs.length > 0 ? (totalSends / sessionsWithClimbs.length).toFixed(1) : '0';
             document.getElementById('statAvgSends').innerText = avgSends;
 
             // Chart data
@@ -1396,7 +1398,7 @@
 
                 // Fetch both updates in parallel using codetabs Proxy to wrap HTTP in HTTPS safely
                 // Calculate detailed player stats for leaderboard
-                let totalSendsGlob = 0, totalFlashesGlob = 0, totalSessGlob = boulderHistory.length, sumGradesGlob = 0, successfulClimbsGlob = 0;
+                let totalSendsGlob = 0, totalFlashesGlob = 0, sumGradesGlob = 0, successfulClimbsGlob = 0;
                 boulderHistory.forEach(s => {
                     if (s.climbs) {
                         s.climbs.forEach(c => {
@@ -1410,8 +1412,9 @@
                     }
                 });
 
+                const sessionsWithClimbsGlob = boulderHistory.filter(s => s.climbs && s.climbs.length > 0);
                 const avgGradeGlob = successfulClimbsGlob > 0 ? fontGrades[Math.round(sumGradesGlob / successfulClimbsGlob)] : '-';
-                const sendsPerSessGlob = totalSessGlob > 0 ? (totalSendsGlob / totalSessGlob).toFixed(1) : '0';
+                const sendsPerSessGlob = sessionsWithClimbsGlob.length > 0 ? (totalSendsGlob / sessionsWithClimbsGlob.length).toFixed(1) : '0';
                 const flashRateGlob = totalSendsGlob > 0 ? Math.round((totalFlashesGlob / totalSendsGlob) * 100) : 0;
                 
                 const statsText = encodeURIComponent(`${avgGradeGlob}|${sendsPerSessGlob}|${flashRateGlob}`);
