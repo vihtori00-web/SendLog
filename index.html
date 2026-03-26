@@ -153,30 +153,36 @@
             <section id="page-history" class="flex flex-col w-full shrink-0 h-[100%] overflow-hidden snap-center snap-always relative">
 
                 <!-- Small stat chips (now includes Points and Avg Time) -->
-                <div class="flex gap-1.5 px-5 mt-3 shrink-0 overflow-x-auto pb-1">
-                    <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 shrink-0">
-                        <span class="text-emerald-400 text-sm font-black" id="statTotalPoints">0</span>
-                        <span class="text-[8px] uppercase font-black tracking-wider text-neutral-500">Points</span>
+                <div class="flex gap-2 px-5 mt-4 shrink-0 overflow-x-auto pb-1">
+                    <!-- 1. Flash% -->
+                    <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shrink-0">
+                        <span class="text-amber-400 text-base font-black" id="statFlashRate">-</span>
+                        <span class="text-[9px] uppercase font-black tracking-wider text-neutral-500">Flash</span>
                     </div>
-                    <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 shrink-0">
-                        <span class="text-emerald-400 text-sm font-black" id="statAvgTime">-</span>
-                        <span class="text-[8px] uppercase font-black tracking-wider text-neutral-500">Avg. Time</span>
+                    <!-- 2. Avg Time -->
+                    <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shrink-0">
+                        <span class="text-emerald-400 text-base font-black" id="statAvgTime">-</span>
+                        <span class="text-[9px] uppercase font-black tracking-wider text-neutral-500">Avg. Time</span>
                     </div>
-                    <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 shrink-0">
-                        <span class="text-emerald-400 text-sm font-black" id="statTotalSends">0</span>
-                        <span class="text-[8px] uppercase font-black tracking-wider text-neutral-500">Sends</span>
+                    <!-- 3. Sends -->
+                    <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shrink-0">
+                        <span class="text-emerald-400 text-base font-black" id="statTotalSends">0</span>
+                        <span class="text-[9px] uppercase font-black tracking-wider text-neutral-500">Sends</span>
                     </div>
-                    <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 shrink-0">
-                        <span class="text-amber-400 text-sm font-black" id="statFlashRate">-</span>
-                        <span class="text-[8px] uppercase font-black tracking-wider text-neutral-500">Flash</span>
+                    <!-- 4. Proj Tries -->
+                    <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shrink-0">
+                        <span class="text-orange-400 text-base font-black" id="statProjectTries">0</span>
+                        <span class="text-[9px] uppercase font-black tracking-wider text-neutral-500">Proj.Tries</span>
                     </div>
-                    <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 shrink-0">
-                        <span class="text-cyan-400 text-sm font-black" id="statSessions">0</span>
-                        <span class="text-[8px] uppercase font-black tracking-wider text-neutral-500">Sessions</span>
+                    <!-- 5. Sessions -->
+                    <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shrink-0">
+                        <span class="text-cyan-400 text-base font-black" id="statSessions">0</span>
+                        <span class="text-[9px] uppercase font-black tracking-wider text-neutral-500">Sessions</span>
                     </div>
-                    <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 shrink-0">
-                        <span class="text-orange-400 text-sm font-black" id="statProjectTries">0</span>
-                        <span class="text-[8px] uppercase font-black tracking-wider text-neutral-500">Proj.Tries</span>
+                    <!-- 6. Points -->
+                    <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shrink-0">
+                        <span class="text-emerald-400 text-base font-black" id="statTotalPoints">0</span>
+                        <span class="text-[9px] uppercase font-black tracking-wider text-neutral-500">Points</span>
                     </div>
                 </div>
 
@@ -431,7 +437,7 @@
             
             <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group">
                 <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span class="text-sm font-bold text-white">Hard Refresh (v7)</span>
+                <span class="text-sm font-bold text-white">Hard Refresh (v8)</span>
             </button>
 
             <div class="flex justify-between items-end mb-4">
