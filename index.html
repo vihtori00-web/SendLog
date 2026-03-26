@@ -454,7 +454,7 @@
         let sessionScore = 0;
         let sessionClimbs = [];
         let climbIdCounter = 0;
-        let history = JSON.parse(localStorage.getItem('boulderHistory')) || [];
+        let boulderHistory = JSON.parse(localStorage.getItem('boulderHistory')) || [];
 
         // --- ACHIEVEMENTS & DATA ---
         const achievementDefinitions = [
@@ -508,7 +508,7 @@
 
         function exportData() {
             const data = {
-                history: history,
+                history: boulderHistory,
                 maxGradeIndex: localStorage.getItem('boulderMaxGradeIndex'),
                 playerName: localStorage.getItem('boulderPlayerName'),
                 achievements: achievementsUnlocked
@@ -529,7 +529,10 @@
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (data.history) localStorage.setItem('boulderHistory', JSON.stringify(data.history));
+                    if (data.history) {
+                        localStorage.setItem('boulderHistory', JSON.stringify(data.history));
+                        boulderHistory = data.history;
+                    }
                     if (data.maxGradeIndex !== undefined) localStorage.setItem('boulderMaxGradeIndex', data.maxGradeIndex);
                     if (data.playerName) localStorage.setItem('boulderPlayerName', data.playerName);
                     if (data.achievements) localStorage.setItem('boulderAchievements', JSON.stringify(data.achievements));
@@ -790,15 +793,15 @@
                 }
             }
 
-            history.push({
+            boulderHistory.push({
                 date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
                 timestamp: Date.now(),
                 score: sessionScore,
                 climbs: [...sessionClimbs]
             });
-            localStorage.setItem('boulderHistory', JSON.stringify(history));
+            localStorage.setItem('boulderHistory', JSON.stringify(boulderHistory));
 
-            if (history.length >= 5) unlockAchievement('consistency');
+            if (boulderHistory.length >= 5) unlockAchievement('consistency');
 
             if (sessionTimerInterval) {
                 clearInterval(sessionTimerInterval);
@@ -941,7 +944,7 @@
             let scoreData = [];
             let avgGradeData = [];
 
-            history.forEach(s => {
+            boulderHistory.forEach(s => {
                 chartLabels.push(s.date.split(',')[0]);
                 scoreData.push(s.score);
 
@@ -967,7 +970,7 @@
                 }
             });
 
-            const totalPoints = history.reduce((s, h) => s + h.score, 0);
+            const totalPoints = boulderHistory.reduce((s, h) => s + h.score, 0);
             const flashRate = totalSends > 0 ? Math.round((totalFlashes / totalSends) * 100) : null;
 
             document.getElementById('statTotalSends').innerText = totalSends;
@@ -975,7 +978,7 @@
             document.getElementById('statProjectTries').innerText = totalProjectTries;
             document.getElementById('statTotalPoints').innerText = totalPoints.toLocaleString();
             document.getElementById('statFlashRate').innerText = flashRate !== null ? flashRate + '%' : '-';
-            document.getElementById('statSessions').innerText = history.length;
+            document.getElementById('statSessions').innerText = boulderHistory.length;
 
             chart.data.labels = chartLabels;
             chart.data.datasets[0].data = scoreData;
@@ -986,7 +989,7 @@
         function renderHistoryList() {
             const listEl = document.getElementById('historyList');
 
-            if (history.length === 0) {
+            if (boulderHistory.length === 0) {
                 listEl.innerHTML = '<li class="text-neutral-500 text-sm">No history yet.</li>';
                 return;
             }
@@ -994,8 +997,8 @@
             const today = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
             const yesterday = new Date(Date.now() - 86400000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 
-            listEl.innerHTML = history.slice().reverse().map((s, reversedIndex) => {
-                const actualIndex = history.length - 1 - reversedIndex;
+            listEl.innerHTML = boulderHistory.slice().reverse().map((s, reversedIndex) => {
+                const actualIndex = boulderHistory.length - 1 - reversedIndex;
                 let sends = 0, flashes = 0;
                 if (s.climbs && s.climbs.length > 0) {
                     sends = s.climbs.filter(c => c.statusText === 'Top' || c.statusText === 'Flash').length;
@@ -1040,7 +1043,7 @@
 
         // -- SESSION DETAIL MODAL --
         function openSessionDetail(historyIndex, push = true) {
-            const s = history[historyIndex];
+            const s = boulderHistory[historyIndex];
             if (!s) return;
             if ('vibrate' in navigator) navigator.vibrate(10);
             
@@ -1149,8 +1152,8 @@
 
         function deleteSession(index) {
             if (confirm("Are you sure you want to delete this session? This cannot be undone.")) {
-                history.splice(index, 1);
-                localStorage.setItem('boulderHistory', JSON.stringify(history));
+                boulderHistory.splice(index, 1);
+                localStorage.setItem('boulderHistory', JSON.stringify(boulderHistory));
                 updateAnalytics();
                 renderHistoryList();
             }
@@ -1167,12 +1170,12 @@
         }
 
         function getTotalScore() {
-            return history.reduce((sum, h) => sum + h.score, 0);
+            return boulderHistory.reduce((sum, h) => sum + h.score, 0);
         }
 
         function getMonthlyScore() {
             const now = new Date();
-            return history.filter(h => {
+            return boulderHistory.filter(h => {
                 const hDate = h.timestamp ? new Date(h.timestamp) : new Date(); // fallback for old history
                 return hDate.getFullYear() === now.getFullYear() && hDate.getMonth() === now.getMonth();
             }).reduce((sum, h) => sum + h.score, 0);
