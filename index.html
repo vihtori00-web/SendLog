@@ -564,6 +564,7 @@
         function startSession() {
             if (sessionStartTime) return; // already started
             sessionStartTime = Date.now();
+            saveActiveSession();
             document.getElementById('sessionTimerDisplay').classList.remove('hidden');
             sessionTimerInterval = setInterval(updateSessionTimer, 1000);
             updateSessionTimer();
@@ -572,6 +573,45 @@
             const btnEnd = document.getElementById('btnEndSession');
             if (btnStart) btnStart.classList.add('hidden');
             if (btnEnd) btnEnd.classList.remove('hidden');
+        }
+
+        function saveActiveSession() {
+            const activeSession = {
+                sessionStartTime,
+                sessionScore,
+                sessionClimbs
+            };
+            localStorage.setItem('boulderActiveSession', JSON.stringify(activeSession));
+        }
+
+        function loadActiveSession() {
+            const data = localStorage.getItem('boulderActiveSession');
+            if (!data) return;
+            const active = JSON.parse(data);
+            if (active.sessionStartTime) {
+                sessionStartTime = active.sessionStartTime;
+                sessionScore = active.sessionScore || 0;
+                sessionClimbs = active.sessionClimbs || [];
+                
+                document.getElementById('sessionTimerDisplay').classList.remove('hidden');
+                sessionTimerInterval = setInterval(updateSessionTimer, 1000);
+                updateSessionTimer();
+                
+                const btnStart = document.getElementById('btnStartSession');
+                const btnEnd = document.getElementById('btnEndSession');
+                if (btnStart) btnStart.classList.add('hidden');
+                if (btnEnd) btnEnd.classList.remove('hidden');
+                
+                renderSessionList();
+            }
+        }
+
+        function formatDuration(seconds) {
+            if (!seconds || seconds < 1) return "";
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            if (h > 0) return `${h}h ${m}m`;
+            return `${m}m`;
         }
 
         function updateSessionTimer() {
@@ -738,6 +778,7 @@
             if (sessionClimbs.length >= 15) unlockAchievement('volume_day');
 
             renderSessionList();
+            saveActiveSession();
 
             btnSubmit.innerText = `+${points} ADDED`;
             btnSubmit.classList.add('bg-emerald-400');
@@ -788,6 +829,7 @@
                 sessionScore -= sessionClimbs[index].points;
                 sessionClimbs.splice(index, 1);
                 renderSessionList();
+                saveActiveSession();
             }
         }
 
@@ -798,13 +840,16 @@
                 }
             }
 
+            const durationSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
             boulderHistory.push({
                 date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
                 timestamp: Date.now(),
                 score: sessionScore,
+                duration: durationSeconds,
                 climbs: [...sessionClimbs]
             });
             localStorage.setItem('boulderHistory', JSON.stringify(boulderHistory));
+            localStorage.removeItem('boulderActiveSession');
 
             if (boulderHistory.length >= 5) unlockAchievement('consistency');
 
@@ -1044,6 +1089,7 @@
                             <span class="text-[10px] text-neutral-400">${climbCount} climbs</span>
                             <span class="text-neutral-700">·</span>
                             <span class="text-[10px] text-blue-400">${sends} sends</span>
+                            ${s.duration ? `<span class="text-neutral-700">·</span><span class="text-[10px] text-neutral-400 italic">${formatDuration(s.duration)}</span>` : ''}
                             ${flashes > 0 ? `<span class="text-neutral-700">·</span><span class="text-[10px] text-amber-400">⚡ ${flashes} flash</span>` : ''}
                         </div>
                     </div>
@@ -1070,7 +1116,8 @@
 
             // Populate header
             document.getElementById('sdDate').innerText = s.date;
-            document.getElementById('sdScore').innerText = s.score.toLocaleString() + ' pts';
+            const durationTxt = s.duration ? ` (${formatDuration(s.duration)})` : '';
+            document.getElementById('sdScore').innerText = s.score.toLocaleString() + ' pts' + durationTxt;
 
             const climbs = s.climbs || [];
             const sends = climbs.filter(c => c.statusText === 'Top' || c.statusText === 'Flash');
@@ -1666,6 +1713,7 @@
         // Init on load
         updateAnalytics();
         renderHistoryList();
+        loadActiveSession();
 
     </script>
 </body>
