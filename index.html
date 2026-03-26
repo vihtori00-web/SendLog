@@ -151,9 +151,19 @@
             </section>
 
             <section id="page-history" class="flex flex-col w-full shrink-0 h-[100%] overflow-hidden snap-center snap-always relative">
+                <div class="px-5 pt-6 pb-2 flex justify-between items-center shrink-0">
+                    <h2 class="text-2xl font-black text-white tracking-tight">History</h2>
+                    <!-- History View Toggle -->
+                    <div class="flex bg-neutral-950 rounded-xl p-1 border border-neutral-800 relative z-0">
+                        <button onclick="setHistoryMode('ALL')" id="historyBtnAll"
+                            class="text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black">ALL TIME</button>
+                        <button onclick="setHistoryMode('MONTH')" id="historyBtnMonth"
+                            class="text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white">MONTH</button>
+                    </div>
+                </div>
 
-                <!-- Small stat chips (now includes Points and Avg Time) -->
-                <div class="flex gap-2 px-5 mt-4 shrink-0 overflow-x-auto pb-1">
+                <!-- Small stat chips (Now includes Avg. Sends and specific order) -->
+                <div class="flex gap-2 px-5 mt-2 shrink-0 overflow-x-auto pb-1">
                     <!-- 1. Flash% -->
                     <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shrink-0">
                         <span class="text-amber-400 text-base font-black" id="statFlashRate">-</span>
@@ -164,22 +174,27 @@
                         <span class="text-emerald-400 text-base font-black" id="statAvgTime">-</span>
                         <span class="text-[9px] uppercase font-black tracking-wider text-neutral-500">Avg. Time</span>
                     </div>
-                    <!-- 3. Sends -->
+                    <!-- 3. Avg Sends per Session -->
+                    <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shrink-0">
+                        <span class="text-emerald-400 text-base font-black" id="statAvgSends">0</span>
+                        <span class="text-[9px] uppercase font-black tracking-wider text-neutral-500">Avg. Sends</span>
+                    </div>
+                    <!-- 4. Sends -->
                     <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shrink-0">
                         <span class="text-emerald-400 text-base font-black" id="statTotalSends">0</span>
                         <span class="text-[9px] uppercase font-black tracking-wider text-neutral-500">Sends</span>
                     </div>
-                    <!-- 4. Proj Tries -->
+                    <!-- 5. Proj Tries -->
                     <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shrink-0">
                         <span class="text-orange-400 text-base font-black" id="statProjectTries">0</span>
                         <span class="text-[9px] uppercase font-black tracking-wider text-neutral-500">Proj.Tries</span>
                     </div>
-                    <!-- 5. Sessions -->
+                    <!-- 6. Sessions -->
                     <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shrink-0">
                         <span class="text-cyan-400 text-base font-black" id="statSessions">0</span>
                         <span class="text-[9px] uppercase font-black tracking-wider text-neutral-500">Sessions</span>
                     </div>
-                    <!-- 6. Points -->
+                    <!-- 7. Points -->
                     <div class="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shrink-0">
                         <span class="text-emerald-400 text-base font-black" id="statTotalPoints">0</span>
                         <span class="text-[9px] uppercase font-black tracking-wider text-neutral-500">Points</span>
@@ -437,7 +452,7 @@
             
             <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group">
                 <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span class="text-sm font-bold text-white">Hard Refresh (v8)</span>
+                <span class="text-sm font-bold text-white">Hard Refresh (v9)</span>
             </button>
 
             <div class="flex justify-between items-end mb-4">
@@ -870,7 +885,7 @@
 
             const durationSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
             boulderHistory.push({
-                date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                date: new Date().toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
                 timestamp: Date.now(),
                 score: sessionScore,
                 duration: durationSeconds,
@@ -1026,54 +1041,89 @@
             }
         });
 
+        let historyViewMode = 'ALL';
+
+        function setHistoryMode(mode) {
+            historyViewMode = mode;
+            const btnAll = document.getElementById('historyBtnAll');
+            const btnMonth = document.getElementById('historyBtnMonth');
+            
+            if (mode === 'ALL') {
+                btnAll.className = 'text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black';
+                btnMonth.className = 'text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white';
+            } else {
+                btnMonth.className = 'text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black';
+                btnAll.className = 'text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white';
+            }
+            updateAnalytics();
+            renderHistoryList();
+        }
+
         function updateAnalytics() {
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+            
+            const filteredHistory = historyViewMode === 'ALL' 
+                ? boulderHistory 
+                : boulderHistory.filter(s => (s.timestamp || 0) >= startOfMonth);
+
+            let totalPoints = 0;
             let totalSends = 0;
             let totalFlashes = 0;
-            let hardestIndex = -1;
-            let totalProjectTries = 0;
-            let chartLabels = [];
-            let scoreData = [];
-            let avgGradeData = [];
+            let totalProjTries = 0;
+            let totalDuration = 0;
+            let sumGrades = 0;
+            let totalSuccessfulClimbs = 0;
 
-            boulderHistory.forEach(s => {
-                chartLabels.push(s.date.split(',')[0]);
-                scoreData.push(s.score);
-
-                let sumGrades = 0;
-                let sendCount = 0;
-
+            filteredHistory.forEach(s => {
+                totalPoints += s.score || 0;
+                totalDuration += s.duration || 0;
                 if (s.climbs) {
                     s.climbs.forEach(c => {
                         const gIdx = fontGrades.indexOf(c.gradeStr);
                         if (c.statusText === 'Top' || c.statusText === 'Flash') {
                             totalSends++;
-                            sendCount++;
+                            totalSuccessfulClimbs++;
                             sumGrades += gIdx;
-                            if (gIdx > hardestIndex) hardestIndex = gIdx;
-                        } else {
-                            totalProjectTries += c.tries;
+                            if (c.statusText === 'Flash') totalFlashes++;
                         }
-                        if (c.statusText === 'Flash') totalFlashes++;
+                        totalProjTries += c.tries || 0;
                     });
-                    avgGradeData.push(sendCount > 0 ? sumGrades / sendCount : null);
-                } else {
-                    avgGradeData.push(null);
                 }
             });
 
-            const totalPoints = boulderHistory.reduce((s, h) => s + h.score, 0);
-            const totalDuration = boulderHistory.reduce((s, h) => s + (h.duration || 0), 0);
-            const avgDuration = boulderHistory.length > 0 ? totalDuration / boulderHistory.length : 0;
-            const flashRate = totalSends > 0 ? Math.round((totalFlashes / totalSends) * 100) : null;
-
+            document.getElementById('statTotalPoints').innerText = totalPoints;
             document.getElementById('statTotalSends').innerText = totalSends;
-            document.getElementById('statProjectTries').innerText = totalProjectTries;
-            document.getElementById('statTotalPoints').innerText = totalPoints.toLocaleString();
-            document.getElementById('statFlashRate').innerText = flashRate !== null ? flashRate + '%' : '-';
-            document.getElementById('statSessions').innerText = boulderHistory.length;
-            document.getElementById('statAvgTime').innerText = formatDuration(avgDuration) || '-';
+            document.getElementById('statSessions').innerText = filteredHistory.length;
+            document.getElementById('statProjectTries').innerText = totalProjTries;
 
-            chart.data.labels = chartLabels;
+            const flashRate = totalSends > 0 ? Math.round((totalFlashes / totalSends) * 100) : 0;
+            document.getElementById('statFlashRate').innerText = flashRate + '%';
+
+            const avgDur = filteredHistory.length > 0 ? Math.round(totalDuration / filteredHistory.length) : 0;
+            document.getElementById('statAvgTime').innerText = avgDur + 'm';
+
+            const avgSends = filteredHistory.length > 0 ? (totalSends / filteredHistory.length).toFixed(1) : '0';
+            document.getElementById('statAvgSends').innerText = avgSends;
+
+            // Chart data
+            const labels = filteredHistory.map(s => {
+                const parts = s.date.split('-');
+                return `${parts[2]}.${parts[1]}`;
+            });
+            const scoreData = filteredHistory.map(s => s.score);
+            const avgGradeData = filteredHistory.map(s => {
+                let sSum = 0, sCount = 0;
+                (s.climbs || []).forEach(c => {
+                    if (c.statusText === 'Top' || c.statusText === 'Flash') {
+                        sSum += fontGrades.indexOf(c.gradeStr);
+                        sCount++;
+                    }
+                });
+                return sCount > 0 ? (sSum / sCount).toFixed(2) : 0;
+            });
+
+            chart.data.labels = labels;
             chart.data.datasets[0].data = scoreData;
             chart.data.datasets[1].data = avgGradeData;
             chart.update();
@@ -1081,8 +1131,14 @@
 
         function renderHistoryList() {
             const listEl = document.getElementById('historyList');
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+            
+            const filteredHistory = historyViewMode === 'ALL' 
+                ? boulderHistory 
+                : boulderHistory.filter(s => (s.timestamp || 0) >= startOfMonth);
 
-            if (boulderHistory.length === 0) {
+            if (filteredHistory.length === 0) {
                 listEl.innerHTML = `
                 <div class="flex flex-col items-center justify-center py-20 opacity-30">
                     <div class="text-6xl mb-4">🏆</div>
@@ -1339,8 +1395,29 @@
                 const nameMonth = encodeURIComponent(safeName + '_M_' + monthStr);
 
                 // Fetch both updates in parallel using codetabs Proxy to wrap HTTP in HTTPS safely
-                const urlAll = `https://api.codetabs.com/v1/proxy?quest=http://dreamlo.com/lb/${DREAMLO_PRIVATE_KEY}/add/${nameAll}/${totalScore}?t=${Date.now()}`;
-                const urlMonth = `https://api.codetabs.com/v1/proxy?quest=http://dreamlo.com/lb/${DREAMLO_PRIVATE_KEY}/add/${nameMonth}/${monthlyScore}?t=${Date.now()}`;
+                // Calculate detailed player stats for leaderboard
+                let totalSendsGlob = 0, totalFlashesGlob = 0, totalSessGlob = boulderHistory.length, sumGradesGlob = 0, successfulClimbsGlob = 0;
+                boulderHistory.forEach(s => {
+                    if (s.climbs) {
+                        s.climbs.forEach(c => {
+                            if (c.statusText === 'Top' || c.statusText === 'Flash') {
+                                totalSendsGlob++;
+                                successfulClimbsGlob++;
+                                sumGradesGlob += fontGrades.indexOf(c.gradeStr);
+                                if (c.statusText === 'Flash') totalFlashesGlob++;
+                            }
+                        });
+                    }
+                });
+
+                const avgGradeGlob = successfulClimbsGlob > 0 ? fontGrades[Math.round(sumGradesGlob / successfulClimbsGlob)] : '-';
+                const sendsPerSessGlob = totalSessGlob > 0 ? (totalSendsGlob / totalSessGlob).toFixed(1) : '0';
+                const flashRateGlob = totalSendsGlob > 0 ? Math.round((totalFlashesGlob / totalSendsGlob) * 100) : 0;
+                
+                const statsText = encodeURIComponent(`${avgGradeGlob}|${sendsPerSessGlob}|${flashRateGlob}`);
+
+                const urlAll = `https://api.codetabs.com/v1/proxy?quest=http://dreamlo.com/lb/${DREAMLO_PRIVATE_KEY}/add/${nameAll}/${totalScore}/0/${statsText}?t=${Date.now()}`;
+                const urlMonth = `https://api.codetabs.com/v1/proxy?quest=http://dreamlo.com/lb/${DREAMLO_PRIVATE_KEY}/add/${nameMonth}/${monthlyScore}/0/${statsText}?t=${Date.now()}`;
 
                 await Promise.all([
                     fetch(urlAll),
@@ -1390,7 +1467,8 @@
                     .map(p => ({
                         rawDecodedName: p.decodedName,
                         name: p.decodedName.replace(suffix, '').replace(/-/g, ' '),
-                        score: parseInt(p.score) || 0
+                        score: parseInt(p.score) || 0,
+                        text: p.text
                     }));
 
                 // Sort descending just in case
@@ -1421,6 +1499,15 @@
                             <div class="w-8 text-center shrink-0 ${rankClass}">#${i + 1}</div>
                             <div class="ml-3 flex-1 overflow-hidden">
                                 <span class="font-bold text-sm ${isMe ? 'text-emerald-400' : 'text-neutral-200'} truncate block w-full">${p.name}</span>
+                                ${p.text && p.text !== '0' ? `
+                                    <div class="flex gap-1.5 mt-0.5 opacity-60 flex-wrap">
+                                        <span class="text-[8px] font-bold text-blue-400">Avg: ${p.text.split('|')[0] || '-'}</span>
+                                        <span class="text-neutral-700 text-[8px]">/</span>
+                                        <span class="text-[8px] font-bold text-emerald-400">${p.text.split('|')[1] || '0'} S/S</span>
+                                        <span class="text-neutral-700 text-[8px]">/</span>
+                                        <span class="text-[8px] font-bold text-amber-500">${p.text.split('|')[2] || '0'}% Fl</span>
+                                    </div>
+                                ` : ''}
                             </div>
                             <div class="ml-2 shrink-0">
                                 <span class="font-black ${isMe ? 'text-emerald-300' : 'text-white'}">${p.score.toLocaleString()}</span> <span class="text-[10px] text-neutral-500 uppercase tracking-widest">pts</span>
