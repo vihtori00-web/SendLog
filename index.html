@@ -25,7 +25,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Removed the hacky select CSS. We handle it with Tailwind now! */
     </style>
 </head>
 
@@ -452,7 +451,7 @@
             '8A', '8A+', '8B', '8B+', '8C', '8C+', '9A'
         ];
 
-        let currentGradeIndex = 14;
+        let currentGradeIndex = parseInt(localStorage.getItem('boulderMaxGradeIndex')) || 14;
         let tries = 1;
         let isTop = false;
         let isFlash = false;
@@ -705,22 +704,32 @@
         }
 
         function calculatePoints(delta, flashed, topped, attempts) {
-            // Per-try points by difficulty vs max grade
-            const tryPts   = delta <= -5 ? 1  : delta === -4 ? 2  : delta === -3 ? 3  :
-                             delta === -2 ? 5  : delta === -1 ? 8  : delta === 0  ? 12 :
-                             delta === 1  ? 18 : 25;
-            // Send bonus for topping
-            const topBonus = delta <= -5 ? 3  : delta === -4 ? 5  : delta === -3 ? 8  :
-                             delta === -2 ? 12 : delta === -1 ? 22 : delta === 0  ? 35 :
-                             delta === 1  ? 55 : 80;
-            // Extra bonus for flashing
-            const flashBonus = delta <= -5 ? 2  : delta === -4 ? 3  : delta === -3 ? 5  :
-                               delta === -2 ? 8  : delta === -1 ? 15 : delta === 0  ? 25 :
-                               delta === 1  ? 40 : 60;
+            // Points mapping based on difficulty relative to max grade (delta)
+            // Indices: -Infinity..-5, -4, -3, -2, -1, 0, 1, 2+
+            const getMapValue = (valArray, d) => {
+                const idx = d <= -5 ? 0 : d >= 2 ? 7 : d + 5;
+                const map = [valArray[0], valArray[1], valArray[2], valArray[3], valArray[4], valArray[5], valArray[6], valArray[7]];
+                // We'll just use a simpler index mapping
+                if (d <= -5) return valArray[0];
+                if (d === -4) return valArray[1];
+                if (d === -3) return valArray[2];
+                if (d === -2) return valArray[3];
+                if (d === -1) return valArray[4];
+                if (d === 0)  return valArray[5];
+                if (d === 1)  return valArray[6];
+                return valArray[7];
+            };
+
+            const tryPtsMap   = [1, 2, 3, 5, 8, 12, 18, 25];
+            const topBonusMap = [3, 5, 8, 12, 22, 35, 55, 80];
+            const flashBonusMap = [2, 3, 5, 8, 15, 25, 40, 60];
+
+            const tryPts = getMapValue(tryPtsMap, delta);
+            const topBonus = getMapValue(topBonusMap, delta);
+            const flashBonus = getMapValue(flashBonusMap, delta);
 
             if (flashed) return tryPts + topBonus + flashBonus;
             if (topped)  return (attempts * tryPts) + topBonus;
-            // Project (no send) — try points capped at 8
             return Math.min(attempts, 8) * tryPts;
         }
 
@@ -1199,22 +1208,6 @@
             if (pop) history.back();
         }
 
-        function startMinigame(push = true) {
-            if (push) history.pushState({ overlay: 'minigame' }, '', '#minigame');
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission().catch(console.error);
-            }
-            document.getElementById('minigameOverlay').classList.replace('hidden', 'flex');
-        }
-
-        function closeMinigame(pop = true) {
-            document.getElementById('minigameOverlay').classList.replace('flex', 'hidden');
-            if (activeBeer) {
-                activeBeer.remove();
-                activeBeer = null;
-            }
-            if (pop) history.back();
-        }
 
         function deleteSession(index) {
             if (confirm("Are you sure you want to delete this session? This cannot be undone.")) {
@@ -1566,7 +1559,8 @@
             startRestTimer();
         }
 
-        function startMinigame() {
+        function startMinigame(push = true) {
+            if (push) history.pushState({ overlay: 'minigame' }, '', '#minigame');
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission().catch(console.error);
             }
@@ -1643,13 +1637,16 @@
 
                 confetti({ particleCount: 200, spread: 160, origin: { y: 0.5 }, shapes: ['circle'], colors: ['#f59e0b', '#fbbf24', '#ffffff'] });
 
-                // Inject the easter egg climb to log
                 sessionScore += 670;
+                const now = new Date();
+                const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
                 sessionClimbs.unshift({
                     id: climbIdCounter++,
                     gradeStr: '🍺',
-                    statusText: "67 Beers", color: "text-amber-400", tries: 67, points: 670
+                    statusText: "67 Beers", color: "text-amber-400", tries: 67, points: 670,
+                    time: timeStr
                 });
+                saveActiveSession();
                 renderSessionList();
 
                 setTimeout(() => {
@@ -1714,6 +1711,10 @@
         updateAnalytics();
         renderHistoryList();
         loadActiveSession();
+
+        // Final sanity check for achievements
+        if (boulderHistory.length >= 5) unlockAchievement('consistency');
+        if (getTotalScore() >= 10000) unlockAchievement('centurion');
 
     </script>
 </body>
