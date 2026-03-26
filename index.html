@@ -539,8 +539,15 @@
             reader.readAsText(file);
         }
 
-        function openSettings() { document.getElementById('settingsOverlay').classList.replace('hidden', 'flex'); renderAchievements(); }
-        function closeSettings() { document.getElementById('settingsOverlay').classList.replace('flex', 'hidden'); }
+        function openSettings(push = true) { 
+            document.getElementById('settingsOverlay').classList.replace('hidden', 'flex'); 
+            renderAchievements(); 
+            if (push) history.pushState({ overlay: 'settings' }, '', '#settings');
+        }
+        function closeSettings(event, pop = true) { 
+            document.getElementById('settingsOverlay').classList.replace('flex', 'hidden'); 
+            if (pop) history.back();
+        }
 
         // Session Timer
         let sessionStartTime = null;
@@ -816,14 +823,22 @@
             switchTab('history');
         }
 
-        function switchTab(tabId) {
+        function switchTab(tabId, push = true) {
             document.getElementById(`page-${tabId}`).scrollIntoView({ behavior: 'smooth', inline: 'start' });
+            if (push) {
+                history.pushState({ tab: tabId }, '', '#' + tabId);
+            }
         }
 
         const tabObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     const tabId = entry.target.id.replace('page-', '');
+                    
+                    // Don't push state on every intersection (e.g. during manual scroll)
+                    // unless we want to support scroll-based history (usually too noisy).
+                    // We'll just update active nav.
+                    
                     ['log', 'session', 'history', 'leaderboard'].forEach(id => {
                         const navEl = document.getElementById(`nav-${id}`);
                         if(navEl) navEl.classList.replace('text-emerald-500', 'text-neutral-500');
@@ -838,6 +853,34 @@
                 }
             });
         }, { threshold: 0.6 });
+
+        window.addEventListener('popstate', (event) => {
+            const state = event.state;
+            
+            // Close all overlays first by default
+            const settingsOverlay = document.getElementById('settingsOverlay');
+            if (settingsOverlay.classList.contains('flex')) closeSettings(null, false);
+            
+            const sessionOverlay = document.getElementById('sessionDetailOverlay');
+            if (sessionOverlay.classList.contains('flex')) closeSessionDetail(null, false);
+            
+            const minigameOverlay = document.getElementById('minigameOverlay');
+            if (minigameOverlay.classList.contains('flex')) closeMinigame(false);
+
+            if (state && state.overlay) {
+                if (state.overlay === 'settings') openSettings(false);
+                if (state.overlay === 'sessionDetail') openSessionDetail(state.index, false);
+                if (state.overlay === 'minigame') startMinigame(false);
+            } else if (state && state.tab) {
+                switchTab(state.tab, false);
+            } else {
+                // Default fallback
+                switchTab('log', false);
+            }
+        });
+
+        // Initialize first state
+        history.replaceState({ tab: 'log' }, '', '#log');
 
         setTimeout(() => {
             ['log', 'session', 'history', 'leaderboard'].forEach(id => {
@@ -992,10 +1035,12 @@
 
 
         // -- SESSION DETAIL MODAL --
-        function openSessionDetail(historyIndex) {
+        function openSessionDetail(historyIndex, push = true) {
             const s = history[historyIndex];
             if (!s) return;
             if ('vibrate' in navigator) navigator.vibrate(10);
+            
+            if (push) history.pushState({ overlay: 'sessionDetail', index: historyIndex }, '', '#session-' + historyIndex);
 
             // Populate header
             document.getElementById('sdDate').innerText = s.date;
@@ -1072,12 +1117,30 @@
             });
         }
 
-        function closeSessionDetail(event) {
+        function closeSessionDetail(event, pop = true) {
             if (event && event.target !== document.getElementById('sessionDetailOverlay')) return;
             const overlay = document.getElementById('sessionDetailOverlay');
             const sheet = document.getElementById('sessionDetailSheet');
             sheet.style.transform = 'translateY(100%)';
             setTimeout(() => overlay.classList.replace('flex', 'hidden'), 300);
+            if (pop) history.back();
+        }
+
+        function startMinigame(push = true) {
+            if (push) history.pushState({ overlay: 'minigame' }, '', '#minigame');
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission().catch(console.error);
+            }
+            document.getElementById('minigameOverlay').classList.replace('hidden', 'flex');
+        }
+
+        function closeMinigame(pop = true) {
+            document.getElementById('minigameOverlay').classList.replace('flex', 'hidden');
+            if (activeBeer) {
+                activeBeer.remove();
+                activeBeer = null;
+            }
+            if (pop) history.back();
         }
 
         function deleteSession(index) {
@@ -1449,12 +1512,13 @@
             spawnBeer();
         }
 
-        function closeMinigame() {
+        function closeMinigame(pop = true) {
             document.getElementById('minigameOverlay').classList.replace('flex', 'hidden');
             if (activeBeer) {
                 activeBeer.remove();
                 activeBeer = null;
             }
+            if (pop) history.back();
         }
 
         function spawnBeer() {
