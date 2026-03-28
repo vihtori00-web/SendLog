@@ -35,7 +35,7 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v4.1</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v4.2</span>
             </h1>
 
             <div class="flex items-center gap-3">
@@ -452,7 +452,7 @@
             
             <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group">
                 <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span class="text-sm font-bold text-white">Hard Refresh (v10)</span>
+                <span class="text-sm font-bold text-white">Hard Refresh (v11)</span>
             </button>
 
             <div class="flex justify-between items-end mb-4">
@@ -1109,10 +1109,7 @@
             document.getElementById('statAvgSends').innerText = avgSends;
 
             // Chart data
-            const labels = filteredHistory.map(s => {
-                const parts = s.date.split('-');
-                return `${parts[2]}.${parts[1]}`;
-            });
+            const labels = filteredHistory.map(() => '');
             const scoreData = filteredHistory.map(s => s.score);
             const avgGradeData = filteredHistory.map(s => {
                 let sSum = 0, sCount = 0;

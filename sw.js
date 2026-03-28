@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sendlog-v10';
+const CACHE_NAME = 'sendlog-v11';
 const ASSETS = [
   './',
   'index.html',
