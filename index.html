@@ -47,7 +47,7 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.7</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.8</span>
             </h1>
 
             <div class="flex items-center gap-2">
@@ -75,59 +75,53 @@
 
             <section id="page-log" class="p-4 flex flex-col space-y-3 w-full shrink-0 h-[100%] overflow-y-auto snap-center snap-always relative">
 
-                <!-- Grade Control (Safer Flex Layout) -->
-                <div class="bg-neutral-900 overflow-hidden rounded-[2rem] border border-neutral-800 flex flex-col items-center justify-center py-5 relative select-none touch-manipulation shadow-md">
-                    <p class="text-neutral-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1 pointer-events-none">Font Grade</p>
-                    <div class="flex items-center justify-between w-full px-6 min-h-[4.5rem]">
-                        <button onclick="adjGrade(-1)" class="w-16 h-16 flex items-center justify-start text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
-                            <span class="text-6xl font-black">&minus;</span>
+                <!-- Grade Control (Extreme Resiliency) -->
+                <div class="bg-neutral-900 overflow-hidden rounded-[2rem] border border-neutral-800 flex flex-col items-center justify-center py-3 relative select-none touch-manipulation shadow-md">
+                    <p class="text-neutral-500 text-[9px] font-black uppercase tracking-[0.2em] mb-0.5 pointer-events-none">Font Grade</p>
+                    <div class="flex items-center justify-between w-full px-6 min-h-[clamp(3.5rem,10vh,5rem)]">
+                        <button onclick="adjGrade(-1)" class="w-12 h-12 flex items-center justify-start text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
+                            <span class="text-4xl font-black">&minus;</span>
                         </button>
-                        <span id="displayGrade" class="text-6xl font-black tracking-tighter text-white drop-shadow-md transition-transform duration-300">6A</span>
-                        <button onclick="adjGrade(1)" class="w-16 h-16 flex items-center justify-end text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
-                            <span class="text-6xl font-black">+</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Attempts Control (Safer Flex Layout) -->
-                <div class="bg-neutral-900 overflow-hidden rounded-[2rem] border border-neutral-800 flex flex-col items-center justify-center py-5 relative select-none touch-manipulation shadow-md">
-                    <p class="text-neutral-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1 pointer-events-none">Attempts</p>
-                    <div class="flex items-center justify-between w-full px-6 min-h-[4rem]">
-                        <button onclick="adjTries(-1)" class="w-16 h-16 flex items-center justify-start text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
-                            <span class="text-6xl font-black">&minus;</span>
-                        </button>
-                        <span id="displayTries" class="text-5xl font-black tracking-tighter text-white drop-shadow-md">1</span>
-                        <button onclick="adjTries(1)" class="w-16 h-16 flex items-center justify-end text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
-                            <span class="text-6xl font-black">+</span>
+                        <span id="displayGrade" class="text-[clamp(2.5rem,12vw,4rem)] font-black tracking-tighter text-white drop-shadow-md leading-none">6A</span>
+                        <button onclick="adjGrade(1)" class="w-12 h-12 flex items-center justify-end text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
+                            <span class="text-4xl font-black">+</span>
                         </button>
                     </div>
                 </div>
 
-                <div class="flex gap-4 shrink-0">
+                <!-- Attempts Control (Extreme Resiliency) -->
+                <div class="bg-neutral-900 overflow-hidden rounded-[2rem] border border-neutral-800 flex flex-col items-center justify-center py-3 relative select-none touch-manipulation shadow-md">
+                    <p class="text-neutral-500 text-[9px] font-black uppercase tracking-[0.2em] mb-0.5 pointer-events-none">Attempts</p>
+                    <div class="flex items-center justify-between w-full px-6 min-h-[clamp(3.5rem,10vh,5rem)]">
+                        <button onclick="adjTries(-1)" class="w-12 h-12 flex items-center justify-start text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
+                            <span class="text-4xl font-black">&minus;</span>
+                        </button>
+                        <span id="displayTries" class="text-[clamp(2.5rem,12vw,3.5rem)] font-black tracking-tighter text-white drop-shadow-md leading-none">1</span>
+                        <button onclick="adjTries(1)" class="w-12 h-12 flex items-center justify-end text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
+                            <span class="text-4xl font-black">+</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 shrink-0 h-[clamp(4rem,12vh,5.5rem)]">
                     <button id="btnTop" onclick="toggleTop()"
-                        class="flex-1 py-6 rounded-[2rem] bg-neutral-900 text-xl font-black text-neutral-500 border-2 border-transparent transition-all duration-200 outline-none">
-                        TOPPED
+                        class="flex-1 rounded-[1.8rem] bg-neutral-900 border border-neutral-800 text-neutral-500 font-black uppercase tracking-[0.15em] text-sm flex items-center justify-center transition-all haptic-feedback">
+                        Topped
                     </button>
                     <button id="btnFlash" onclick="toggleFlash()"
-                        class="flex-1 py-6 rounded-[2rem] bg-neutral-900 text-xl font-black text-neutral-500 border-2 border-transparent transition-all duration-200 outline-none">
-                        FLASH
+                        class="flex-1 rounded-[1.8rem] bg-neutral-900 border border-neutral-800 text-neutral-500 font-black uppercase tracking-[0.15em] text-sm flex items-center justify-center transition-all haptic-feedback transition-transform">
+                        Flash
                     </button>
                 </div>
 
-                <div class="flex flex-wrap justify-center gap-2 mt-1 shrink-0 px-2 lg:px-4">
-                    <button onclick="toggleTag('crimp')" id="tag-crimp" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none">CRIMP</button>
-                    <button onclick="toggleTag('sloper')" id="tag-sloper" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none">SLOPER</button>
-                    <button onclick="toggleTag('pinch')" id="tag-pinch" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none">PINCH</button>
-                    <button onclick="toggleTag('overhang')" id="tag-overhang" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none">OVERHANG</button>
-                    <button onclick="toggleTag('slab')" id="tag-slab" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none">SLAB</button>
-                    <button onclick="toggleTag('dyno')" id="tag-dyno" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none">DYNO</button>
-                    <button onclick="toggleTag('comp')" id="tag-comp" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none">COMP</button>
+                <div id="tagContainer" class="flex flex-wrap justify-center gap-2 mt-1 shrink-0 px-2 lg:px-4">
+                    <!-- Dynamic style tags go here -->
                 </div>
 
                 <div class="mt-auto pt-2 shrink-0">
-                    <button onclick="logClimb()" id="btnSubmit"
-                        class="w-full py-7 rounded-[2.5rem] bg-gradient-to-r from-emerald-500 to-emerald-400 text-neutral-950 text-2xl font-black shrink-0 active:scale-[0.97] transition-all duration-150 shadow-[0_0_30px_rgba(16,185,129,0.2)] outline-none">
-                        LOG CLIMB
+                    <button onclick="addClimb()" id="mainAddButton"
+                        class="w-full h-[clamp(4.5rem,14vh,6.5rem)] rounded-[2.5rem] bg-emerald-500 text-black font-black uppercase tracking-[0.3em] text-2xl shadow-xl shadow-emerald-500/20 active:scale-95 transition-all outline-none">
+                        Log Climb
                     </button>
                 </div>
             </section>
