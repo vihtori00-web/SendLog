@@ -47,7 +47,7 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.2</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.3</span>
             </h1>
 
             <div class="flex items-center gap-2">
@@ -122,14 +122,14 @@
                     </button>
                 </div>
 
-                <div class="grid grid-cols-4 gap-2 mt-1 shrink-0">
-                    <button onclick="toggleTag('crimp')" id="tag-crimp" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none">CRIMP</button>
-                    <button onclick="toggleTag('sloper')" id="tag-sloper" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none">SLOPER</button>
-                    <button onclick="toggleTag('pinch')" id="tag-pinch" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none">PINCH</button>
-                    <button onclick="toggleTag('overhang')" id="tag-overhang" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none">OVERHANG</button>
-                    <button onclick="toggleTag('slab')" id="tag-slab" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none">SLAB</button>
-                    <button onclick="toggleTag('dyno')" id="tag-dyno" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none">DYNO</button>
-                    <button onclick="toggleTag('comp')" id="tag-comp" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none">COMP</button>
+                <div class="flex flex-wrap justify-center gap-2 mt-1 shrink-0 px-2 lg:px-4">
+                    <button onclick="toggleTag('crimp')" id="tag-crimp" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none">CRIMP</button>
+                    <button onclick="toggleTag('sloper')" id="tag-sloper" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none">SLOPER</button>
+                    <button onclick="toggleTag('pinch')" id="tag-pinch" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none">PINCH</button>
+                    <button onclick="toggleTag('overhang')" id="tag-overhang" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none">OVERHANG</button>
+                    <button onclick="toggleTag('slab')" id="tag-slab" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none">SLAB</button>
+                    <button onclick="toggleTag('dyno')" id="tag-dyno" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none">DYNO</button>
+                    <button onclick="toggleTag('comp')" id="tag-comp" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none">COMP</button>
                 </div>
 
                 <div class="mt-auto pt-2 shrink-0">
@@ -768,7 +768,7 @@
             if ('vibrate' in navigator) navigator.vibrate(10);
             const idx = selectedTags.indexOf(tag);
             const el = document.getElementById('tag-' + tag);
-            const baseClass = "climb-tag border font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none";
+            const baseClass = "climb-tag border font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none";
             if (idx > -1) {
                 selectedTags.splice(idx, 1);
                 if (el) el.className = baseClass + " bg-neutral-900 border-neutral-800 text-neutral-500";
@@ -875,7 +875,7 @@
             isTop = false; isFlash = false; tries = 1; elTries.innerText = 1;
             selectedTags.forEach(t => {
                 const el = document.getElementById('tag-' + t);
-                const baseClass = "climb-tag border font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none";
+                const baseClass = "climb-tag border font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none";
                 if (el) el.className = baseClass + " bg-neutral-900 border-neutral-800 text-neutral-500";
             });
             selectedTags = [];
@@ -1297,13 +1297,21 @@
                 }
                 const avgGrade = sendCount > 0 ? fontGrades[Math.round(sumGrades / sendCount)] : '-';
 
-                let displayDate = s.date;
-                if (s.date.startsWith(today)) displayDate = 'Today';
-                else if (s.date.startsWith(yesterday)) displayDate = 'Yesterday';
-                else {
-                   const parts = s.date.split(',');
-                   displayDate = parts[0];
-                }
+                // Robust Date Logic using timestamp
+                const sDate = s.timestamp ? new Date(s.timestamp) : new Date();
+                const checkToday = new Date();
+                const checkYesterday = new Date(); checkYesterday.setDate(checkYesterday.getDate() - 1);
+                
+                const isToday = sDate.toDateString() === checkToday.toDateString();
+                const isYesterday = sDate.toDateString() === checkYesterday.toDateString();
+                
+                let relLabel = "";
+                if (isToday) relLabel = "TODAY";
+                else if (isYesterday) relLabel = "YESTERDAY";
+                else relLabel = sDate.toLocaleDateString(undefined, { month: 'short' }).toUpperCase();
+
+                const dayNum = sDate.getDate();
+                const fullDateTitle = isToday ? "Today's Session" : isYesterday ? "Yesterday's Session" : `Session on ${sDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
 
                 const climbCount = s.climbs ? s.climbs.length : 0;
                 
@@ -1326,13 +1334,13 @@
                     <div class="flex items-center justify-between mb-1.5">
                         <div class="flex items-center gap-3 min-w-0">
                             <!-- Date Badge -->
-                            <div class="flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-neutral-950 border border-neutral-800 shrink-0">
-                                <span class="text-[8px] font-black text-neutral-500 uppercase leading-none">${displayDate.split(' ')[0]}</span>
-                                <span class="text-base font-black text-white leading-none mt-0.5">${displayDate.split(' ')[1] || ''}</span>
+                            <div class="flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-neutral-950 border border-neutral-800 shrink-0">
+                                <span class="text-[9px] font-black text-emerald-400 uppercase leading-none mb-0.5">${relLabel}</span>
+                                <span class="text-xl font-black text-white leading-none">${dayNum}</span>
                             </div>
                             <!-- Title & Stats -->
                             <div class="min-w-0">
-                                <h4 class="text-sm font-black text-white uppercase tracking-tight">${displayDate === 'Today' || displayDate === 'Yesterday' ? displayDate + "'s Session" : "Session on " + displayDate}</h4>
+                                <h4 class="text-base font-black text-white uppercase tracking-tight">${fullDateTitle}</h4>
                                 <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                     <span class="text-[10px] font-bold text-neutral-500">${climbCount} Climbs</span>
                                     <span class="text-neutral-800 text-[8px]">●</span>
