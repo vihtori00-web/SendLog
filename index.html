@@ -47,7 +47,7 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.9.0</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.9.1</span>
             </h1>
 
             <div class="flex items-center gap-2">
@@ -460,6 +460,30 @@
     </div>
 
     <script>
+        const DOM = {
+            sessionTimerStr: document.getElementById('sessionTimerDisplay'),
+            sessionScoreStr: document.getElementById('sessionScoreDisplay'),
+            sessionBtn: document.getElementById('btnSessionAction'),
+            timerText: document.getElementById('btnTimerText'),
+            timerPulse: document.getElementById('headerTimerPulse'),
+            timerCard: document.getElementById('headerTimer')
+        };
+
+        function toggleSessionButtonUI(isActive) {
+            if (!DOM.sessionBtn) return;
+            if (isActive) {
+                DOM.sessionBtn.innerText = "FINISH";
+                DOM.sessionBtn.classList.replace('bg-emerald-500/20', 'bg-red-500/20');
+                DOM.sessionBtn.classList.replace('text-emerald-400', 'text-red-400');
+                DOM.sessionBtn.classList.replace('border-emerald-500/30', 'border-red-500/30');
+            } else {
+                DOM.sessionBtn.innerText = "START";
+                DOM.sessionBtn.classList.replace('bg-red-500/20', 'bg-emerald-500/20');
+                DOM.sessionBtn.classList.replace('text-red-400', 'text-emerald-400');
+                DOM.sessionBtn.classList.replace('border-red-500/30', 'border-emerald-500/30');
+            }
+        }
+
         const fontGrades = [
             '<4', '4', '4+', '5', '5+', '6A', '6A+', '6B', '6B+',
             '6C', '6C+', '7A', '7A+', '7B', '7B+', '7C', '7C+',
@@ -660,18 +684,12 @@
             if (sessionStartTime) return; 
             sessionStartTime = Date.now();
             saveActiveSession();
-            document.getElementById('sessionTimerDisplay').classList.remove('hidden');
-            document.getElementById('sessionScoreDisplay').classList.add('animate-score-pulse');
+            DOM.sessionTimerStr.classList.remove('hidden');
+            DOM.sessionScoreStr.classList.add('animate-score-pulse');
             sessionTimerInterval = setInterval(updateSessionTimer, 1000);
             updateSessionTimer();
             
-            const btn = document.getElementById('btnSessionAction');
-            if (btn) {
-                btn.innerText = "FINISH";
-                btn.classList.replace('bg-emerald-500/20', 'bg-red-500/20');
-                btn.classList.replace('text-emerald-400', 'text-red-400');
-                btn.classList.replace('border-emerald-500/30', 'border-red-500/30');
-            }
+            toggleSessionButtonUI(true);
             if ('vibrate' in navigator) navigator.vibrate([10, 30, 10]);
         }
 
@@ -704,19 +722,12 @@
                     }
                     
                     if (sessionStartTime) {
-                        document.getElementById('sessionTimerDisplay').classList.remove('hidden');
-                        document.getElementById('sessionScoreDisplay').classList.add('animate-score-pulse');
+                        DOM.sessionTimerStr.classList.remove('hidden');
+                        DOM.sessionScoreStr.classList.add('animate-score-pulse');
                         if (sessionTimerInterval) clearInterval(sessionTimerInterval);
                         sessionTimerInterval = setInterval(updateSessionTimer, 1000);
                         updateSessionTimer();
-                        
-                        const btn = document.getElementById('btnSessionAction');
-                        if (btn) {
-                            btn.innerText = "FINISH";
-                            btn.classList.replace('bg-emerald-500/20', 'bg-red-500/20');
-                            btn.classList.replace('text-emerald-400', 'text-red-400');
-                            btn.classList.replace('border-emerald-500/30', 'border-red-500/30');
-                        }
+                        toggleSessionButtonUI(true);
                     }
                     
                     console.log(`Restored session with ${sessionClimbs.length} climbs and score ${sessionScore}`);
@@ -746,7 +757,7 @@
             const hStr = h > 0 ? h.toString().padStart(2, '0') + ':' : '';
             const mStr = m.toString().padStart(2, '0') + ':';
             const sStr = s.toString().padStart(2, '0');
-            document.getElementById('sessionTimerDisplay').innerText = hStr + mStr + sStr;
+            DOM.sessionTimerStr.innerText = hStr + mStr + sStr;
         }
 
         // Player Name for Leaderboard
@@ -1000,20 +1011,13 @@
                 sessionTimerInterval = null;
             }
             sessionStartTime = null;
-            document.getElementById('sessionScoreDisplay').classList.remove('animate-score-pulse');
-            const timerDisplay = document.getElementById('sessionTimerDisplay');
-            if (timerDisplay) {
-                timerDisplay.classList.add('hidden');
-                timerDisplay.innerText = "00:00:00";
+            DOM.sessionScoreStr.classList.remove('animate-score-pulse');
+            if (DOM.sessionTimerStr) {
+                DOM.sessionTimerStr.classList.add('hidden');
+                DOM.sessionTimerStr.innerText = "00:00:00";
             }
-
-            const btn = document.getElementById('btnSessionAction');
-            if (btn) {
-                btn.innerText = "START";
-                btn.classList.replace('bg-red-500/20', 'bg-emerald-500/20');
-                btn.classList.replace('text-red-400', 'text-emerald-400');
-                btn.classList.replace('border-red-500/30', 'border-emerald-500/30');
-            }
+            
+            toggleSessionButtonUI(false);
             if ('vibrate' in navigator) navigator.vibrate(30);
 
             sessionScore = 0; sessionClimbs = [];
@@ -1126,9 +1130,11 @@
 
         function setChartType(type) {
             currentChartType = type;
-            document.getElementById('chartBtnLine').className = type === 'line' ? "text-[9px] font-black px-2.5 py-1 rounded transition-colors bg-emerald-500 text-black uppercase tracking-widest" : "text-[9px] font-black px-2.5 py-1 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest";
-            document.getElementById('chartBtnRadar').className = type === 'radar' ? "text-[9px] font-black px-2.5 py-1 rounded transition-colors bg-emerald-500 text-black uppercase tracking-widest" : "text-[9px] font-black px-2.5 py-1 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest";
-            document.getElementById('chartBtnBar').className = type === 'bar' ? "text-[9px] font-black px-2.5 py-1 rounded transition-colors bg-emerald-500 text-black uppercase tracking-widest" : "text-[9px] font-black px-2.5 py-1 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest";
+            const a = "text-[9px] font-black px-2.5 py-1 rounded transition-colors bg-emerald-500 text-black uppercase tracking-widest";
+            const i = "text-[9px] font-black px-2.5 py-1 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest";
+            document.getElementById('chartBtnLine').className = type === 'line' ? a : i;
+            document.getElementById('chartBtnRadar').className = type === 'radar' ? a : i;
+            document.getElementById('chartBtnBar').className = type === 'bar' ? a : i;
             updateAnalytics();
         }
 
@@ -1136,16 +1142,10 @@
 
         function setHistoryMode(mode) {
             historyViewMode = mode;
-            const btnAll = document.getElementById('historyBtnAll');
-            const btnMonth = document.getElementById('historyBtnMonth');
-            
-            if (mode === 'ALL') {
-                btnAll.className = 'text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black';
-                btnMonth.className = 'text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white';
-            } else {
-                btnMonth.className = 'text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black';
-                btnAll.className = 'text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white';
-            }
+            const a = 'text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black';
+            const i = 'text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white';
+            document.getElementById('historyBtnAll').className = mode === 'ALL' ? a : i;
+            document.getElementById('historyBtnMonth').className = mode === 'MONTH' ? a : i;
             updateAnalytics();
             renderHistoryList();
         }
@@ -1493,8 +1493,10 @@
 
         function setLbMode(mode) {
             lbMode = mode;
-            document.getElementById('lbBtnAll').className = mode === 'ALL' ? "text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black" : "text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white";
-            document.getElementById('lbBtnMonth').className = mode === 'MONTH' ? "text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black" : "text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white";
+            const a = "text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black";
+            const i = "text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white";
+            document.getElementById('lbBtnAll').className = mode === 'ALL' ? a : i;
+            document.getElementById('lbBtnMonth').className = mode === 'MONTH' ? a : i;
             loadLeaderboard();
         }
 
@@ -1783,9 +1785,10 @@
         }
 
         function updateRestTimerDisplay() {
-            const display = document.getElementById('btnTimerText');
-            const pulse = document.getElementById('headerTimerPulse');
-            const container = document.getElementById('headerTimer');
+            if (!DOM.timerText) return;
+            const display = DOM.timerText;
+            const pulse = DOM.timerPulse;
+            const container = DOM.timerCard;
             const secs = restTimerInterval ? restTimeRemaining : defaultRestSeconds;
             
             if (display) {
