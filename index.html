@@ -47,7 +47,7 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.5</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.6</span>
             </h1>
 
             <div class="flex items-center gap-2">
@@ -1769,15 +1769,16 @@
         }
 
         function adjRestTimer(delta) {
-            initAudio();
             if (restTimerInterval) {
                 restTimeRemaining = Math.max(5, restTimeRemaining + delta);
-                updateRestTimerDisplay();
             } else {
                 defaultRestSeconds = Math.max(30, Math.min(900, defaultRestSeconds + delta));
-                updateRestTimerDisplay();
             }
+            updateRestTimerDisplay();
+            
+            // Secondary effects offloaded
             if ('vibrate' in navigator) navigator.vibrate(10);
+            setTimeout(initAudio, 0); 
         }
 
         function updateRestTimerDisplay() {
@@ -1804,7 +1805,6 @@
         }
 
         function startRestTimer() {
-            initAudio();
             if (restTimerInterval) {
                 clearInterval(restTimerInterval);
                 restTimerInterval = null;
@@ -1814,7 +1814,10 @@
 
             restTimeRemaining = defaultRestSeconds;
             updateRestTimerDisplay();
+
+            // Secondary effects offloaded
             if ('vibrate' in navigator) navigator.vibrate(20);
+            setTimeout(initAudio, 0);
 
             restTimerInterval = setInterval(() => {
                 restTimeRemaining--;
@@ -1963,6 +1966,16 @@
             btn.innerHTML = originalHtml;
         }
 
+
+        // Pre-initialize audio engine on first interaction to remove latency
+        function primeAudio() {
+            if (typeof initAudio === 'function') initAudio();
+            const silent = new Audio();
+            silent.muted = true;
+            silent.play().catch(() => {});
+        }
+        document.body.addEventListener('touchstart', primeAudio, { once: true });
+        document.body.addEventListener('mousedown', primeAudio, { once: true });
     </script>
 </body>
 
