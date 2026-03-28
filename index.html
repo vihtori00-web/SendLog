@@ -47,10 +47,20 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.0</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.1</span>
             </h1>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
+                <!-- Header Rest Timer -->
+                <div id="headerTimer" class="flex items-center gap-1 bg-neutral-900 border border-neutral-800 px-2 py-1.5 rounded-xl transition-all shadow-sm">
+                    <button onclick="adjRestTimer(-30)" class="w-6 h-6 flex items-center justify-center text-neutral-600 hover:text-white active:scale-90 transition-all font-black text-xs outline-none">&minus;</button>
+                    <div onclick="startRestTimer()" class="flex items-center gap-1.5 px-1.5 cursor-pointer active:scale-95 transition-all outline-none">
+                        <div id="headerTimerPulse" class="w-1.5 h-1.5 rounded-full bg-neutral-700"></div>
+                        <span id="btnTimerText" class="text-[11px] font-mono font-black text-neutral-500 tracking-tighter w-8 text-center">2:00</span>
+                    </div>
+                    <button onclick="adjRestTimer(30)" class="w-6 h-6 flex items-center justify-center text-neutral-600 hover:text-white active:scale-90 transition-all font-black text-xs outline-none">+</button>
+                </div>
+
                 <button onclick="openSettings()" class="text-neutral-500 hover:text-white transition active:scale-95 flex items-center justify-center bg-neutral-900 p-2.5 rounded-xl border border-neutral-800">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
@@ -350,19 +360,7 @@
         </nav>
 
         </div>
-    <!-- GLOBAL FLOATING REST TIMER (Bottom Right) -->
-    <div class="fixed bottom-24 right-5 z-[50] pointer-events-none flex flex-col items-end gap-2">
-        <div class="flex items-center bg-neutral-900/90 backdrop-blur-md rounded-[2rem] border border-neutral-800 p-1.5 pointer-events-auto shadow-2xl transition-all">
-            <button onclick="adjRestTimer(-30)" class="w-12 h-12 rounded-full text-neutral-500 font-bold hover:bg-neutral-800 active:bg-neutral-700 flex items-center justify-center text-2xl shrink-0 transition-colors outline-none">&minus;</button>
-            <button onclick="startRestTimer()" id="btnTimer" class="h-12 px-6 flex items-center justify-center gap-2 hover:bg-neutral-800 active:bg-neutral-700 rounded-[1.5rem] transition-colors outline-none">
-                <svg id="btnTimerIcon" class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span id="btnTimerText" class="text-neutral-400 font-bold text-sm tracking-widest uppercase">2:00</span>
-            </button>
-            <button onclick="adjRestTimer(30)" class="w-12 h-12 rounded-full text-neutral-500 font-bold hover:bg-neutral-800 active:bg-neutral-700 flex items-center justify-center text-2xl shrink-0 transition-colors outline-none">+</button>
-        </div>
-    </div>
+
 
     <!-- ACHIEVEMENTS TOAST -->
     <div id="toastAlert" class="fixed top-4 left-4 right-4 bg-emerald-900/95 border-2 border-emerald-500 rounded-2xl p-4 shadow-[0_0_30px_rgba(16,185,129,0.4)] z-[200] transform -translate-y-[150%] transition-transform duration-500 flex items-center gap-4 backdrop-blur-md">
@@ -758,12 +756,12 @@
 
         function updateUI() {
             btnTop.className = isTop
-                ? "py-5 rounded-[2rem] bg-blue-500/20 text-lg font-black text-blue-400 border-2 border-blue-500/50 transition-all duration-200"
-                : "py-5 rounded-[2rem] bg-neutral-900 text-lg font-black text-neutral-500 border-2 border-transparent transition-all duration-200";
+                ? "flex-1 py-6 rounded-[2rem] bg-blue-500/20 text-xl font-black text-blue-400 border-2 border-blue-500/50 transition-all duration-200"
+                : "flex-1 py-6 rounded-[2rem] bg-neutral-900 text-xl font-black text-neutral-500 border-2 border-transparent transition-all duration-200";
 
             btnFlash.className = isFlash
-                ? "py-5 rounded-[2rem] bg-amber-500/20 text-lg font-black text-amber-400 border-2 border-amber-500/50 transition-all duration-200"
-                : "py-5 rounded-[2rem] bg-neutral-900 text-lg font-black text-neutral-500 border-2 border-transparent transition-all duration-200";
+                ? "flex-1 py-6 rounded-[2rem] bg-amber-500/20 text-xl font-black text-amber-400 border-2 border-amber-500/50 transition-all duration-200"
+                : "flex-1 py-6 rounded-[2rem] bg-neutral-900 text-xl font-black text-neutral-500 border-2 border-transparent transition-all duration-200";
         }
 
         function toggleTag(tag) {
@@ -1761,62 +1759,78 @@
         }
 
         function adjRestTimer(delta) {
+            initAudio();
             if (restTimerInterval) {
-                // Adjust remaining time inline
                 restTimeRemaining = Math.max(5, restTimeRemaining + delta);
-                // Wait for the next interval tick to update the button, or force it right away
-                document.getElementById('btnTimerText').innerText = `Resting... ${formatTimerDisplay(restTimeRemaining)}`;
+                updateRestTimerDisplay();
             } else {
-                // Adjust configured time (capped between 0:30 and 15:00)
                 defaultRestSeconds = Math.max(30, Math.min(900, defaultRestSeconds + delta));
-                document.getElementById('displayRestTime').innerText = formatTimerDisplay(defaultRestSeconds);
+                updateRestTimerDisplay();
+            }
+            if ('vibrate' in navigator) navigator.vibrate(10);
+        }
+
+        function updateRestTimerDisplay() {
+            const display = document.getElementById('btnTimerText');
+            const pulse = document.getElementById('headerTimerPulse');
+            const secs = restTimerInterval ? restTimeRemaining : defaultRestSeconds;
+            
+            if (display) {
+                display.innerText = formatTimerDisplay(secs);
+                if (restTimerInterval) {
+                    display.classList.replace('text-neutral-500', 'text-amber-400');
+                    if (pulse) {
+                        pulse.className = "w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse";
+                    }
+                } else if (secs <= 0 && !restTimerInterval) {
+                    display.classList.replace('text-amber-400', 'text-red-500');
+                    display.classList.replace('text-neutral-500', 'text-red-500');
+                    if (pulse) pulse.className = "w-1.5 h-1.5 rounded-full bg-red-500";
+                } else {
+                    display.classList.replace('text-amber-400', 'text-neutral-500');
+                    display.classList.replace('text-red-500', 'text-neutral-500');
+                    if (pulse) pulse.className = "w-1.5 h-1.5 rounded-full bg-neutral-700";
+                }
             }
         }
 
         function startRestTimer() {
             initAudio();
-            const btn = document.getElementById('btnTimer');
-
             if (restTimerInterval) {
-                // Cancel timer
                 clearInterval(restTimerInterval);
                 restTimerInterval = null;
-                btn.classList.remove('bg-neutral-800', 'text-amber-400', 'border-amber-500/30', 'bg-emerald-900/30', 'text-emerald-400', 'border-emerald-500/50');
-                btn.classList.add('bg-neutral-900', 'text-neutral-400', 'border-neutral-800');
-                document.getElementById('btnTimerIcon').className = "w-5 h-5";
-                document.getElementById('btnTimerText').innerText = "START REST";
+                updateRestTimerDisplay();
                 return;
             }
 
-            // Start timer
             restTimeRemaining = defaultRestSeconds;
-
-            btn.classList.add('bg-neutral-800', 'text-amber-400', 'border-amber-500/30');
-            btn.classList.remove('bg-neutral-900', 'text-neutral-400', 'border-neutral-800', 'bg-emerald-900/30', 'text-emerald-400', 'border-emerald-500/50');
-            document.getElementById('btnTimerIcon').className = "w-5 h-5 animate-pulse";
-            document.getElementById('btnTimerText').innerText = `Resting... ${formatTimerDisplay(restTimeRemaining)}`;
+            updateRestTimerDisplay();
+            if ('vibrate' in navigator) navigator.vibrate(20);
 
             restTimerInterval = setInterval(() => {
                 restTimeRemaining--;
                 if (restTimeRemaining <= 0) {
                     clearInterval(restTimerInterval);
                     restTimerInterval = null;
-                    document.getElementById('btnTimerIcon').className = "w-5 h-5 text-emerald-400";
-                    document.getElementById('btnTimerText').innerHTML = `<span class="text-emerald-400">Rest Complete!</span>`;
-
-                    btn.classList.remove('bg-neutral-800', 'text-amber-400', 'border-amber-500/30');
-                    btn.classList.add('bg-emerald-900/30', 'text-emerald-400', 'border-emerald-500/50');
+                    updateRestTimerDisplay();
+                    
+                    const display = document.getElementById('btnTimerText');
+                    if (display) {
+                        display.innerText = "DONE!";
+                        display.classList.add('text-emerald-400');
+                    }
+                    const pulse = document.getElementById('headerTimerPulse');
+                    if (pulse) pulse.className = "w-1.5 h-1.5 rounded-full bg-emerald-500";
 
                     if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
                     playDing();
 
                     setTimeout(() => {
-                        if (restTimerInterval) return; // Ignore if user started a new session quickly
-                        document.getElementById('btnTimerIcon').className = "w-5 h-5";
-                        document.getElementById('btnTimerText').innerText = "START REST";
-                        btn.classList.remove('bg-emerald-900/30', 'text-emerald-400', 'border-emerald-500/50');
-                        btn.classList.add('bg-neutral-900', 'text-neutral-400', 'border-neutral-800');
+                        if (restTimerInterval) return;
+                        updateRestTimerDisplay();
                     }, 4000);
+                } else {
+                    updateRestTimerDisplay();
                 }
             }, 1000);
         }
