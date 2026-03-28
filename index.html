@@ -36,7 +36,7 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v5.0</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v5.1</span>
             </h1>
 
             <div class="flex items-center gap-3">
@@ -378,6 +378,46 @@
         </div>
     </div>
 
+    <!-- HIDDEN EXPORT CARD FOR HTML2CANVAS -->
+    <div id="exportCard" class="fixed top-0 -left-[9999px] w-[400px] h-[700px] bg-neutral-950 flex flex-col p-6 overflow-hidden z-[-1] pointer-events-none">
+        <div class="absolute -top-32 -right-32 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-32 -left-32 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl"></div>
+        
+        <div class="flex justify-between items-center z-10 mb-8">
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v5.0</span></h1>
+            <span id="exportDate" class="text-neutral-500 text-[10px] font-black uppercase tracking-widest"></span>
+        </div>
+        
+        <div class="flex flex-col items-center justify-center z-10 mb-8">
+            <h2 id="exportScore" class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-neutral-400 drop-shadow-lg leading-none truncate">0</h2>
+            <p class="text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em] mt-2">SESSION SCORE</p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 z-10 mb-8">
+            <div class="bg-neutral-900/80 backdrop-blur-md rounded-2xl p-4 flex flex-col items-center justify-center border border-neutral-800">
+                <span class="text-neutral-500 text-[8px] font-black uppercase tracking-widest mb-1">CLIMBS</span>
+                <span id="exportClimbs" class="text-xl font-black text-white">0</span>
+            </div>
+            <div class="bg-neutral-900/80 backdrop-blur-md rounded-2xl p-4 flex flex-col items-center justify-center border border-neutral-800">
+                <span class="text-neutral-500 text-[8px] font-black uppercase tracking-widest mb-1">TOPS</span>
+                <span id="exportTops" class="text-xl font-black text-blue-400">0</span>
+            </div>
+            <div class="bg-neutral-900/80 backdrop-blur-md rounded-2xl p-4 flex flex-col items-center justify-center border border-neutral-800">
+                <span class="text-neutral-500 text-[8px] font-black uppercase tracking-widest mb-1">FLASHES</span>
+                <span id="exportFlashes" class="text-xl font-black text-amber-400">0</span>
+            </div>
+        </div>
+
+        <div class="z-10 bg-neutral-900/50 backdrop-blur-sm rounded-2xl p-4 border border-neutral-800/50 mb-6 flex-1">
+            <p class="text-neutral-500 text-[9px] font-black uppercase tracking-widest mb-3 text-center">BEST SENDS</p>
+            <ul id="exportBestClimbs" class="flex flex-col gap-3"></ul>
+        </div>
+
+        <div class="mt-auto z-10 flex flex-col items-center text-center opacity-50 pb-2">
+            <p class="text-[8px] font-bold text-neutral-400 uppercase tracking-widest">Logged with SendLog</p>
+        </div>
+    </div>
+
     <!-- ACHIEVEMENTS TOAST -->
     <div id="toastAlert" class="fixed top-4 left-4 right-4 bg-emerald-900/95 border-2 border-emerald-500 rounded-2xl p-4 shadow-[0_0_30px_rgba(16,185,129,0.4)] z-[200] transform -translate-y-[150%] transition-transform duration-500 flex items-center gap-4 backdrop-blur-md">
         <div class="text-4xl">🏆</div>
@@ -466,7 +506,7 @@
             
             <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group">
                 <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span class="text-sm font-bold text-white">Hard Refresh (v13)</span>
+                <span class="text-sm font-bold text-white">Hard Refresh (v14)</span>
             </button>
 
             <div class="flex justify-between items-end mb-4">
@@ -1340,7 +1380,9 @@
 
 
         // -- SESSION DETAIL MODAL --
+        let currentSessionDetailIndex = null;
         function openSessionDetail(historyIndex, push = true) {
+            currentSessionDetailIndex = historyIndex;
             const s = boulderHistory[historyIndex];
             if (!s) return;
             if ('vibrate' in navigator) navigator.vibrate(10);
@@ -1994,19 +2036,36 @@
             btn.innerHTML = `<div class="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>`;
             
             try {
-                const sheet = document.getElementById('sessionDetailSheet');
-                const prevBg = sheet.style.backgroundColor;
-                sheet.style.backgroundColor = '#0a0a0a';
+                // Populate export card
+                const s = boulderHistory[currentSessionDetailIndex];
+                document.getElementById('exportDate').innerText = s.date;
+                document.getElementById('exportScore').innerText = s.score.toLocaleString();
                 
-                const canvas = await html2canvas(sheet, {
+                const climbs = s.climbs || [];
+                const sends = climbs.filter(c => c.statusText === 'Top' || c.statusText === 'Flash');
+                const flashes = climbs.filter(c => c.statusText === 'Flash');
+                
+                document.getElementById('exportClimbs').innerText = climbs.length;
+                document.getElementById('exportTops').innerText = sends.length;
+                document.getElementById('exportFlashes').innerText = flashes.length;
+                
+                // Best climbs
+                const best = sends.sort((a, b) => b.points - a.points).slice(0, 5);
+                document.getElementById('exportBestClimbs').innerHTML = best.length === 0 ? 
+                    '<li class="text-neutral-500 text-xs text-center py-2">No sends recorded.</li>' :
+                    best.map(c => {
+                        const sColor = c.statusText === 'Flash' ? 'text-amber-400' : 'text-blue-400';
+                        return `<li class="flex justify-between items-center whitespace-nowrap"><div class="flex items-center gap-3"><span class="text-xl font-black w-10 text-center text-white">${c.gradeStr}</span><span class="${sColor} text-[11px] font-bold uppercase tracking-wider">${c.statusText}</span></div><span class="text-neutral-400 font-bold text-sm">${c.points} pts</span></li>`;
+                    }).join('');
+                
+                const card = document.getElementById('exportCard');
+                
+                const canvas = await html2canvas(card, {
                     backgroundColor: '#0a0a0a',
-                    scale: 2,
+                    scale: 3,
                     useCORS: true,
-                    logging: false,
-                    ignoreElements: (el) => el.hasAttribute('data-html2canvas-ignore')
+                    logging: false
                 });
-                
-                sheet.style.backgroundColor = prevBg;
 
                 const imgData = canvas.toDataURL('image/jpeg', 0.9);
                 const timestampStr = new Date().toISOString().replace(/[:.]/g, '-');
