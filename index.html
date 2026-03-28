@@ -70,7 +70,7 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.9.2</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.9.3</span>
             </h1>
 
             <div class="flex items-center gap-2">
@@ -870,16 +870,7 @@
             // Indices: -Infinity..-5, -4, -3, -2, -1, 0, 1, 2+
             const getMapValue = (valArray, d) => {
                 const idx = d <= -5 ? 0 : d >= 2 ? 7 : d + 5;
-                const map = [valArray[0], valArray[1], valArray[2], valArray[3], valArray[4], valArray[5], valArray[6], valArray[7]];
-                // We'll just use a simpler index mapping
-                if (d <= -5) return valArray[0];
-                if (d === -4) return valArray[1];
-                if (d === -3) return valArray[2];
-                if (d === -2) return valArray[3];
-                if (d === -1) return valArray[4];
-                if (d === 0)  return valArray[5];
-                if (d === 1)  return valArray[6];
-                return valArray[7];
+                return valArray[idx];
             };
 
             const tryPts = getMapValue(tryPtsMap, delta);
@@ -1425,14 +1416,13 @@
             document.getElementById('sdScore').innerText = s.score.toLocaleString() + ' pts' + durationTxt;
 
             const climbs = s.climbs || [];
-            const sends = climbs.filter(c => c.statusText === 'Top' || c.statusText === 'Flash');
-            const flashes = climbs.filter(c => c.statusText === 'Flash');
-            const projects = climbs.filter(c => c.statusText !== 'Top' && c.statusText !== 'Flash');
+            const stats = getSessionStats(s);
+            const projects = climbs.length - stats.sends;
 
             document.getElementById('sdClimbCount').innerText = climbs.length;
-            document.getElementById('sdSends').innerText = sends.length;
-            document.getElementById('sdFlashes').innerText = flashes.length;
-            document.getElementById('sdProjects').innerText = projects.length;
+            document.getElementById('sdSends').innerText = stats.sends;
+            document.getElementById('sdFlashes').innerText = stats.flashes;
+            document.getElementById('sdProjects').innerText = projects;
 
             // Grade distribution bar
             const gradeBar = document.getElementById('sdGradeBar');
@@ -1659,6 +1649,8 @@
                             : i === 2 ? "text-amber-600 font-bold text-lg"
                                 : "text-neutral-500";
                     const bgClass = isMe ? "bg-emerald-900/40 border border-emerald-500/30" : "hover:bg-neutral-800/30 border border-transparent";
+                    
+                    const [avgG, sPerS, fPct] = (p.text && p.text !== '0') ? p.text.split('|') : ['-', '0', '0'];
 
                     const deleteBtnHtml = isAdmin ? `
                         <button onclick="deleteRecord('${p.rawDecodedName.replace(/'/g, "\\'")}')" class="ml-3 text-red-500 hover:text-red-400 bg-red-500/10 rounded-lg transition active:scale-95 p-2 shrink-0" title="Delete Score">
@@ -1673,11 +1665,11 @@
                                 <span class="font-bold text-sm ${isMe ? 'text-emerald-400' : 'text-neutral-200'} truncate block w-full">${p.name}</span>
                                 ${p.text && p.text !== '0' ? `
                                     <div class="flex gap-1.5 mt-0.5 opacity-60 flex-wrap">
-                                        <span class="text-[8px] font-bold text-blue-400">Avg: ${p.text.split('|')[0] || '-'}</span>
+                                        <span class="text-[8px] font-bold text-blue-400">Avg: ${avgG || '-'}</span>
                                         <span class="text-neutral-700 text-[8px]">/</span>
-                                        <span class="text-[8px] font-bold text-emerald-400">${p.text.split('|')[1] || '0'} S/S</span>
+                                        <span class="text-[8px] font-bold text-emerald-400">${sPerS || '0'} S/S</span>
                                         <span class="text-neutral-700 text-[8px]">/</span>
-                                        <span class="text-[8px] font-bold text-amber-500">${p.text.split('|')[2] || '0'}% Fl</span>
+                                        <span class="text-[8px] font-bold text-amber-500">${fPct || '0'}% Fl</span>
                                     </div>
                                 ` : ''}
                             </div>
