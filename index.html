@@ -47,7 +47,7 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.8.1</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.8.2</span>
             </h1>
 
             <div class="flex items-center gap-2">
@@ -448,7 +448,7 @@
             
             <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group">
                 <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span class="text-sm font-bold text-white">Hard Refresh (v6.8.1)</span>
+                <span class="text-sm font-bold text-white">Hard Refresh (v6.8.2)</span>
             </button>
 
             <div class="flex justify-between items-end mb-4">
@@ -475,6 +475,22 @@
         let climbIdCounter = 0;
         let selectedTags = [];
         let boulderHistory = JSON.parse(localStorage.getItem('boulderHistory')) || [];
+        const tagList = ['crimp', 'sloper', 'pinch', 'overhang', 'slab', 'dyno', 'comp'];
+
+        function renderTags() {
+            try {
+                const container = document.getElementById('tagContainer');
+                if (!container) return;
+                container.innerHTML = tagList.map(tag => `
+                    <button onclick="toggleTag('${tag}')" id="tag-${tag}"
+                        style="width: calc(25% - 0.5rem); min-width: 65px;"
+                        class="py-2.5 rounded-xl border border-neutral-800 text-[10px] font-black uppercase tracking-wider transition-all truncate px-1
+                        ${selectedTags.includes(tag) ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' : 'bg-neutral-900 text-neutral-500 border-neutral-800'}">
+                        ${tag}
+                    </button>
+                `).join('');
+            } catch (e) { console.error("renderTags failed:", e); }
+        }
 
         // --- ACHIEVEMENTS & DATA ---
         const achievementDefinitions = [
@@ -867,21 +883,6 @@
             });
             selectedTags = [];
             updateUI();
-        }
-
-        const tagList = ['crimp', 'sloper', 'pinch', 'overhang', 'slab', 'dyno', 'comp'];
-
-        function renderTags() {
-            const container = document.getElementById('tagContainer');
-            if (!container) return;
-            container.innerHTML = tagList.map(tag => `
-                <button onclick="toggleTag('${tag}')" id="tag-${tag}"
-                    style="width: calc(25% - 0.5rem); min-width: 65px;"
-                    class="py-2.5 rounded-xl border border-neutral-800 text-[10px] font-black uppercase tracking-wider transition-all truncate px-1
-                    ${selectedTags.includes(tag) ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' : 'bg-neutral-900 text-neutral-500 border-neutral-800'}">
-                    ${tag}
-                </button>
-            `).join('');
         }
 
         // -- LOGIC: RENDER & DELETE SESSION CLIMBS --
@@ -1494,7 +1495,7 @@
         }
 
         function getTotalScore() {
-            return boulderHistory.reduce((sum, h) => sum + h.score, 0);
+            return (boulderHistory || []).reduce((sum, s) => sum + (s.score || 0), 0);
         }
 
         function getMonthlyScore() {
@@ -1880,9 +1881,7 @@
             });
         }
 
-        function getTotalScore() {
-            return boulderHistory.reduce((sum, s) => sum + s.score, 0);
-        }
+        // consolidated to line 1515
 
         function deleteSession(index) {
             if (confirm("Delete this session permanently?")) {
@@ -1893,15 +1892,20 @@
             }
         }
 
-        // Init on load
-        updateAnalytics();
-        renderHistoryList();
-        loadActiveSession();
-        renderAchievements();
+        // Init on load with safety guards
+        try {
+            updateAnalytics();
+            renderHistoryList();
+            loadActiveSession();
+            renderAchievements();
+            renderTags();
 
-        // Final sanity check for achievements
-        if (boulderHistory.length >= 5) unlockAchievement('consistency');
-        if (getTotalScore() >= 10000) unlockAchievement('centurion');
+            // Final sanity check for achievements
+            if (boulderHistory && boulderHistory.length >= 5) unlockAchievement('consistency');
+            if (getTotalScore() >= 10000) unlockAchievement('centurion');
+        } catch (e) {
+            console.error("App boot sequence failed:", e);
+        }
 
         async function exportSessionImage() {
             if ('vibrate' in navigator) navigator.vibrate(20);
