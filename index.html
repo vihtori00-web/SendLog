@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#10b981">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -35,7 +36,7 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v4.3</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v5.0</span>
             </h1>
 
             <div class="flex items-center gap-3">
@@ -99,6 +100,16 @@
                         class="py-5 rounded-[2rem] bg-neutral-900 text-lg font-black text-neutral-500 border-2 border-transparent transition-all duration-200">
                         FLASH
                     </button>
+                </div>
+
+                <div class="flex gap-2 overflow-x-auto shrink-0 pb-1 hide-scrollbar -mx-1 px-1">
+                    <button onclick="toggleTag('crimp')" id="tag-crimp" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded-xl shrink-0 transition-colors">CRIMP</button>
+                    <button onclick="toggleTag('sloper')" id="tag-sloper" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded-xl shrink-0 transition-colors">SLOPER</button>
+                    <button onclick="toggleTag('pinch')" id="tag-pinch" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded-xl shrink-0 transition-colors">PINCH</button>
+                    <button onclick="toggleTag('overhang')" id="tag-overhang" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded-xl shrink-0 transition-colors">OVERHANG</button>
+                    <button onclick="toggleTag('slab')" id="tag-slab" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded-xl shrink-0 transition-colors">SLAB</button>
+                    <button onclick="toggleTag('dyno')" id="tag-dyno" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded-xl shrink-0 transition-colors">DYNO</button>
+                    <button onclick="toggleTag('comp')" id="tag-comp" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded-xl shrink-0 transition-colors">COMP</button>
                 </div>
 
                 <button onclick="logClimb()" id="btnSubmit"
@@ -204,14 +215,12 @@
                 <!-- Chart card -->
                 <div class="mx-5 mt-2 bg-neutral-900 rounded-2xl border border-neutral-800 shrink-0 overflow-hidden">
                     <div class="flex justify-between items-center px-4 pt-2.5 pb-1">
-                        <div class="flex items-center gap-2">
-                             <span class="text-[9px] uppercase font-black tracking-widest text-neutral-500">Progression</span>
-                             <button onclick="chart.resetZoom()" class="text-[8px] font-black text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md hover:bg-blue-500/20 transition-colors uppercase tracking-wider">Reset Zoom</button>
+                        <div class="flex items-center gap-1.5 bg-neutral-950 rounded-lg p-0.5 border border-neutral-800">
+                            <button onclick="setChartType('line')" id="chartBtnLine" class="text-[9px] font-black px-2.5 py-1 rounded transition-colors bg-emerald-500 text-black uppercase tracking-widest">Trend</button>
+                            <button onclick="setChartType('radar')" id="chartBtnRadar" class="text-[9px] font-black px-2.5 py-1 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest">Style</button>
+                            <button onclick="setChartType('bar')" id="chartBtnBar" class="text-[9px] font-black px-2.5 py-1 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest">Pyramid</button>
                         </div>
-                        <span class="text-[8px] text-neutral-600 flex items-center gap-1">
-                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
-                            Pinch to zoom
-                        </span>
+                        <button onclick="if(chart && chart.resetZoom) chart.resetZoom()" class="text-[8px] font-black text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md hover:bg-blue-500/20 transition-colors uppercase tracking-wider">Reset Zoom</button>
                     </div>
                     <div class="h-44 px-2 pb-1 cursor-pointer">
                         <canvas id="progressionChart" class="w-full h-full"></canvas>
@@ -392,9 +401,14 @@
                         <p id="sdDate" class="text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-0.5"></p>
                         <h3 id="sdScore" class="text-3xl font-black text-emerald-400"></h3>
                     </div>
-                    <button onclick="closeSessionDetail()" class="text-neutral-500 hover:text-white transition active:scale-95 bg-neutral-800 p-2 rounded-full mt-1">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
+                    <div class="flex items-center gap-2 mt-1 shrink-0" data-html2canvas-ignore="true">
+                        <button onclick="exportSessionImage()" id="sdShareBtn" class="text-emerald-400 hover:text-emerald-300 transition active:scale-95 bg-emerald-500/10 p-2 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                            <svg class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        </button>
+                        <button onclick="closeSessionDetail()" class="text-neutral-500 hover:text-white transition active:scale-95 bg-neutral-800 p-2 rounded-full">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <!-- Mini stats row -->
                 <div class="flex gap-3 mt-3">
@@ -452,7 +466,7 @@
             
             <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group">
                 <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span class="text-sm font-bold text-white">Hard Refresh (v12)</span>
+                <span class="text-sm font-bold text-white">Hard Refresh (v13)</span>
             </button>
 
             <div class="flex justify-between items-end mb-4">
@@ -477,6 +491,7 @@
         let sessionScore = 0;
         let sessionClimbs = [];
         let climbIdCounter = 0;
+        let selectedTags = [];
         let boulderHistory = JSON.parse(localStorage.getItem('boulderHistory')) || [];
 
         // --- ACHIEVEMENTS & DATA ---
@@ -737,6 +752,19 @@
                 : "py-5 rounded-[2rem] bg-neutral-900 text-lg font-black text-neutral-500 border-2 border-transparent transition-all duration-200";
         }
 
+        function toggleTag(tag) {
+            if ('vibrate' in navigator) navigator.vibrate(10);
+            const idx = selectedTags.indexOf(tag);
+            const el = document.getElementById('tag-' + tag);
+            if (idx > -1) {
+                selectedTags.splice(idx, 1);
+                if (el) el.className = "climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded-xl shrink-0 transition-colors";
+            } else {
+                selectedTags.push(tag);
+                if (el) el.className = "climb-tag bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded-xl shrink-0 transition-colors";
+            }
+        }
+
         function calculatePoints(delta, flashed, topped, attempts) {
             // Points mapping based on difficulty relative to max grade (delta)
             // Indices: -Infinity..-5, -4, -3, -2, -1, 0, 1, 2+
@@ -812,7 +840,8 @@
                 id: climbIdCounter++,
                 gradeStr: fontGrades[currentGradeIndex],
                 statusText, color, tries, points,
-                time: timeStr
+                time: timeStr,
+                tags: [...selectedTags]
             });
 
             if (!sessionStartTime) {
@@ -831,6 +860,11 @@
             }, 800);
 
             isTop = false; isFlash = false; tries = 1; elTries.innerText = 1;
+            selectedTags.forEach(t => {
+                const el = document.getElementById('tag-' + t);
+                if (el) el.className = "climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded-xl shrink-0 transition-colors";
+            });
+            selectedTags = [];
             updateUI();
         }
 
@@ -854,6 +888,7 @@
                         <div class="flex flex-col">
                             <span class="${c.color} text-[11px] font-bold uppercase tracking-wider">${c.statusText}</span>
                             <span class="text-neutral-500 text-[9px]">${c.tries} Attempt${c.tries > 1 ? 's' : ''}</span>
+                            ${c.tags && c.tags.length > 0 ? `<div class="flex gap-1 mt-1 flex-wrap">${c.tags.map(t => `<span class="bg-neutral-800 text-neutral-400 border border-neutral-700 text-[8px] uppercase px-1.5 py-0.5 rounded">${t}</span>`).join('')}</div>` : ''}
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
@@ -1008,38 +1043,16 @@
         Chart.defaults.color = '#737373';
         Chart.defaults.font.family = 'system-ui, -apple-system, sans-serif';
 
-        let chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [
-                    { label: 'Score', data: [], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.07)', borderWidth: 2, fill: true, tension: 0.4, yAxisID: 'y', pointRadius: 0, hitRadius: 0, hoverRadius: 0 },
-                    { label: 'Avg Grade', data: [], borderColor: '#3b82f6', backgroundColor: 'transparent', borderDash: [5, 5], borderWidth: 1.5, tension: 0.3, yAxisID: 'y1', pointRadius: 0, hitRadius: 0, hoverRadius: 0 }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { enabled: false },
-                    zoom: {
-                        pan: { enabled: true, mode: 'x' },
-                        zoom: {
-                            wheel: { enabled: true },
-                            pinch: { enabled: true },
-                            mode: 'x'
-                        }
-                    }
-                },
-                interaction: { mode: 'index', intersect: false },
-                events: ['mousedown', 'mouseup', 'mousemove', 'touchstart', 'touchend', 'touchmove'], // Only events needed for zoom
-                scales: {
-                    y: { beginAtZero: true, position: 'left', grid: { color: '#1a1a1a' }, border: { display: false }, ticks: { font: { size: 9 } } },
-                    y1: { position: 'right', grid: { display: false }, border: { display: false }, ticks: { font: { size: 9 }, callback: function (val) { return fontGrades[Math.round(val)] || ''; } } },
-                    x: { grid: { display: false }, border: { display: false }, ticks: { display: false } }
-                }
-            }
-        });
+        let chart = null;
+        let currentChartType = 'line';
+
+        function setChartType(type) {
+            currentChartType = type;
+            document.getElementById('chartBtnLine').className = type === 'line' ? "text-[9px] font-black px-2.5 py-1 rounded transition-colors bg-emerald-500 text-black uppercase tracking-widest" : "text-[9px] font-black px-2.5 py-1 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest";
+            document.getElementById('chartBtnRadar').className = type === 'radar' ? "text-[9px] font-black px-2.5 py-1 rounded transition-colors bg-emerald-500 text-black uppercase tracking-widest" : "text-[9px] font-black px-2.5 py-1 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest";
+            document.getElementById('chartBtnBar').className = type === 'bar' ? "text-[9px] font-black px-2.5 py-1 rounded transition-colors bg-emerald-500 text-black uppercase tracking-widest" : "text-[9px] font-black px-2.5 py-1 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest";
+            updateAnalytics();
+        }
 
         let historyViewMode = 'ALL';
 
@@ -1108,25 +1121,118 @@
             const avgSends = sessionsWithClimbs.length > 0 ? (totalSends / sessionsWithClimbs.length).toFixed(1) : '0';
             document.getElementById('statAvgSends').innerText = avgSends;
 
-            // Chart data
-            const labels = filteredHistory.map(() => '');
-            const scoreData = filteredHistory.map(s => s.score);
-            const avgGradeData = filteredHistory.map(s => {
-                let sSum = 0, sCount = 0;
-                (s.climbs || []).forEach(c => {
-                    if (c.statusText === 'Top' || c.statusText === 'Flash') {
-                        sSum += fontGrades.indexOf(c.gradeStr);
-                        sCount++;
+            // Chart data rendering
+            if (chart) chart.destroy();
+            const ctx = document.getElementById('progressionChart').getContext('2d');
+            
+            if (currentChartType === 'line') {
+                const labels = filteredHistory.map(() => '');
+                const scoreData = filteredHistory.map(s => s.score);
+                const avgGradeData = filteredHistory.map(s => {
+                    let sSum = 0, sCount = 0;
+                    (s.climbs || []).forEach(c => {
+                        if (c.statusText === 'Top' || c.statusText === 'Flash') {
+                            sSum += fontGrades.indexOf(c.gradeStr);
+                            sCount++;
+                        }
+                    });
+                    return sCount > 0 ? (sSum / sCount).toFixed(2) : 0;
+                });
+
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'Score', data: scoreData, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.07)', borderWidth: 2, fill: true, tension: 0.4, yAxisID: 'y', pointRadius: 0, hitRadius: 0, hoverRadius: 0 },
+                            { label: 'Avg Grade', data: avgGradeData, borderColor: '#3b82f6', backgroundColor: 'transparent', borderDash: [5, 5], borderWidth: 1.5, tension: 0.3, yAxisID: 'y1', pointRadius: 0, hitRadius: 0, hoverRadius: 0 }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false },
+                            zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' } }
+                        },
+                        interaction: { mode: 'index', intersect: false },
+                        events: ['mousedown', 'mouseup', 'mousemove', 'touchstart', 'touchend', 'touchmove'],
+                        scales: {
+                            y: { beginAtZero: true, position: 'left', grid: { color: '#1a1a1a' }, border: { display: false }, ticks: { font: { size: 9 } } },
+                            y1: { position: 'right', grid: { display: false }, border: { display: false }, ticks: { font: { size: 9 }, callback: function (val) { return fontGrades[Math.round(val)] || ''; } } },
+                            x: { grid: { display: false }, border: { display: false }, ticks: { display: false } }
+                        }
                     }
                 });
-                return sCount > 0 ? (sSum / sCount).toFixed(2) : 0;
-            });
-
-            chart.data.labels = labels;
-            chart.data.datasets[0].data = scoreData;
-            chart.data.datasets[1].data = avgGradeData;
-            chart.update();
+            } else if (currentChartType === 'radar') {
+                const tagCounts = { 'crimp': 0, 'sloper': 0, 'pinch': 0, 'overhang': 0, 'slab': 0, 'dyno': 0, 'comp': 0 };
+                filteredHistory.forEach(s => {
+                    (s.climbs || []).forEach(c => {
+                        if (c.tags) c.tags.forEach(t => { if (tagCounts[t] !== undefined) tagCounts[t]++; });
+                    });
+                });
+                
+                chart = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: Object.keys(tagCounts).map(k => k.toUpperCase()),
+                        datasets: [{
+                            label: 'Style Volume',
+                            data: Object.values(tagCounts),
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                            borderColor: '#10b981',
+                            pointBackgroundColor: '#10b981',
+                            borderWidth: 1.5
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { enabled: true }, zoom: { pan: {enabled: false}, zoom: {enabled: false} } },
+                        scales: {
+                            r: {
+                                ticks: { display: false, maxTicksLimit: 4 },
+                                grid: { color: '#262626' },
+                                angleLines: { color: '#262626' },
+                                pointLabels: { font: { size: 9, weight: 'bold' }, color: '#737373' }
+                            }
+                        }
+                    }
+                });
+            } else if (currentChartType === 'bar') {
+                const gradeCounts = {};
+                filteredHistory.forEach(s => {
+                    (s.climbs || []).forEach(c => {
+                        if ((c.statusText === 'Top' || c.statusText === 'Flash') && c.gradeStr && c.gradeStr !== '🍺') {
+                            gradeCounts[c.gradeStr] = (gradeCounts[c.gradeStr] || 0) + 1;
+                        }
+                    });
+                });
+                const sortedKeys = Object.keys(gradeCounts).sort((a,b) => fontGrades.indexOf(a) - fontGrades.indexOf(b));
+                const dataValues = sortedKeys.map(k => gradeCounts[k]);
+                
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: sortedKeys,
+                        datasets: [{
+                            label: 'Tops',
+                            data: dataValues,
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { enabled: false }, zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' } } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#1a1a1a' }, border: { display: false }, ticks: { font: { size: 9 } } },
+                            x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 9 }, color: '#737373' } }
+                        }
+                    }
+                });
+            }
         }
+
 
         function renderHistoryList() {
             const listEl = document.getElementById('historyList');
@@ -1300,6 +1406,7 @@
                             <div class="flex flex-col">
                                 <span class="${statusColor} text-[11px] font-bold uppercase tracking-wider">${c.statusText}</span>
                                 <span class="text-neutral-500 text-[9px]">${c.tries} Attempt${c.tries > 1 ? 's' : ''}</span>
+                                ${c.tags && c.tags.length > 0 ? `<div class="flex gap-1 mt-1 flex-wrap">${c.tags.map(t => `<span class="bg-neutral-800 text-neutral-400 border border-neutral-700 text-[8px] uppercase px-1.5 py-0.5 rounded">${t}</span>`).join('')}</div>` : ''}
                             </div>
                         </div>
                         <span class="text-emerald-400 font-bold text-sm">+${c.points} pts</span>
@@ -1879,6 +1986,57 @@
         // Final sanity check for achievements
         if (boulderHistory.length >= 5) unlockAchievement('consistency');
         if (getTotalScore() >= 10000) unlockAchievement('centurion');
+
+        async function exportSessionImage() {
+            if ('vibrate' in navigator) navigator.vibrate(20);
+            const btn = document.getElementById('sdShareBtn');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = `<div class="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>`;
+            
+            try {
+                const sheet = document.getElementById('sessionDetailSheet');
+                const prevBg = sheet.style.backgroundColor;
+                sheet.style.backgroundColor = '#0a0a0a';
+                
+                const canvas = await html2canvas(sheet, {
+                    backgroundColor: '#0a0a0a',
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    ignoreElements: (el) => el.hasAttribute('data-html2canvas-ignore')
+                });
+                
+                sheet.style.backgroundColor = prevBg;
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                const timestampStr = new Date().toISOString().replace(/[:.]/g, '-');
+                const filename = `sendlog-session-${timestampStr}.jpg`;
+                
+                if (navigator.share && navigator.canShare) {
+                    try {
+                        const blob = await (await fetch(imgData)).blob();
+                        const file = new File([blob], filename, { type: 'image/jpeg' });
+                        if (navigator.canShare({ files: [file] })) {
+                            await navigator.share({
+                                files: [file],
+                                title: 'SendLog Session',
+                                text: 'Check out my climbing session!'
+                            });
+                            btn.innerHTML = originalHtml;
+                            return;
+                        }
+                    } catch (e) { console.log('Web share failed or cancelled', e); }
+                }
+
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = imgData;
+                link.click();
+            } catch (e) {
+                alert("Failed to export: " + e.message);
+            }
+            btn.innerHTML = originalHtml;
+        }
 
     </script>
 </body>
