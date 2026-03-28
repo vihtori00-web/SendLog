@@ -47,7 +47,7 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.1</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.2</span>
             </h1>
 
             <div class="flex items-center gap-2">
@@ -122,14 +122,14 @@
                     </button>
                 </div>
 
-                <div class="flex gap-2.5 overflow-x-auto shrink-0 pb-2 hide-scrollbar -mx-1 px-1 mt-1">
-                    <button onclick="toggleTag('crimp')" id="tag-crimp" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-xs uppercase tracking-wider px-5 py-4 rounded-2xl shrink-0 transition-all active:scale-95 outline-none">CRIMP</button>
-                    <button onclick="toggleTag('sloper')" id="tag-sloper" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-xs uppercase tracking-wider px-5 py-4 rounded-2xl shrink-0 transition-all active:scale-95 outline-none">SLOPER</button>
-                    <button onclick="toggleTag('pinch')" id="tag-pinch" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-xs uppercase tracking-wider px-5 py-4 rounded-2xl shrink-0 transition-all active:scale-95 outline-none">PINCH</button>
-                    <button onclick="toggleTag('overhang')" id="tag-overhang" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-xs uppercase tracking-wider px-5 py-4 rounded-2xl shrink-0 transition-all active:scale-95 outline-none">OVERHANG</button>
-                    <button onclick="toggleTag('slab')" id="tag-slab" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-xs uppercase tracking-wider px-5 py-4 rounded-2xl shrink-0 transition-all active:scale-95 outline-none">SLAB</button>
-                    <button onclick="toggleTag('dyno')" id="tag-dyno" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-xs uppercase tracking-wider px-5 py-4 rounded-2xl shrink-0 transition-all active:scale-95 outline-none">DYNO</button>
-                    <button onclick="toggleTag('comp')" id="tag-comp" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-xs uppercase tracking-wider px-5 py-4 rounded-2xl shrink-0 transition-all active:scale-95 outline-none">COMP</button>
+                <div class="grid grid-cols-4 gap-2 mt-1 shrink-0">
+                    <button onclick="toggleTag('crimp')" id="tag-crimp" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none">CRIMP</button>
+                    <button onclick="toggleTag('sloper')" id="tag-sloper" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none">SLOPER</button>
+                    <button onclick="toggleTag('pinch')" id="tag-pinch" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none">PINCH</button>
+                    <button onclick="toggleTag('overhang')" id="tag-overhang" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none">OVERHANG</button>
+                    <button onclick="toggleTag('slab')" id="tag-slab" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none">SLAB</button>
+                    <button onclick="toggleTag('dyno')" id="tag-dyno" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none">DYNO</button>
+                    <button onclick="toggleTag('comp')" id="tag-comp" class="climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none">COMP</button>
                 </div>
 
                 <div class="mt-auto pt-2 shrink-0">
@@ -768,12 +768,13 @@
             if ('vibrate' in navigator) navigator.vibrate(10);
             const idx = selectedTags.indexOf(tag);
             const el = document.getElementById('tag-' + tag);
+            const baseClass = "climb-tag border font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none";
             if (idx > -1) {
                 selectedTags.splice(idx, 1);
-                if (el) el.className = "climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded-xl shrink-0 transition-colors";
+                if (el) el.className = baseClass + " bg-neutral-900 border-neutral-800 text-neutral-500";
             } else {
                 selectedTags.push(tag);
-                if (el) el.className = "climb-tag bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded-xl shrink-0 transition-colors";
+                if (el) el.className = baseClass + " bg-emerald-500/20 border-emerald-500/50 text-emerald-400 font-black";
             }
         }
 
@@ -874,7 +875,8 @@
             isTop = false; isFlash = false; tries = 1; elTries.innerText = 1;
             selectedTags.forEach(t => {
                 const el = document.getElementById('tag-' + t);
-                if (el) el.className = "climb-tag bg-neutral-900 border border-neutral-800 text-neutral-500 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded-xl shrink-0 transition-colors";
+                const baseClass = "climb-tag border font-black text-[11px] uppercase tracking-wider px-2 py-4 rounded-2xl transition-all active:scale-95 outline-none";
+                if (el) el.className = baseClass + " bg-neutral-900 border-neutral-800 text-neutral-500";
             });
             selectedTags = [];
             updateUI();
