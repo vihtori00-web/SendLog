@@ -537,7 +537,8 @@
             });
             const flashRate = totalSends > 0 ? Math.round((totalFlashes / totalSends) * 100) : 0;
             const sessionsWithTime = historyArray.filter(s => (s.duration || 0) > 0);
-            const avgDur = sessionsWithTime.length > 0 ? Math.round(totalDuration / sessionsWithTime.length) : 0;
+            const avgDurDec = sessionsWithTime.length > 0 ? (totalDuration / sessionsWithTime.length) : 0;
+            const avgDur = Math.round(avgDurDec / 60);
             const sessionsWithClimbs = historyArray.filter(s => s.climbs && s.climbs.length > 0);
             const avgSends = sessionsWithClimbs.length > 0 ? (totalSends / sessionsWithClimbs.length).toFixed(1) : '0';
             const avgGrade = totalSuccessfulClimbs > 0 ? fontGrades[Math.round(sumGrades / totalSuccessfulClimbs)] : '-';
