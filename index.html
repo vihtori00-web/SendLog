@@ -70,7 +70,7 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.9.3</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.9.5</span>
             </h1>
 
             <div class="flex items-center gap-2">
@@ -213,14 +213,18 @@
                             <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Points</span>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-3 gap-2">
                         <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
                             <span class="text-orange-400 text-xl font-black" id="statProjectTries">0</span>
                             <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Proj Tries</span>
                         </div>
                         <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
-                            <span class="text-blue-400 text-xl font-black" id="statAvgTime">-</span>
+                            <span class="text-blue-400 text-xl font-black font-mono text-xs" id="statAvgTime">-</span>
                             <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Avg Time</span>
+                        </div>
+                        <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                            <span class="text-purple-400 text-xl font-black" id="statAvgGrade">-</span>
+                            <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Avg Grade</span>
                         </div>
                     </div>
                 </div>
@@ -471,7 +475,7 @@
             
             <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group">
                 <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span class="text-sm font-bold text-white">Hard Refresh (v6.8.4)</span>
+                <span class="text-sm font-bold text-white">Hard Refresh (v6.9.5)</span>
             </button>
 
             <div class="flex justify-between items-end mb-4">
@@ -564,11 +568,11 @@
             const flashRate = totalSends > 0 ? Math.round((totalFlashes / totalSends) * 100) : 0;
             const sessionsWithTime = historyArray.filter(s => (s.duration || 0) > 0);
             const avgDurDec = sessionsWithTime.length > 0 ? (totalDuration / sessionsWithTime.length) : 0;
-            const avgDur = Math.round(avgDurDec / 60);
-            const sessionsWithClimbs = historyArray.filter(s => s.climbs && s.climbs.length > 0);
+            const avgDur = formatDuration(Math.round(avgDurDec));
             const avgSends = sessionsWithClimbs.length > 0 ? (totalSends / sessionsWithClimbs.length).toFixed(1) : '0';
-            const avgGrade = totalSuccessfulClimbs > 0 ? fontGrades[Math.round(sumGrades / totalSuccessfulClimbs)] : '-';
-            return { totalPoints, totalSends, totalFlashes, totalProjTries, totalDuration, sumGrades, totalSuccessfulClimbs, flashRate, avgDur, avgSends, avgGrade };
+            const avgGradeScore = totalSuccessfulClimbs > 0 ? (sumGrades / totalSuccessfulClimbs) : 0;
+            const avgGrade = totalSuccessfulClimbs > 0 ? fontGrades[Math.round(avgGradeScore)] : '-';
+            return { totalPoints, totalSends, totalFlashes, totalProjTries, totalDuration, sumGrades, totalSuccessfulClimbs, flashRate, avgDur, avgSends, avgGrade, avgGradeScore };
         }
 
         function renderTags() {
@@ -1183,11 +1187,20 @@
             document.getElementById('statSessions').innerText = filteredHistory.length;
             document.getElementById('statProjectTries').innerText = stats.totalProjTries;
             document.getElementById('statFlashRate').innerText = stats.flashRate + '%';
-            document.getElementById('statAvgTime').innerText = stats.avgDur + 'm';
+            document.getElementById('statAvgTime').innerText = stats.avgDur || '-';
             document.getElementById('statAvgSends').innerText = stats.avgSends;
+            
+            const gIdx = Math.floor(stats.avgGradeScore);
+            const gRem = (stats.avgGradeScore - gIdx).toFixed(1);
+            const preciseG = stats.totalSuccessfulClimbs > 0 ? `${fontGrades[gIdx]}<span class="text-[10px] text-neutral-500 ml-1">+${gRem}</span>` : '-';
+            document.getElementById('statAvgGrade').innerHTML = preciseG;
 
             // Chart data rendering
-            if (chart) chart.destroy();
+            if (chart && chart.config.type !== currentChartType) {
+                chart.destroy();
+                chart = null;
+            }
+
             const ctx = document.getElementById('progressionChart').getContext('2d');
             
             if (currentChartType === 'line') {
@@ -1204,7 +1217,13 @@
                     return sCount > 0 ? (sSum / sCount).toFixed(2) : 0;
                 });
 
-                chart = new Chart(ctx, {
+                if (chart) {
+                    chart.data.labels = labels;
+                    chart.data.datasets[0].data = scoreData;
+                    chart.data.datasets[1].data = avgGradeData;
+                    chart.update('none');
+                } else {
+                    chart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: labels,
@@ -1229,7 +1248,8 @@
                         }
                     }
                 });
-            } else if (currentChartType === 'radar') {
+            }
+        } else if (currentChartType === 'radar') {
                 const tagCounts = { 'crimp': 0, 'sloper': 0, 'pinch': 0, 'overhang': 0, 'slab': 0, 'dyno': 0, 'comp': 0 };
                 filteredHistory.forEach(s => {
                     (s.climbs || []).forEach(c => {
