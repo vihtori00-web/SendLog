@@ -47,7 +47,7 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.8.4</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.9.0</span>
             </h1>
 
             <div class="flex items-center gap-2">
@@ -477,6 +477,49 @@
         let boulderHistory = JSON.parse(localStorage.getItem('boulderHistory')) || [];
         const tagList = ['crimp', 'sloper', 'pinch', 'overhang', 'slab', 'dyno', 'comp'];
 
+        function getSessionStats(session) {
+            let sends = 0, flashes = 0, sumGrades = 0, sendCount = 0;
+            if (session.climbs && session.climbs.length > 0) {
+                session.climbs.forEach(c => {
+                    if (c.statusText === 'Top' || c.statusText === 'Flash') {
+                        sends++;
+                        sendCount++;
+                        sumGrades += fontGrades.indexOf(c.gradeStr);
+                        if (c.statusText === 'Flash') flashes++;
+                    }
+                });
+            }
+            const avgGrade = sendCount > 0 ? fontGrades[Math.round(sumGrades / sendCount)] : '-';
+            return { sends, flashes, sumGrades, sendCount, avgGrade };
+        }
+
+        function getHistoryStats(historyArray) {
+            let totalPoints = 0, totalSends = 0, totalFlashes = 0, totalProjTries = 0;
+            let totalDuration = 0, sumGrades = 0, totalSuccessfulClimbs = 0;
+            historyArray.forEach(s => {
+                totalPoints += s.score || 0;
+                totalDuration += s.duration || 0;
+                if (s.climbs) {
+                    s.climbs.forEach(c => {
+                        if (c.statusText === 'Top' || c.statusText === 'Flash') {
+                            totalSends++;
+                            totalSuccessfulClimbs++;
+                            sumGrades += fontGrades.indexOf(c.gradeStr);
+                            if (c.statusText === 'Flash') totalFlashes++;
+                        }
+                        totalProjTries += c.tries || 0;
+                    });
+                }
+            });
+            const flashRate = totalSends > 0 ? Math.round((totalFlashes / totalSends) * 100) : 0;
+            const sessionsWithTime = historyArray.filter(s => (s.duration || 0) > 0);
+            const avgDur = sessionsWithTime.length > 0 ? Math.round(totalDuration / sessionsWithTime.length) : 0;
+            const sessionsWithClimbs = historyArray.filter(s => s.climbs && s.climbs.length > 0);
+            const avgSends = sessionsWithClimbs.length > 0 ? (totalSends / sessionsWithClimbs.length).toFixed(1) : '0';
+            const avgGrade = totalSuccessfulClimbs > 0 ? fontGrades[Math.round(sumGrades / totalSuccessfulClimbs)] : '-';
+            return { totalPoints, totalSends, totalFlashes, totalProjTries, totalDuration, sumGrades, totalSuccessfulClimbs, flashRate, avgDur, avgSends, avgGrade };
+        }
+
         function renderTags() {
             try {
                 const container = document.getElementById('tagContainer');
@@ -780,6 +823,10 @@
             renderTags();
         }
 
+        const tryPtsMap   = [1, 2, 3, 5, 8, 12, 18, 25];
+        const topBonusMap = [3, 5, 8, 12, 22, 35, 55, 80];
+        const flashBonusMap = [2, 3, 5, 8, 15, 25, 40, 60];
+
         function calculatePoints(delta, flashed, topped, attempts) {
             // Points mapping based on difficulty relative to max grade (delta)
             // Indices: -Infinity..-5, -4, -3, -2, -1, 0, 1, 2+
@@ -796,10 +843,6 @@
                 if (d === 1)  return valArray[6];
                 return valArray[7];
             };
-
-            const tryPtsMap   = [1, 2, 3, 5, 8, 12, 18, 25];
-            const topBonusMap = [3, 5, 8, 12, 22, 35, 55, 80];
-            const flashBonusMap = [2, 3, 5, 8, 15, 25, 40, 60];
 
             const tryPts = getMapValue(tryPtsMap, delta);
             const topBonus = getMapValue(topBonusMap, delta);
@@ -1115,46 +1158,15 @@
                 ? boulderHistory 
                 : boulderHistory.filter(s => (s.timestamp || 0) >= startOfMonth);
 
-            let totalPoints = 0;
-            let totalSends = 0;
-            let totalFlashes = 0;
-            let totalProjTries = 0;
-            let totalDuration = 0;
-            let sumGrades = 0;
-            let totalSuccessfulClimbs = 0;
+            const stats = getHistoryStats(filteredHistory);
 
-            filteredHistory.forEach(s => {
-                totalPoints += s.score || 0;
-                totalDuration += s.duration || 0;
-                if (s.climbs) {
-                    s.climbs.forEach(c => {
-                        const gIdx = fontGrades.indexOf(c.gradeStr);
-                        if (c.statusText === 'Top' || c.statusText === 'Flash') {
-                            totalSends++;
-                            totalSuccessfulClimbs++;
-                            sumGrades += gIdx;
-                            if (c.statusText === 'Flash') totalFlashes++;
-                        }
-                        totalProjTries += c.tries || 0;
-                    });
-                }
-            });
-
-            document.getElementById('statTotalPoints').innerText = totalPoints;
-            document.getElementById('statTotalSends').innerText = totalSends;
+            document.getElementById('statTotalPoints').innerText = stats.totalPoints;
+            document.getElementById('statTotalSends').innerText = stats.totalSends;
             document.getElementById('statSessions').innerText = filteredHistory.length;
-            document.getElementById('statProjectTries').innerText = totalProjTries;
-
-            const flashRate = totalSends > 0 ? Math.round((totalFlashes / totalSends) * 100) : 0;
-            document.getElementById('statFlashRate').innerText = flashRate + '%';
-
-            const sessionsWithTime = filteredHistory.filter(s => (s.duration || 0) > 0);
-            const avgDur = sessionsWithTime.length > 0 ? Math.round(totalDuration / sessionsWithTime.length) : 0;
-            document.getElementById('statAvgTime').innerText = avgDur + 'm';
-
-            const sessionsWithClimbs = filteredHistory.filter(s => s.climbs && s.climbs.length > 0);
-            const avgSends = sessionsWithClimbs.length > 0 ? (totalSends / sessionsWithClimbs.length).toFixed(1) : '0';
-            document.getElementById('statAvgSends').innerText = avgSends;
+            document.getElementById('statProjectTries').innerText = stats.totalProjTries;
+            document.getElementById('statFlashRate').innerText = stats.flashRate + '%';
+            document.getElementById('statAvgTime').innerText = stats.avgDur + 'm';
+            document.getElementById('statAvgSends').innerText = stats.avgSends;
 
             // Chart data rendering
             if (chart) chart.destroy();
@@ -1293,19 +1305,7 @@
 
             listEl.innerHTML = boulderHistory.slice().reverse().map((s, reversedIndex) => {
                 const actualIndex = boulderHistory.length - 1 - reversedIndex;
-                let sends = 0, flashes = 0, sumGrades = 0, sendCount = 0;
-                if (s.climbs && s.climbs.length > 0) {
-                    s.climbs.forEach(c => {
-                        const gIdx = fontGrades.indexOf(c.gradeStr);
-                        if (c.statusText === 'Top' || c.statusText === 'Flash') {
-                            sends++;
-                            sendCount++;
-                            sumGrades += gIdx;
-                            if (c.statusText === 'Flash') flashes++;
-                        }
-                    });
-                }
-                const avgGrade = sendCount > 0 ? fontGrades[Math.round(sumGrades / sendCount)] : '-';
+                const { sends, flashes, avgGrade } = getSessionStats(s);
 
                 // Robust Date Logic using timestamp
                 const sDate = s.timestamp ? new Date(s.timestamp) : new Date();
@@ -1546,27 +1546,8 @@
                 const nameMonth = encodeURIComponent(safeName + '_M_' + monthStr);
 
                 // Fetch both updates in parallel using codetabs Proxy to wrap HTTP in HTTPS safely
-                // Calculate detailed player stats for leaderboard
-                let totalSendsGlob = 0, totalFlashesGlob = 0, sumGradesGlob = 0, successfulClimbsGlob = 0;
-                boulderHistory.forEach(s => {
-                    if (s.climbs) {
-                        s.climbs.forEach(c => {
-                            if (c.statusText === 'Top' || c.statusText === 'Flash') {
-                                totalSendsGlob++;
-                                successfulClimbsGlob++;
-                                sumGradesGlob += fontGrades.indexOf(c.gradeStr);
-                                if (c.statusText === 'Flash') totalFlashesGlob++;
-                            }
-                        });
-                    }
-                });
-
-                const sessionsWithClimbsGlob = boulderHistory.filter(s => s.climbs && s.climbs.length > 0);
-                const avgGradeGlob = successfulClimbsGlob > 0 ? fontGrades[Math.round(sumGradesGlob / successfulClimbsGlob)] : '-';
-                const sendsPerSessGlob = sessionsWithClimbsGlob.length > 0 ? (totalSendsGlob / sessionsWithClimbsGlob.length).toFixed(1) : '0';
-                const flashRateGlob = totalSendsGlob > 0 ? Math.round((totalFlashesGlob / totalSendsGlob) * 100) : 0;
-                
-                const statsText = encodeURIComponent(`${avgGradeGlob}|${sendsPerSessGlob}|${flashRateGlob}`);
+                const glob = getHistoryStats(boulderHistory);
+                const statsText = encodeURIComponent(`${glob.avgGrade}|${glob.avgSends}|${glob.flashRate}`);
 
                 const urlAll = `https://api.codetabs.com/v1/proxy?quest=http://dreamlo.com/lb/${DREAMLO_PRIVATE_KEY}/add/${nameAll}/${totalScore}/0/${statsText}?t=${Date.now()}`;
                 const urlMonth = `https://api.codetabs.com/v1/proxy?quest=http://dreamlo.com/lb/${DREAMLO_PRIVATE_KEY}/add/${nameMonth}/${monthlyScore}/0/${statsText}?t=${Date.now()}`;
@@ -1745,6 +1726,16 @@
             } catch (e) { }
         }
 
+        // Pre-initialize audio engine on first interaction to remove latency
+        function primeAudio() {
+            if (typeof initAudio === 'function') initAudio();
+            const silent = new Audio();
+            silent.muted = true;
+            silent.play().catch(() => {});
+        }
+        document.body.addEventListener('touchstart', primeAudio, { once: true });
+        document.body.addEventListener('mousedown', primeAudio, { once: true });
+
         function playDing() {
             if (!audioCtx) return;
             try {
@@ -1885,17 +1876,6 @@
             });
         }
 
-        // consolidated to line 1515
-
-        function deleteSession(index) {
-            if (confirm("Delete this session permanently?")) {
-                boulderHistory.splice(index, 1);
-                localStorage.setItem('boulderHistory', JSON.stringify(boulderHistory));
-                updateAnalytics();
-                renderHistoryList();
-            }
-        }
-
         // Init on load with safety guards
         try {
             updateAnalytics();
@@ -1910,85 +1890,6 @@
         } catch (e) {
             console.error("App boot sequence failed:", e);
         }
-
-        async function exportSessionImage() {
-            if ('vibrate' in navigator) navigator.vibrate(20);
-            const btn = document.getElementById('sdShareBtn');
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = `<div class="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>`;
-            
-            try {
-                // Populate export card
-                const s = boulderHistory[currentSessionDetailIndex];
-                document.getElementById('exportDate').innerText = s.date;
-                document.getElementById('exportScore').innerText = s.score.toLocaleString();
-                
-                const climbs = s.climbs || [];
-                const sends = climbs.filter(c => c.statusText === 'Top' || c.statusText === 'Flash');
-                const flashes = climbs.filter(c => c.statusText === 'Flash');
-                
-                document.getElementById('exportClimbs').innerText = climbs.length;
-                document.getElementById('exportTops').innerText = sends.length;
-                document.getElementById('exportFlashes').innerText = flashes.length;
-                
-                // Best climbs
-                const best = sends.sort((a, b) => b.points - a.points).slice(0, 5);
-                document.getElementById('exportBestClimbs').innerHTML = best.length === 0 ? 
-                    '<li class="text-neutral-500 text-xs text-center py-2">No sends recorded.</li>' :
-                    best.map(c => {
-                        const sColor = c.statusText === 'Flash' ? 'text-amber-400' : 'text-blue-400';
-                        return `<li class="flex justify-between items-center whitespace-nowrap"><div class="flex items-center gap-3"><span class="text-xl font-black w-10 text-center text-white">${c.gradeStr}</span><span class="${sColor} text-[11px] font-bold uppercase tracking-wider">${c.statusText}</span></div><span class="text-neutral-400 font-bold text-sm">${c.points} pts</span></li>`;
-                    }).join('');
-                
-                const card = document.getElementById('exportCard');
-                
-                const canvas = await html2canvas(card, {
-                    backgroundColor: '#0a0a0a',
-                    scale: 3,
-                    useCORS: true,
-                    logging: false
-                });
-
-                const imgData = canvas.toDataURL('image/jpeg', 0.9);
-                const timestampStr = new Date().toISOString().replace(/[:.]/g, '-');
-                const filename = `sendlog-session-${timestampStr}.jpg`;
-                
-                if (navigator.share && navigator.canShare) {
-                    try {
-                        const blob = await (await fetch(imgData)).blob();
-                        const file = new File([blob], filename, { type: 'image/jpeg' });
-                        if (navigator.canShare({ files: [file] })) {
-                            await navigator.share({
-                                files: [file],
-                                title: 'SendLog Session',
-                                text: 'Check out my climbing session!'
-                            });
-                            btn.innerHTML = originalHtml;
-                            return;
-                        }
-                    } catch (e) { console.log('Web share failed or cancelled', e); }
-                }
-
-                const link = document.createElement('a');
-                link.download = filename;
-                link.href = imgData;
-                link.click();
-            } catch (e) {
-                alert("Failed to export: " + e.message);
-            }
-            btn.innerHTML = originalHtml;
-        }
-
-
-        // Pre-initialize audio engine on first interaction to remove latency
-        function primeAudio() {
-            if (typeof initAudio === 'function') initAudio();
-            const silent = new Audio();
-            silent.muted = true;
-            silent.play().catch(() => {});
-        }
-        document.body.addEventListener('touchstart', primeAudio, { once: true });
-        document.body.addEventListener('mousedown', primeAudio, { once: true });
     </script>
 </body>
 
