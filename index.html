@@ -47,7 +47,7 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.8.2</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.8.3</span>
             </h1>
 
             <div class="flex items-center gap-2">
@@ -448,7 +448,7 @@
             
             <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group">
                 <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span class="text-sm font-bold text-white">Hard Refresh (v6.8.2)</span>
+                <span class="text-sm font-bold text-white">Hard Refresh (v6.8.3)</span>
             </button>
 
             <div class="flex justify-between items-end mb-4">
@@ -758,27 +758,26 @@
         }
 
         function updateUI() {
+            const base = "flex-1 rounded-[1.8rem] border text-sm font-black uppercase tracking-[0.15em] flex items-center justify-center transition-all haptic-feedback";
+            
             btnTop.className = isTop
-                ? "flex-1 py-6 rounded-[2rem] bg-blue-500/20 text-xl font-black text-blue-400 border-2 border-blue-500/50 transition-all duration-200"
-                : "flex-1 py-6 rounded-[2rem] bg-neutral-900 text-xl font-black text-neutral-500 border-2 border-transparent transition-all duration-200";
+                ? `${base} bg-blue-500/20 text-blue-400 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.1)]`
+                : `${base} bg-neutral-900 border-neutral-800 text-neutral-500`;
 
             btnFlash.className = isFlash
-                ? "flex-1 py-6 rounded-[2rem] bg-amber-500/20 text-xl font-black text-amber-400 border-2 border-amber-500/50 transition-all duration-200"
-                : "flex-1 py-6 rounded-[2rem] bg-neutral-900 text-xl font-black text-neutral-500 border-2 border-transparent transition-all duration-200";
+                ? `${base} bg-amber-500/20 text-amber-400 border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.1)]`
+                : `${base} bg-neutral-900 border-neutral-800 text-neutral-500`;
         }
 
         function toggleTag(tag) {
             if ('vibrate' in navigator) navigator.vibrate(10);
             const idx = selectedTags.indexOf(tag);
-            const el = document.getElementById('tag-' + tag);
-            const baseClass = "climb-tag border font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none";
             if (idx > -1) {
                 selectedTags.splice(idx, 1);
-                if (el) el.className = baseClass + " bg-neutral-900 border-neutral-800 text-neutral-500";
             } else {
                 selectedTags.push(tag);
-                if (el) el.className = baseClass + " bg-emerald-500/20 border-emerald-500/50 text-emerald-400 font-black";
             }
+            renderTags();
         }
 
         function calculatePoints(delta, flashed, topped, attempts) {
@@ -867,7 +866,6 @@
 
             renderSessionList();
             saveActiveSession();
-
             btnSubmit.innerText = `+${points} ADDED`;
             btnSubmit.classList.add('bg-emerald-400');
             setTimeout(() => {
@@ -875,12 +873,6 @@
                 btnSubmit.classList.remove('bg-emerald-400');
             }, 800);
 
-            isTop = false; isFlash = false; tries = 1; elTries.innerText = 1;
-            selectedTags.forEach(t => {
-                const el = document.getElementById('tag-' + t);
-                const baseClass = "climb-tag border font-black text-[11px] uppercase tracking-wider px-4 py-4 rounded-2xl transition-all active:scale-95 outline-none";
-                if (el) el.className = baseClass + " bg-neutral-900 border-neutral-800 text-neutral-500";
-            });
             selectedTags = [];
             updateUI();
         }
