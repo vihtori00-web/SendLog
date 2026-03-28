@@ -47,7 +47,7 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.6</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.7</span>
             </h1>
 
             <div class="flex items-center gap-2">
@@ -73,41 +73,33 @@
 
         <main id="mainContainer" class="flex-1 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory pb-24 relative">
 
-            <section id="page-log" class="p-5 flex flex-col space-y-4 w-full shrink-0 h-[100%] overflow-y-auto snap-center snap-always relative">
+            <section id="page-log" class="p-4 flex flex-col space-y-3 w-full shrink-0 h-[100%] overflow-y-auto snap-center snap-always relative">
 
-                <!-- Grade Control (Chalky Hands Target) -->
-                <div class="bg-neutral-900 overflow-hidden rounded-[2rem] border border-neutral-800 flex flex-col relative select-none touch-manipulation shadow-md">
-                    <p class="text-neutral-500 text-[10px] font-black uppercase tracking-[0.2em] pt-4 text-center pointer-events-none">Font Grade</p>
-                    <div class="flex items-stretch justify-between h-28 relative">
-                        <!-- Massive touch target left -->
-                        <button onclick="adjGrade(-1)" class="absolute left-0 top-0 bottom-0 w-2/5 z-10 active:bg-neutral-800/80 transition-colors flex items-center justify-start pl-6 outline-none">
-                            <span class="text-neutral-600 text-5xl font-black opacity-50 block -mt-4">&minus;</span>
+                <!-- Grade Control (Safer Flex Layout) -->
+                <div class="bg-neutral-900 overflow-hidden rounded-[2rem] border border-neutral-800 flex flex-col items-center justify-center py-5 relative select-none touch-manipulation shadow-md">
+                    <p class="text-neutral-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1 pointer-events-none">Font Grade</p>
+                    <div class="flex items-center justify-between w-full px-6 min-h-[4.5rem]">
+                        <button onclick="adjGrade(-1)" class="w-16 h-16 flex items-center justify-start text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
+                            <span class="text-6xl font-black">&minus;</span>
                         </button>
-                        <!-- Massive touch target right -->
-                        <button onclick="adjGrade(1)" class="absolute right-0 top-0 bottom-0 w-2/5 z-10 active:bg-neutral-800/80 transition-colors flex items-center justify-end pr-6 outline-none">
-                            <span class="text-neutral-600 text-5xl font-black opacity-50 block -mt-4">+</span>
+                        <span id="displayGrade" class="text-6xl font-black tracking-tighter text-white drop-shadow-md transition-transform duration-300">6A</span>
+                        <button onclick="adjGrade(1)" class="w-16 h-16 flex items-center justify-end text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
+                            <span class="text-6xl font-black">+</span>
                         </button>
-                        
-                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-                            <span id="displayGrade" class="text-7xl font-black tracking-tighter text-white drop-shadow-md transition-transform duration-300">6A</span>
-                        </div>
                     </div>
                 </div>
 
-                <!-- Attempts Control (Chalky Hands Target) -->
-                <div class="bg-neutral-900 overflow-hidden rounded-[2rem] border border-neutral-800 flex flex-col relative select-none touch-manipulation shadow-md">
-                    <p class="text-neutral-500 text-[10px] font-black uppercase tracking-[0.2em] pt-4 text-center pointer-events-none">Attempts</p>
-                    <div class="flex items-stretch justify-between h-24 relative">
-                        <button onclick="adjTries(-1)" class="absolute left-0 top-0 bottom-0 w-2/5 z-10 active:bg-neutral-800/80 transition-colors flex items-center justify-start pl-6 outline-none">
-                            <span class="text-neutral-600 text-5xl font-black opacity-50 block -mt-4">&minus;</span>
+                <!-- Attempts Control (Safer Flex Layout) -->
+                <div class="bg-neutral-900 overflow-hidden rounded-[2rem] border border-neutral-800 flex flex-col items-center justify-center py-5 relative select-none touch-manipulation shadow-md">
+                    <p class="text-neutral-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1 pointer-events-none">Attempts</p>
+                    <div class="flex items-center justify-between w-full px-6 min-h-[4rem]">
+                        <button onclick="adjTries(-1)" class="w-16 h-16 flex items-center justify-start text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
+                            <span class="text-6xl font-black">&minus;</span>
                         </button>
-                        <button onclick="adjTries(1)" class="absolute right-0 top-0 bottom-0 w-2/5 z-10 active:bg-neutral-800/80 transition-colors flex items-center justify-end pr-6 outline-none">
-                            <span class="text-neutral-600 text-5xl font-black opacity-50 block -mt-4">+</span>
+                        <span id="displayTries" class="text-5xl font-black tracking-tighter text-white drop-shadow-md">1</span>
+                        <button onclick="adjTries(1)" class="w-16 h-16 flex items-center justify-end text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
+                            <span class="text-6xl font-black">+</span>
                         </button>
-                        
-                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-                            <span id="displayTries" class="text-6xl font-black tracking-tighter text-white drop-shadow-md">1</span>
-                        </div>
                     </div>
                 </div>
 
