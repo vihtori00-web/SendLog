@@ -47,21 +47,21 @@
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.3</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.4</span>
             </h1>
 
             <div class="flex items-center gap-2">
                 <!-- Header Rest Timer -->
-                <div id="headerTimer" class="flex items-center gap-1 bg-neutral-900 border border-neutral-800 px-2 py-1.5 rounded-xl transition-all shadow-sm">
-                    <button onclick="adjRestTimer(-30)" class="w-6 h-6 flex items-center justify-center text-neutral-600 hover:text-white active:scale-90 transition-all font-black text-xs outline-none">&minus;</button>
-                    <div onclick="startRestTimer()" class="flex items-center gap-1.5 px-1.5 cursor-pointer active:scale-95 transition-all outline-none">
-                        <div id="headerTimerPulse" class="w-1.5 h-1.5 rounded-full bg-neutral-700"></div>
-                        <span id="btnTimerText" class="text-[11px] font-mono font-black text-neutral-500 tracking-tighter w-8 text-center">2:00</span>
+                <div id="headerTimer" class="flex items-center gap-1.5 bg-neutral-900 border border-neutral-800 px-2 py-1.5 rounded-2xl transition-all shadow-lg">
+                    <button onclick="adjRestTimer(-30)" class="w-10 h-10 flex items-center justify-center text-neutral-600 hover:text-white active:scale-90 bg-black/40 rounded-xl transition-all font-black text-lg outline-none">&minus;</button>
+                    <div onclick="startRestTimer()" class="flex items-center gap-2 px-1 cursor-pointer active:scale-95 transition-all outline-none">
+                        <div id="headerTimerPulse" class="w-2 h-2 rounded-full bg-neutral-700"></div>
+                        <span id="btnTimerText" class="text-xs font-mono font-black text-neutral-500 tracking-tighter w-8 text-center">2:00</span>
                     </div>
-                    <button onclick="adjRestTimer(30)" class="w-6 h-6 flex items-center justify-center text-neutral-600 hover:text-white active:scale-90 transition-all font-black text-xs outline-none">+</button>
+                    <button onclick="adjRestTimer(30)" class="w-10 h-10 flex items-center justify-center text-neutral-600 hover:text-white active:scale-90 bg-black/40 rounded-xl transition-all font-black text-lg outline-none">+</button>
                 </div>
 
-                <button onclick="openSettings()" class="text-neutral-500 hover:text-white transition active:scale-95 flex items-center justify-center bg-neutral-900 p-2.5 rounded-xl border border-neutral-800">
+                <button onclick="openSettings()" class="text-neutral-500 hover:text-white transition active:scale-95 flex items-center justify-center bg-neutral-900 p-2.5 rounded-xl border border-neutral-800 shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
