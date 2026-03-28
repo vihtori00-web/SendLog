@@ -43,11 +43,34 @@
 
 <body class="bg-black text-white font-sans antialiased">
 
+    <!-- CHALK-FRIENDLY REST TIMER OVERLAY -->
+    <div id="restOverlay" class="fixed inset-0 z-[60] bg-neutral-950/95 backdrop-blur-sm hidden flex-col items-center justify-center border-t-4 border-emerald-500" style="touch-action: none;">
+        <button onclick="document.getElementById('restOverlay').classList.replace('flex','hidden')" class="absolute top-8 right-8 text-neutral-500 hover:text-white p-4 haptic-feedback">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+        
+        <!-- Timer Display -->
+        <div id="restOverlayTime" class="text-[8rem] font-black text-emerald-400 tracking-tighter leading-none mb-12 font-mono drop-shadow-[0_0_30px_rgba(16,185,129,0.3)]">2:00</div>
+        
+        <!-- Controls -->
+        <div class="flex gap-6 w-full max-w-sm px-6">
+            <button onclick="adjRestTimer(-30)" class="flex-1 bg-neutral-900 border border-neutral-800 text-neutral-400 py-6 text-2xl font-black rounded-3xl haptic-feedback active:bg-neutral-800 transition-all shadow-xl">-30s</button>
+            <button onclick="adjRestTimer(30)" class="flex-1 bg-neutral-900 border border-neutral-800 text-neutral-400 py-6 text-2xl font-black rounded-3xl haptic-feedback active:bg-neutral-800 transition-all shadow-xl">+30s</button>
+        </div>
+        
+        <button onclick="cancelRestTimer()" class="mt-8 text-red-500 border border-red-500/20 bg-red-500/10 px-6 py-3 rounded-full font-bold text-sm haptic-feedback tracking-widest">CANCEL TIMER</button>
+
+        <!-- Finished Message -->
+        <div id="restOverlayFinished" class="absolute inset-0 bg-emerald-500 hidden flex-col items-center justify-center z-10" onclick="this.classList.replace('flex','hidden'); document.getElementById('restOverlay').classList.replace('flex','hidden')">
+            <span class="text-black font-black tracking-widest text-7xl text-center leading-none">GO<br>CLIMB!</span>
+        </div>
+    </div>
+
     <div
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
-            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.9.1</span>
+            <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span><span class="text-[8px] text-neutral-600 align-top ml-1">v6.9.2</span>
             </h1>
 
             <div class="flex items-center gap-2">
@@ -466,7 +489,10 @@
             sessionBtn: document.getElementById('btnSessionAction'),
             timerText: document.getElementById('btnTimerText'),
             timerPulse: document.getElementById('headerTimerPulse'),
-            timerCard: document.getElementById('headerTimer')
+            timerCard: document.getElementById('headerTimer'),
+            overlayMain: document.getElementById('restOverlay'),
+            overlayTime: document.getElementById('restOverlayTime'),
+            overlayFinished: document.getElementById('restOverlayFinished')
         };
 
         function toggleSessionButtonUI(isActive) {
@@ -1792,10 +1818,13 @@
             const container = DOM.timerCard;
             const secs = restTimerInterval ? restTimeRemaining : defaultRestSeconds;
             
+            const mins = Math.floor(secs / 60);
+            const secondRemainder = secs % 60;
+            const timeStr = `${mins}:${secondRemainder.toString().padStart(2, '0')}`;
+            if (DOM.overlayTime) DOM.overlayTime.innerText = timeStr;
+
             if (display) {
-                const mins = Math.floor(secs / 60);
-                const secondRemainder = secs % 60;
-                display.innerText = `${mins}:${secondRemainder.toString().padStart(2, '0')}`;
+                display.innerText = timeStr;
                 
                 if (restTimerInterval) {
                     display.classList.replace('text-neutral-400', 'text-emerald-400');
@@ -1810,17 +1839,15 @@
         }
 
         function startRestTimer() {
-            if (restTimerInterval) {
-                clearInterval(restTimerInterval);
-                restTimerInterval = null;
-                updateRestTimerDisplay();
-                return;
+            if (DOM.overlayMain) {
+                DOM.overlayMain.classList.replace('hidden', 'flex');
+                if (DOM.overlayFinished) DOM.overlayFinished.classList.replace('flex', 'hidden');
             }
 
-            restTimeRemaining = defaultRestSeconds;
-            updateRestTimerDisplay();
+            if (restTimerInterval) return;
 
-            // Secondary effects offloaded
+            restTimeRemaining = defaultRestSeconds;
+
             if ('vibrate' in navigator) navigator.vibrate(20);
             setTimeout(initAudio, 0);
 
@@ -1829,27 +1856,27 @@
                 if (restTimeRemaining <= 0) {
                     clearInterval(restTimerInterval);
                     restTimerInterval = null;
-                    updateRestTimerDisplay();
                     
-                    const display = document.getElementById('btnTimerText');
-                    if (display) {
-                        display.innerText = "DONE!";
-                        display.classList.add('text-emerald-400');
-                    }
-                    const pulse = document.getElementById('headerTimerPulse');
-                    if (pulse) pulse.className = "w-1.5 h-1.5 rounded-full bg-emerald-500";
-
+                    if (DOM.timerPulse) DOM.timerPulse.className = "w-1.5 h-1.5 rounded-full bg-emerald-500";
                     if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
                     playDing();
-
-                    setTimeout(() => {
-                        if (restTimerInterval) return;
-                        updateRestTimerDisplay();
-                    }, 4000);
-                } else {
-                    updateRestTimerDisplay();
+                    
+                    if (DOM.overlayMain && !DOM.overlayMain.classList.contains('hidden') && DOM.overlayFinished) {
+                        DOM.overlayFinished.classList.replace('hidden', 'flex');
+                    }
                 }
+                updateRestTimerDisplay();
             }, 1000);
+            updateRestTimerDisplay();
+        }
+
+        function cancelRestTimer() {
+            if (restTimerInterval) {
+                clearInterval(restTimerInterval);
+                restTimerInterval = null;
+            }
+            if (DOM.overlayMain) DOM.overlayMain.classList.replace('flex', 'hidden');
+            updateRestTimerDisplay();
         }
 
 
