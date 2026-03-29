@@ -560,7 +560,7 @@
                             sumGrades += fontGrades.indexOf(c.gradeStr);
                             if (c.statusText === 'Flash') totalFlashes++;
                         }
-                        totalProjTries += c.tries || 0;
+                        if (c.statusText === 'Project') totalProjTries += c.tries || 0;
                     });
                 }
             });

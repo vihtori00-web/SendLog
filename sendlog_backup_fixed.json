@@ -1,0 +1,384 @@
+{
+  "history": [
+    {
+      "date": "21 Mar, 20.23",
+      "timestamp": 1774117407750,
+      "score": 90,
+      "climbs": [
+        {
+          "id": 7,
+          "gradeStr": "6C+",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 10,
+          "time": "20:23"
+        },
+        {
+          "id": 6,
+          "gradeStr": "6C+",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 10,
+          "time": "19:54"
+        },
+        {
+          "id": 5,
+          "gradeStr": "7B",
+          "statusText": "Project",
+          "color": "text-neutral-400",
+          "tries": 3,
+          "points": 30,
+          "time": "19:54"
+        },
+        {
+          "id": 4,
+          "gradeStr": "6C+",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 10,
+          "time": "19:29"
+        },
+        {
+          "id": 3,
+          "gradeStr": "7A+",
+          "statusText": "Top",
+          "color": "text-blue-400",
+          "tries": 3,
+          "points": 15,
+          "time": "18:57"
+        },
+        {
+          "id": 2,
+          "gradeStr": "6C",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 5,
+          "time": "18:39"
+        },
+        {
+          "id": 1,
+          "gradeStr": "6B+",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 5,
+          "time": "18:35"
+        },
+        {
+          "id": 0,
+          "gradeStr": "6B+",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 5,
+          "time": "18:31"
+        }
+      ]
+    },
+    {
+      "date": "24 Mar, 21.51",
+      "timestamp": 1774381909545,
+      "score": 95,
+      "climbs": [
+        {
+          "id": 11,
+          "gradeStr": "7A+",
+          "statusText": "Project",
+          "color": "text-neutral-400",
+          "tries": 1,
+          "points": 5,
+          "time": "21:51"
+        },
+        {
+          "id": 10,
+          "gradeStr": "7A+",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 25,
+          "time": "21:35"
+        },
+        {
+          "id": 9,
+          "gradeStr": "7A+",
+          "statusText": "Project",
+          "color": "text-neutral-400",
+          "tries": 2,
+          "points": 10,
+          "time": "21:23"
+        },
+        {
+          "id": 8,
+          "gradeStr": "7A",
+          "statusText": "Project",
+          "color": "text-neutral-400",
+          "tries": 4,
+          "points": 0,
+          "time": "21:23"
+        },
+        {
+          "id": 7,
+          "gradeStr": "7A",
+          "statusText": "Top",
+          "color": "text-blue-400",
+          "tries": 2,
+          "points": 10,
+          "time": "21:23"
+        },
+        {
+          "id": 6,
+          "gradeStr": "6C",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 5,
+          "time": "21:01"
+        },
+        {
+          "id": 5,
+          "gradeStr": "6C",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 5,
+          "time": "20:27"
+        },
+        {
+          "id": 4,
+          "gradeStr": "6C",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 5,
+          "time": "20:23"
+        },
+        {
+          "id": 3,
+          "gradeStr": "6C+",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 10,
+          "time": "20:17"
+        },
+        {
+          "id": 2,
+          "gradeStr": "6C",
+          "statusText": "Project",
+          "color": "text-neutral-400",
+          "tries": 3,
+          "points": 0,
+          "time": "20:17"
+        },
+        {
+          "id": 1,
+          "gradeStr": "7A+",
+          "statusText": "Top",
+          "color": "text-blue-400",
+          "tries": 2,
+          "points": 15,
+          "time": "20:17"
+        },
+        {
+          "id": 0,
+          "gradeStr": "6A",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 5,
+          "time": "20:16"
+        }
+      ]
+    },
+    {
+      "date": "26 Mar, 21.14",
+      "timestamp": 1774552466843,
+      "score": 113,
+      "climbs": [
+        {
+          "id": 8,
+          "gradeStr": "6C+",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 16,
+          "time": "21:14"
+        },
+        {
+          "id": 5,
+          "gradeStr": "7A",
+          "statusText": "Project",
+          "color": "text-neutral-400",
+          "tries": 3,
+          "points": 15,
+          "time": "21:14"
+        },
+        {
+          "id": 4,
+          "gradeStr": "7A+",
+          "statusText": "Project",
+          "color": "text-neutral-400",
+          "tries": 2,
+          "points": 16,
+          "time": "21:13"
+        },
+        {
+          "id": 3,
+          "gradeStr": "7A+",
+          "statusText": "Project",
+          "color": "text-neutral-400",
+          "tries": 3,
+          "points": 24,
+          "time": "21:13"
+        },
+        {
+          "id": 2,
+          "gradeStr": "6C+",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 16,
+          "time": "21:13"
+        },
+        {
+          "id": 1,
+          "gradeStr": "6C",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 10,
+          "time": "21:13"
+        },
+        {
+          "id": 0,
+          "gradeStr": "6C+",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 16,
+          "time": "21:13"
+        }
+      ]
+    },
+    {
+      "date": "29/03/2026, 15.58",
+      "timestamp": 1774789130599,
+      "score": 95,
+      "duration": 8089,
+      "climbs": [
+        {
+          "id": 11,
+          "gradeStr": "6C+",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 16,
+          "time": "15:47",
+          "tags": [
+            "sloper"
+          ]
+        },
+        {
+          "id": 9,
+          "gradeStr": "7B",
+          "statusText": "Project",
+          "color": "text-neutral-400",
+          "tries": 2,
+          "points": 24,
+          "time": "15:47",
+          "tags": [
+            "dyno",
+            "overhang"
+          ]
+        },
+        {
+          "id": 6,
+          "gradeStr": "7A+",
+          "statusText": "Project",
+          "color": "text-neutral-400",
+          "tries": 1,
+          "points": 8,
+          "time": "15:12",
+          "tags": [
+            "overhang"
+          ]
+        },
+        {
+          "id": 5,
+          "gradeStr": "7A",
+          "statusText": "Project",
+          "color": "text-neutral-400",
+          "tries": 2,
+          "points": 10,
+          "time": "15:12",
+          "tags": [
+            "dyno",
+            "pinch"
+          ]
+        },
+        {
+          "id": 4,
+          "gradeStr": "7A+",
+          "statusText": "Project",
+          "color": "text-neutral-400",
+          "tries": 2,
+          "points": 16,
+          "time": "14:38",
+          "tags": [
+            "sloper",
+            "comp"
+          ]
+        },
+        {
+          "id": 3,
+          "gradeStr": "6C",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 10,
+          "time": "13:57",
+          "tags": [
+            "sloper"
+          ]
+        },
+        {
+          "id": 2,
+          "gradeStr": "6B+",
+          "statusText": "Top",
+          "color": "text-blue-400",
+          "tries": 2,
+          "points": 5,
+          "time": "13:50",
+          "tags": [
+            "slab"
+          ]
+        },
+        {
+          "id": 1,
+          "gradeStr": "6B+",
+          "statusText": "Flash",
+          "color": "text-amber-400",
+          "tries": 1,
+          "points": 6,
+          "time": "13:44",
+          "tags": [
+            "crimp",
+            "overhang"
+          ]
+        }
+      ]
+    }
+  ],
+  "maxGradeIndex": "13",
+  "playerName": "Viktor",
+  "achievements": [
+    "first_blood",
+    "the_flash",
+    "project_crusher",
+    "sixty_seven"
+  ]
+}
