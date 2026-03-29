@@ -1266,6 +1266,8 @@
                             backgroundColor: 'rgba(16, 185, 129, 0.2)',
                             borderColor: '#10b981',
                             pointBackgroundColor: '#10b981',
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
                             borderWidth: 1.5
                         }]
                     },
@@ -1274,7 +1276,8 @@
                         plugins: { legend: { display: false }, tooltip: { enabled: true }, zoom: { pan: {enabled: false}, zoom: {enabled: false} } },
                         scales: {
                             r: {
-                                ticks: { display: false, maxTicksLimit: 4 },
+                                beginAtZero: true,
+                                ticks: { display: false, stepSize: 1 },
                                 grid: { color: '#262626' },
                                 angleLines: { color: '#262626' },
                                 pointLabels: { font: { size: 9, weight: 'bold' }, color: '#737373' }
