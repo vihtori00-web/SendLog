@@ -668,9 +668,9 @@
                         localStorage.setItem('boulderHistory', JSON.stringify(data.history));
                         boulderHistory = data.history;
                     }
-                    if (data.maxGradeIndex !== undefined) localStorage.setItem('boulderMaxGradeIndex', data.maxGradeIndex);
-                    if (data.playerName) localStorage.setItem('boulderPlayerName', data.playerName);
-                    if (data.achievements) localStorage.setItem('boulderAchievements', JSON.stringify(data.achievements));
+                   // if (data.maxGradeIndex !== undefined) localStorage.setItem('boulderMaxGradeIndex', data.maxGradeIndex);
+                    //if (data.playerName) localStorage.setItem('boulderPlayerName', data.playerName);
+                   // if (data.achievements) localStorage.setItem('boulderAchievements', JSON.stringify(data.achievements));
                     window.location.reload();
                 } catch (err) { alert("Failed to parse Backup file."); }
             };
