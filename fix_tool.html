@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SendLog - Data Fix Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="bg-black text-white font-sans antialiased min-h-screen">
+
+    <div class="max-w-2xl mx-auto p-5">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-black tracking-widest">
+                <span class="bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND</span><span class="text-white">LOG</span>
+                <span class="text-amber-400 text-sm ml-2">FIX TOOL</span>
+            </h1>
+            <a href="index.html" class="text-xs text-neutral-500 hover:text-white transition bg-neutral-900 border border-neutral-800 px-3 py-2 rounded-xl font-bold uppercase tracking-wider">← Back to App</a>
+        </div>
+
+        <!-- Step 1: Load File -->
+        <div class="bg-neutral-900 rounded-[2rem] border border-neutral-800 p-6 mb-4 shadow-lg">
+            <h2 class="text-xs font-black text-neutral-500 uppercase tracking-widest mb-3">Step 1: Load Backup</h2>
+            <p class="text-sm text-neutral-400 mb-4">Load a <code class="text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded text-xs">sendlog_backup.json</code> file exported from the app.</p>
+            <label class="block w-full cursor-pointer">
+                <div class="flex items-center justify-center gap-3 p-5 bg-neutral-950 border-2 border-dashed border-neutral-700 hover:border-emerald-500/50 rounded-2xl transition-colors group">
+                    <svg class="w-8 h-8 text-neutral-500 group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    <span class="text-sm font-bold text-neutral-400 group-hover:text-white transition-colors">Click to load backup file</span>
+                </div>
+                <input type="file" id="fileInput" accept=".json" class="hidden" onchange="loadFile(event)">
+            </label>
+            <div id="loadStatus" class="mt-3 text-sm font-bold hidden"></div>
+        </div>
+
+        <!-- Session List (hidden until file loaded) -->
+        <div id="sessionPanel" class="hidden">
+            <div class="bg-neutral-900 rounded-[2rem] border border-neutral-800 p-6 mb-4 shadow-lg">
+                <h2 class="text-xs font-black text-neutral-500 uppercase tracking-widest mb-1">Step 2: Select a Session to Fix</h2>
+                <p class="text-sm text-neutral-400 mb-4">Click on a session to edit its duration or recalculate its points.</p>
+                <ul id="sessionList" class="space-y-2 max-h-[40vh] overflow-y-auto"></ul>
+            </div>
+        </div>
+
+        <!-- Session Editor (hidden until session selected) -->
+        <div id="editorPanel" class="hidden">
+            <div class="bg-neutral-900 rounded-[2rem] border border-emerald-500/30 p-6 mb-4 shadow-lg shadow-emerald-500/5">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xs font-black text-emerald-400 uppercase tracking-widest">Editing Session</h2>
+                    <button onclick="closeEditor()" class="text-neutral-500 hover:text-white transition text-xs font-bold bg-neutral-800 px-3 py-1.5 rounded-lg active:scale-95">Close</button>
+                </div>
+                <p id="editorSessionDate" class="text-sm font-bold text-white mb-4"></p>
+
+                <!-- Duration Fix -->
+                <div class="bg-neutral-950 rounded-2xl p-4 border border-neutral-800 mb-4">
+                    <h3 class="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-3">Fix Duration</h3>
+                    <div class="flex gap-3 items-center">
+                        <div class="flex-1">
+                            <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1">Hours</label>
+                            <input type="number" id="fixHours" min="0" max="24" value="0" class="w-full bg-neutral-900 text-white border border-neutral-700 rounded-xl px-3 py-2.5 text-lg font-black focus:outline-none focus:border-emerald-500 transition-colors text-center">
+                        </div>
+                        <span class="text-2xl font-black text-neutral-600 mt-4">:</span>
+                        <div class="flex-1">
+                            <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1">Minutes</label>
+                            <input type="number" id="fixMinutes" min="0" max="59" value="0" class="w-full bg-neutral-900 text-white border border-neutral-700 rounded-xl px-3 py-2.5 text-lg font-black focus:outline-none focus:border-emerald-500 transition-colors text-center">
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-3">
+                        <span class="text-[10px] text-neutral-500 font-bold">Current:</span>
+                        <span id="currentDuration" class="text-[10px] text-amber-400 font-bold"></span>
+                    </div>
+                    <button onclick="applyDurationFix()" class="w-full mt-3 py-3 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-xl font-black text-sm active:scale-95 transition-all hover:bg-blue-500/30">Apply Duration</button>
+                </div>
+
+                <!-- Points Recalculation -->
+                <div class="bg-neutral-950 rounded-2xl p-4 border border-neutral-800 mb-4">
+                    <h3 class="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-3">Recalculate Points</h3>
+                    <p class="text-xs text-neutral-400 mb-3">Set the max grade that <em>should have been</em> used as the baseline for this session.</p>
+                    <div class="flex gap-3 items-end">
+                        <div class="flex-1">
+                            <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1">Max Grade Baseline</label>
+                            <select id="fixMaxGrade" class="w-full bg-neutral-900 text-emerald-400 border border-neutral-700 rounded-xl px-3 py-2.5 text-lg font-black focus:outline-none focus:border-emerald-500 appearance-none cursor-pointer">
+                            </select>
+                        </div>
+                        <button onclick="previewRecalc()" class="px-5 py-2.5 bg-neutral-800 text-white border border-neutral-700 rounded-xl font-black text-sm active:scale-95 transition-all hover:bg-neutral-700 shrink-0">Preview</button>
+                    </div>
+                </div>
+
+                <!-- Preview Table -->
+                <div id="previewPanel" class="hidden bg-neutral-950 rounded-2xl p-4 border border-neutral-800 mb-4">
+                    <h3 class="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-3">Points Preview</h3>
+                    <div class="flex justify-between items-center mb-3 px-1">
+                        <span class="text-sm text-neutral-400">Session Total:</span>
+                        <div>
+                            <span id="previewOldTotal" class="text-sm text-red-400 line-through mr-2"></span>
+                            <span id="previewNewTotal" class="text-lg font-black text-emerald-400"></span>
+                        </div>
+                    </div>
+                    <ul id="previewList" class="space-y-1.5 max-h-[30vh] overflow-y-auto"></ul>
+                    <button onclick="applyRecalc()" class="w-full mt-4 py-3 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl font-black text-sm active:scale-95 transition-all hover:bg-emerald-500/30">✓ Apply Recalculated Points</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export (hidden until file loaded) -->
+        <div id="exportPanel" class="hidden">
+            <div class="bg-neutral-900 rounded-[2rem] border border-neutral-800 p-6 shadow-lg">
+                <h2 class="text-xs font-black text-neutral-500 uppercase tracking-widest mb-3">Step 3: Export Fixed Backup</h2>
+                <p class="text-sm text-neutral-400 mb-4">Download the fixed backup, then import it back into the app via Profile → Import Code.</p>
+                <button onclick="exportFixed()" class="w-full py-4 bg-emerald-500 text-black font-black uppercase tracking-[0.2em] rounded-2xl text-lg active:scale-95 transition-all shadow-lg shadow-emerald-500/20 hover:bg-emerald-400">
+                    Export Fixed Backup
+                </button>
+                <div id="changeLog" class="mt-4 hidden">
+                    <h3 class="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-2">Changes Made</h3>
+                    <ul id="changeList" class="space-y-1 text-xs text-neutral-400"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fontGrades = [
+            '<4', '4', '4+', '5', '5+', '6A', '6A+', '6B', '6B+',
+            '6C', '6C+', '7A', '7A+', '7B', '7B+', '7C', '7C+',
+            '8A', '8A+', '8B', '8B+', '8C', '8C+', '9A'
+        ];
+
+        const tryPtsMap   = [1, 2, 3, 5, 8, 12, 18, 25];
+        const topBonusMap = [3, 5, 8, 12, 22, 35, 55, 80];
+        const flashBonusMap = [2, 3, 5, 8, 15, 25, 40, 60];
+
+        function calculatePoints(delta, flashed, topped, attempts) {
+            const getMapValue = (valArray, d) => {
+                const idx = d <= -5 ? 0 : d >= 2 ? 7 : d + 5;
+                return valArray[idx];
+            };
+            const tryPts = getMapValue(tryPtsMap, delta);
+            const topBonus = getMapValue(topBonusMap, delta);
+            const flashBonus = getMapValue(flashBonusMap, delta);
+            if (flashed) return tryPts + topBonus + flashBonus;
+            if (topped)  return (attempts * tryPts) + topBonus;
+            return Math.min(attempts, 8) * tryPts;
+        }
+
+        let backupData = null;
+        let selectedSessionIndex = null;
+        let changes = [];
+
+        // Populate max grade dropdown
+        const gradeSelect = document.getElementById('fixMaxGrade');
+        gradeSelect.innerHTML = fontGrades.map((g, i) => `<option value="${i}">${g}</option>`).join('');
+
+        function formatDuration(seconds) {
+            if (!seconds || seconds < 1) return "none";
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            if (h > 0) return `${h}h ${m}m`;
+            return `${m}m`;
+        }
+
+        function loadFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    backupData = JSON.parse(e.target.result);
+                    if (!backupData.history) throw new Error("No history found in backup");
+
+                    const status = document.getElementById('loadStatus');
+                    status.classList.remove('hidden');
+                    status.className = 'mt-3 text-sm font-bold text-emerald-400';
+                    status.innerText = `✓ Loaded ${backupData.history.length} sessions from "${file.name}"`;
+
+                    // Set default max grade from backup
+                    if (backupData.maxGradeIndex !== undefined) {
+                        gradeSelect.value = backupData.maxGradeIndex;
+                    }
+
+                    changes = [];
+                    renderSessionList();
+                    document.getElementById('sessionPanel').classList.remove('hidden');
+                    document.getElementById('exportPanel').classList.remove('hidden');
+                    document.getElementById('editorPanel').classList.add('hidden');
+                } catch (err) {
+                    const status = document.getElementById('loadStatus');
+                    status.classList.remove('hidden');
+                    status.className = 'mt-3 text-sm font-bold text-red-400';
+                    status.innerText = `✗ Failed to parse file: ${err.message}`;
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function renderSessionList() {
+            const list = document.getElementById('sessionList');
+            if (!backupData || !backupData.history) return;
+
+            list.innerHTML = backupData.history.slice().reverse().map((s, ri) => {
+                const i = backupData.history.length - 1 - ri;
+                const climbCount = s.climbs ? s.climbs.length : 0;
+                const sends = s.climbs ? s.climbs.filter(c => c.statusText === 'Top' || c.statusText === 'Flash').length : 0;
+                const dur = formatDuration(s.duration);
+                const isSelected = selectedSessionIndex === i;
+                const bgClass = isSelected
+                    ? 'bg-emerald-500/10 border-emerald-500/30'
+                    : 'bg-neutral-800/30 border-neutral-700/30 hover:bg-neutral-800/50';
+
+                return `
+                <li class="flex justify-between items-center p-3 ${bgClass} border rounded-xl cursor-pointer transition-all active:scale-[0.98]" onclick="selectSession(${i})">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center text-xs font-black text-neutral-400 shrink-0">#${i + 1}</div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-bold text-white truncate">${s.date || 'Unknown Date'}</p>
+                            <p class="text-[10px] text-neutral-500">${climbCount} climbs · ${sends} sends · ${dur}</p>
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0 ml-2">
+                        <span class="text-lg font-black text-emerald-400">${s.score}</span>
+                        <span class="text-[8px] text-neutral-500 uppercase ml-0.5">pts</span>
+                    </div>
+                </li>`;
+            }).join('');
+        }
+
+        function selectSession(index) {
+            selectedSessionIndex = index;
+            const s = backupData.history[index];
+
+            document.getElementById('editorPanel').classList.remove('hidden');
+            document.getElementById('previewPanel').classList.add('hidden');
+            document.getElementById('editorSessionDate').innerText = `Session #${index + 1} — ${s.date || 'Unknown'}`;
+
+            // Fill duration fields
+            const totalSec = s.duration || 0;
+            document.getElementById('fixHours').value = Math.floor(totalSec / 3600);
+            document.getElementById('fixMinutes').value = Math.floor((totalSec % 3600) / 60);
+            document.getElementById('currentDuration').innerText = formatDuration(totalSec) + ` (${totalSec.toLocaleString()}s)`;
+
+            renderSessionList();
+
+            // Scroll editor into view
+            document.getElementById('editorPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function closeEditor() {
+            selectedSessionIndex = null;
+            document.getElementById('editorPanel').classList.add('hidden');
+            renderSessionList();
+        }
+
+        function applyDurationFix() {
+            if (selectedSessionIndex === null) return;
+            const s = backupData.history[selectedSessionIndex];
+            const hours = parseInt(document.getElementById('fixHours').value) || 0;
+            const minutes = parseInt(document.getElementById('fixMinutes').value) || 0;
+            const newDuration = (hours * 3600) + (minutes * 60);
+            const oldDuration = s.duration || 0;
+
+            s.duration = newDuration;
+            document.getElementById('currentDuration').innerText = formatDuration(newDuration) + ` (${newDuration.toLocaleString()}s)`;
+
+            changes.push(`Session #${selectedSessionIndex + 1}: Duration ${formatDuration(oldDuration)} → ${formatDuration(newDuration)}`);
+            renderSessionList();
+            updateChangeLog();
+        }
+
+        function previewRecalc() {
+            if (selectedSessionIndex === null) return;
+            const s = backupData.history[selectedSessionIndex];
+            if (!s.climbs || s.climbs.length === 0) {
+                alert('This session has no climbs to recalculate.');
+                return;
+            }
+
+            const maxIdx = parseInt(gradeSelect.value);
+            const previewPanel = document.getElementById('previewPanel');
+            const previewList = document.getElementById('previewList');
+
+            let oldTotal = 0;
+            let newTotal = 0;
+
+            previewList.innerHTML = s.climbs.map(c => {
+                const gradeIdx = fontGrades.indexOf(c.gradeStr);
+                const delta = gradeIdx - maxIdx;
+                const isFlash = c.statusText === 'Flash';
+                const isTop = c.statusText === 'Top' || isFlash;
+                const newPoints = calculatePoints(delta, isFlash, isTop, c.tries);
+                const oldPoints = c.points;
+
+                oldTotal += oldPoints;
+                newTotal += newPoints;
+
+                const diff = newPoints - oldPoints;
+                const diffClass = diff > 0 ? 'text-emerald-400' : diff < 0 ? 'text-red-400' : 'text-neutral-500';
+                const diffStr = diff > 0 ? `+${diff}` : `${diff}`;
+                const statusColor = c.statusText === 'Flash' ? 'text-amber-400' : c.statusText === 'Top' ? 'text-blue-400' : 'text-neutral-400';
+
+                return `
+                <li class="flex justify-between items-center p-2 bg-neutral-900/50 rounded-lg border border-neutral-800/50">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-black w-8 text-center">${c.gradeStr}</span>
+                        <span class="${statusColor} text-[10px] font-bold uppercase tracking-wider">${c.statusText}</span>
+                        <span class="text-neutral-600 text-[9px]">${c.tries}att</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-neutral-500 text-xs ${diff !== 0 ? 'line-through' : ''}">${oldPoints}</span>
+                        ${diff !== 0 ? `<span class="text-xs font-bold text-white">${newPoints}</span>` : ''}
+                        <span class="${diffClass} text-[10px] font-bold w-8 text-right">${diffStr}</span>
+                    </div>
+                </li>`;
+            }).join('');
+
+            document.getElementById('previewOldTotal').innerText = oldTotal;
+            document.getElementById('previewNewTotal').innerText = newTotal + ' pts';
+
+            previewPanel.classList.remove('hidden');
+            previewPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function applyRecalc() {
+            if (selectedSessionIndex === null) return;
+            const s = backupData.history[selectedSessionIndex];
+            const maxIdx = parseInt(gradeSelect.value);
+
+            let oldScore = s.score;
+            let newScore = 0;
+
+            s.climbs.forEach(c => {
+                const gradeIdx = fontGrades.indexOf(c.gradeStr);
+                const delta = gradeIdx - maxIdx;
+                const isFlash = c.statusText === 'Flash';
+                const isTop = c.statusText === 'Top' || isFlash;
+                c.points = calculatePoints(delta, isFlash, isTop, c.tries);
+                newScore += c.points;
+            });
+
+            s.score = newScore;
+
+            changes.push(`Session #${selectedSessionIndex + 1}: Points recalculated with max grade ${fontGrades[maxIdx]} — ${oldScore} → ${newScore} pts`);
+            renderSessionList();
+            updateChangeLog();
+            document.getElementById('previewPanel').classList.add('hidden');
+
+            // Re-select to refresh the editor view
+            selectSession(selectedSessionIndex);
+        }
+
+        function updateChangeLog() {
+            if (changes.length === 0) return;
+            const panel = document.getElementById('changeLog');
+            const list = document.getElementById('changeList');
+            panel.classList.remove('hidden');
+            list.innerHTML = changes.map(c => `<li class="text-emerald-400">✓ ${c}</li>`).join('');
+        }
+
+        function exportFixed() {
+            if (!backupData) return;
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+            const node = document.createElement('a');
+            node.setAttribute("href", dataStr);
+            node.setAttribute("download", "sendlog_backup_fixed.json");
+            document.body.appendChild(node);
+            node.click();
+            node.remove();
+        }
+    </script>
+</body>
+</html>
