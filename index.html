@@ -905,9 +905,9 @@
                 if (getTotalScore() + points >= 10000) unlockAchievement('centurion');
 
                 if (currentGradeIndex > maxGradeIndex) {
-                  //  maxGradeIndex = currentGradeIndex;
-                   // selectMax.value = maxGradeIndex;
-                   // localStorage.setItem('boulderMaxGradeIndex', maxGradeIndex);
+                    maxGradeIndex = currentGradeIndex;
+                    selectMax.value = maxGradeIndex;
+                    localStorage.setItem('boulderMaxGradeIndex', maxGradeIndex);
                     
                     // Cool animation for new max grade
                     confetti({ particleCount: 300, spread: 160, origin: { y: 0.5 }, startVelocity: 45, colors: ['#ff0000', '#00ff00', '#3b82f6', '#fbbf24', '#10b981'] });
