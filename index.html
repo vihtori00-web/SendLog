@@ -179,9 +179,11 @@
                     <!-- History View Toggle -->
                     <div class="flex bg-neutral-950 rounded-xl p-1 border border-neutral-800 relative z-0">
                         <button onclick="setHistoryMode('ALL')" id="historyBtnAll"
-                            class="text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black">ALL TIME</button>
+                            class="text-[10px] font-black px-3 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black">ALL</button>
+                        <button onclick="setHistoryMode('WEEK')" id="historyBtnWeek"
+                            class="text-[10px] font-black px-3 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white">WEEK</button>
                         <button onclick="setHistoryMode('MONTH')" id="historyBtnMonth"
-                            class="text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white">MONTH</button>
+                            class="text-[10px] font-black px-3 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white">MONTH</button>
                     </div>
                 </div>
 
@@ -295,9 +297,11 @@
                         class="p-5 border-b border-neutral-800 shrink-0 flex justify-between items-center relative z-10">
                         <div class="flex bg-neutral-950 rounded-xl p-1 border border-neutral-800 relative z-0">
                             <button onclick="setLbMode('ALL')" id="lbBtnAll"
-                                class="text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black">ALL TIME</button>
+                                class="text-[10px] font-black px-3 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black">ALL</button>
+                            <button onclick="setLbMode('WEEK')" id="lbBtnWeek"
+                                class="text-[10px] font-black px-3 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white">WEEK</button>
                             <button onclick="setLbMode('MONTH')" id="lbBtnMonth"
-                                class="text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white">MONTH</button>
+                                class="text-[10px] font-black px-3 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white">MONTH</button>
                         </div>
                         <button onclick="loadLeaderboard()" class="text-neutral-500 hover:text-white transition-colors"
                             title="Refresh">
@@ -1167,21 +1171,35 @@
 
         function setHistoryMode(mode) {
             historyViewMode = mode;
-            const a = 'text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black';
-            const i = 'text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white';
+            const a = 'text-[10px] font-black px-3 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black';
+            const i = 'text-[10px] font-black px-3 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white';
             document.getElementById('historyBtnAll').className = mode === 'ALL' ? a : i;
+            document.getElementById('historyBtnWeek').className = mode === 'WEEK' ? a : i;
             document.getElementById('historyBtnMonth').className = mode === 'MONTH' ? a : i;
             updateAnalytics();
             renderHistoryList();
         }
 
+        function getStartOfWeek() {
+            const now = new Date();
+            const day = now.getDay(); // 0=Sun, 1=Mon...
+            const diff = (day === 0 ? -6 : 1) - day; // Monday-based
+            const monday = new Date(now);
+            monday.setDate(now.getDate() + diff);
+            monday.setHours(0, 0, 0, 0);
+            return monday.getTime();
+        }
+
         function updateAnalytics() {
             const now = new Date();
             const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+            const startOfWeek = getStartOfWeek();
             
-            const filteredHistory = historyViewMode === 'ALL' 
-                ? boulderHistory 
-                : boulderHistory.filter(s => (s.timestamp || 0) >= startOfMonth);
+            const filteredHistory = historyViewMode === 'ALL'
+                ? boulderHistory
+                : historyViewMode === 'WEEK'
+                    ? boulderHistory.filter(s => (s.timestamp || 0) >= startOfWeek)
+                    : boulderHistory.filter(s => (s.timestamp || 0) >= startOfMonth);
 
             const stats = getHistoryStats(filteredHistory);
 
@@ -1329,10 +1347,13 @@
             const listEl = document.getElementById('historyList');
             const now = new Date();
             const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-            
-            const filteredHistory = historyViewMode === 'ALL' 
-                ? boulderHistory 
-                : boulderHistory.filter(s => (s.timestamp || 0) >= startOfMonth);
+            const startOfWeek = getStartOfWeek();
+
+            const filteredHistory = historyViewMode === 'ALL'
+                ? boulderHistory
+                : historyViewMode === 'WEEK'
+                    ? boulderHistory.filter(s => (s.timestamp || 0) >= startOfWeek)
+                    : boulderHistory.filter(s => (s.timestamp || 0) >= startOfMonth);
 
             if (filteredHistory.length === 0) {
                 listEl.innerHTML = `
@@ -1536,9 +1557,10 @@
 
         function setLbMode(mode) {
             lbMode = mode;
-            const a = "text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black";
-            const i = "text-[10px] font-black px-4 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white";
+            const a = "text-[10px] font-black px-3 py-1.5 rounded-lg transition-colors z-10 bg-emerald-500 text-black";
+            const i = "text-[10px] font-black px-3 py-1.5 rounded-lg transition-colors z-10 text-neutral-500 hover:text-white";
             document.getElementById('lbBtnAll').className = mode === 'ALL' ? a : i;
+            document.getElementById('lbBtnWeek').className = mode === 'WEEK' ? a : i;
             document.getElementById('lbBtnMonth').className = mode === 'MONTH' ? a : i;
             loadLeaderboard();
         }
@@ -1550,14 +1572,29 @@
         function getMonthlyScore() {
             const now = new Date();
             return boulderHistory.filter(h => {
-                const hDate = h.timestamp ? new Date(h.timestamp) : new Date(); // fallback for old history
+                const hDate = h.timestamp ? new Date(h.timestamp) : new Date();
                 return hDate.getFullYear() === now.getFullYear() && hDate.getMonth() === now.getMonth();
             }).reduce((sum, h) => sum + h.score, 0);
         }
 
+        function getWeeklyScore() {
+            const startOfWeek = getStartOfWeek();
+            return boulderHistory.filter(h => (h.timestamp || 0) >= startOfWeek).reduce((sum, h) => sum + h.score, 0);
+        }
+
+        function getISOWeekStr() {
+            const now = new Date();
+            const tmp = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+            tmp.setUTCDate(tmp.getUTCDate() + 4 - (tmp.getUTCDay() || 7));
+            const year = tmp.getUTCFullYear();
+            const week = Math.ceil((((tmp - Date.UTC(year, 0, 1)) / 86400000) + 1) / 7);
+            return year + "-W" + String(week).padStart(2, '0');
+        }
+
         function updateLeaderboardUI() {
             document.getElementById('playerNameInput').value = playerName;
-            document.getElementById('syncTotalScore').innerText = lbMode === 'MONTH' ? getMonthlyScore() : getTotalScore();
+            const score = lbMode === 'MONTH' ? getMonthlyScore() : lbMode === 'WEEK' ? getWeeklyScore() : getTotalScore();
+            document.getElementById('syncTotalScore').innerText = score;
         }
 
         function savePlayerName() {
@@ -1580,26 +1617,29 @@
 
             const totalScore = getTotalScore();
             const monthlyScore = getMonthlyScore();
+            const weeklyScore = getWeeklyScore();
 
             try {
-                // To support both monthly and all-time, we send two separate players implicitly via Suffix
                 const safeName = playerName.replace(/ /g, '-');
                 const nameAll = encodeURIComponent(safeName + '_ALL');
 
                 const now = new Date();
                 const monthStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, '0');
                 const nameMonth = encodeURIComponent(safeName + '_M_' + monthStr);
+                const weekStr = getISOWeekStr();
+                const nameWeek = encodeURIComponent(safeName + '_W_' + weekStr);
 
-                // Fetch both updates in parallel using codetabs Proxy to wrap HTTP in HTTPS safely
                 const glob = getHistoryStats(boulderHistory);
                 const statsText = encodeURIComponent(`${glob.avgGrade}|${glob.avgSends}|${glob.flashRate}`);
 
-                const urlAll = `https://api.codetabs.com/v1/proxy?quest=http://dreamlo.com/lb/${DREAMLO_PRIVATE_KEY}/add/${nameAll}/${totalScore}/0/${statsText}?t=${Date.now()}`;
+                const urlAll   = `https://api.codetabs.com/v1/proxy?quest=http://dreamlo.com/lb/${DREAMLO_PRIVATE_KEY}/add/${nameAll}/${totalScore}/0/${statsText}?t=${Date.now()}`;
                 const urlMonth = `https://api.codetabs.com/v1/proxy?quest=http://dreamlo.com/lb/${DREAMLO_PRIVATE_KEY}/add/${nameMonth}/${monthlyScore}/0/${statsText}?t=${Date.now()}`;
+                const urlWeek  = `https://api.codetabs.com/v1/proxy?quest=http://dreamlo.com/lb/${DREAMLO_PRIVATE_KEY}/add/${nameWeek}/${weeklyScore}/0/${statsText}?t=${Date.now()}`;
 
                 await Promise.all([
                     fetch(urlAll),
-                    fetch(urlMonth)
+                    fetch(urlMonth),
+                    fetch(urlWeek)
                 ]);
 
                 btn.innerText = "Synced!";
@@ -1615,7 +1655,7 @@
 
         async function loadLeaderboard() {
             const listEl = document.getElementById('leaderboardList');
-            document.getElementById('syncTotalScore').innerText = lbMode === 'MONTH' ? getMonthlyScore() : getTotalScore();
+            document.getElementById('syncTotalScore').innerText = lbMode === 'MONTH' ? getMonthlyScore() : lbMode === 'WEEK' ? getWeeklyScore() : getTotalScore();
             listEl.innerHTML = `
                 <div class="flex justify-center items-center py-10">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
@@ -1636,7 +1676,8 @@
                 // Identify the suffix to filter on based on the selected mode
                 const now = new Date();
                 const monthStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, '0');
-                const suffix = lbMode === 'ALL' ? '_ALL' : '_M_' + monthStr;
+                const weekStr = getISOWeekStr();
+                const suffix = lbMode === 'ALL' ? '_ALL' : lbMode === 'WEEK' ? '_W_' + weekStr : '_M_' + monthStr;
 
                 // Map the data into our native format and filter implicitly
                 data = data
