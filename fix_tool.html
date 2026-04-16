@@ -1,35 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SendLog - Data Fix Tool</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        ::-webkit-scrollbar { display: none; }
-        * { -ms-overflow-style: none; scrollbar-width: none; -webkit-tap-highlight-color: transparent; }
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        * {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            -webkit-tap-highlight-color: transparent;
+        }
     </style>
 </head>
+
 <body class="bg-black text-white font-sans antialiased min-h-screen">
 
     <div class="max-w-2xl mx-auto p-5">
         <!-- Header -->
         <div class="flex items-center justify-between mb-6">
             <h1 class="text-2xl font-black tracking-widest">
-                <span class="bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND</span><span class="text-white">LOG</span>
+                <span
+                    class="bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND</span><span
+                    class="text-white">LOG</span>
                 <span class="text-amber-400 text-sm ml-2">FIX TOOL</span>
             </h1>
-            <a href="index.html" class="text-xs text-neutral-500 hover:text-white transition bg-neutral-900 border border-neutral-800 px-3 py-2 rounded-xl font-bold uppercase tracking-wider">← Back to App</a>
+            <a href="index.html"
+                class="text-xs text-neutral-500 hover:text-white transition bg-neutral-900 border border-neutral-800 px-3 py-2 rounded-xl font-bold uppercase tracking-wider">←
+                Back to App</a>
         </div>
 
         <!-- Step 1: Load File -->
         <div class="bg-neutral-900 rounded-[2rem] border border-neutral-800 p-6 mb-4 shadow-lg">
             <h2 class="text-xs font-black text-neutral-500 uppercase tracking-widest mb-3">Step 1: Load Backup</h2>
-            <p class="text-sm text-neutral-400 mb-4">Load a <code class="text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded text-xs">sendlog_backup.json</code> file exported from the app.</p>
+            <p class="text-sm text-neutral-400 mb-4">Load a <code
+                    class="text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded text-xs">sendlog_backup.json</code>
+                file exported from the app.</p>
             <label class="block w-full cursor-pointer">
-                <div class="flex items-center justify-center gap-3 p-5 bg-neutral-950 border-2 border-dashed border-neutral-700 hover:border-emerald-500/50 rounded-2xl transition-colors group">
-                    <svg class="w-8 h-8 text-neutral-500 group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                    <span class="text-sm font-bold text-neutral-400 group-hover:text-white transition-colors">Click to load backup file</span>
+                <div
+                    class="flex items-center justify-center gap-3 p-5 bg-neutral-950 border-2 border-dashed border-neutral-700 hover:border-emerald-500/50 rounded-2xl transition-colors group">
+                    <svg class="w-8 h-8 text-neutral-500 group-hover:text-emerald-400 transition-colors" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    <span class="text-sm font-bold text-neutral-400 group-hover:text-white transition-colors">Click to
+                        load backup file</span>
                 </div>
                 <input type="file" id="fileInput" accept=".json" class="hidden" onchange="loadFile(event)">
             </label>
@@ -39,18 +60,22 @@
         <!-- Session List (hidden until file loaded) -->
         <div id="sessionPanel" class="hidden">
             <div class="bg-neutral-900 rounded-[2rem] border border-neutral-800 p-6 mb-4 shadow-lg">
-                <h2 class="text-xs font-black text-neutral-500 uppercase tracking-widest mb-1">Step 2: Select a Session to Fix</h2>
-                <p class="text-sm text-neutral-400 mb-4">Click on a session to edit its duration or recalculate its points.</p>
+                <h2 class="text-xs font-black text-neutral-500 uppercase tracking-widest mb-1">Step 2: Select a Session
+                    to Fix</h2>
+                <p class="text-sm text-neutral-400 mb-4">Click on a session to edit its duration or recalculate its
+                    points.</p>
                 <ul id="sessionList" class="space-y-2 max-h-[40vh] overflow-y-auto"></ul>
             </div>
         </div>
 
         <!-- Session Editor (hidden until session selected) -->
         <div id="editorPanel" class="hidden">
-            <div class="bg-neutral-900 rounded-[2rem] border border-emerald-500/30 p-6 mb-4 shadow-lg shadow-emerald-500/5">
+            <div
+                class="bg-neutral-900 rounded-[2rem] border border-emerald-500/30 p-6 mb-4 shadow-lg shadow-emerald-500/5">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xs font-black text-emerald-400 uppercase tracking-widest">Editing Session</h2>
-                    <button onclick="closeEditor()" class="text-neutral-500 hover:text-white transition text-xs font-bold bg-neutral-800 px-3 py-1.5 rounded-lg active:scale-95">Close</button>
+                    <button onclick="closeEditor()"
+                        class="text-neutral-500 hover:text-white transition text-xs font-bold bg-neutral-800 px-3 py-1.5 rounded-lg active:scale-95">Close</button>
                 </div>
                 <p id="editorSessionDate" class="text-sm font-bold text-white mb-4"></p>
 
@@ -59,33 +84,45 @@
                     <h3 class="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-3">Fix Duration</h3>
                     <div class="flex gap-3 items-center">
                         <div class="flex-1">
-                            <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1">Hours</label>
-                            <input type="number" id="fixHours" min="0" max="24" value="0" class="w-full bg-neutral-900 text-white border border-neutral-700 rounded-xl px-3 py-2.5 text-lg font-black focus:outline-none focus:border-emerald-500 transition-colors text-center">
+                            <label
+                                class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1">Hours</label>
+                            <input type="number" id="fixHours" min="0" max="24" value="0"
+                                class="w-full bg-neutral-900 text-white border border-neutral-700 rounded-xl px-3 py-2.5 text-lg font-black focus:outline-none focus:border-emerald-500 transition-colors text-center">
                         </div>
                         <span class="text-2xl font-black text-neutral-600 mt-4">:</span>
                         <div class="flex-1">
-                            <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1">Minutes</label>
-                            <input type="number" id="fixMinutes" min="0" max="59" value="0" class="w-full bg-neutral-900 text-white border border-neutral-700 rounded-xl px-3 py-2.5 text-lg font-black focus:outline-none focus:border-emerald-500 transition-colors text-center">
+                            <label
+                                class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1">Minutes</label>
+                            <input type="number" id="fixMinutes" min="0" max="59" value="0"
+                                class="w-full bg-neutral-900 text-white border border-neutral-700 rounded-xl px-3 py-2.5 text-lg font-black focus:outline-none focus:border-emerald-500 transition-colors text-center">
                         </div>
                     </div>
                     <div class="flex gap-2 mt-3">
                         <span class="text-[10px] text-neutral-500 font-bold">Current:</span>
                         <span id="currentDuration" class="text-[10px] text-amber-400 font-bold"></span>
                     </div>
-                    <button onclick="applyDurationFix()" class="w-full mt-3 py-3 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-xl font-black text-sm active:scale-95 transition-all hover:bg-blue-500/30">Apply Duration</button>
+                    <button onclick="applyDurationFix()"
+                        class="w-full mt-3 py-3 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-xl font-black text-sm active:scale-95 transition-all hover:bg-blue-500/30">Apply
+                        Duration</button>
                 </div>
 
                 <!-- Points Recalculation -->
                 <div class="bg-neutral-950 rounded-2xl p-4 border border-neutral-800 mb-4">
-                    <h3 class="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-3">Recalculate Points</h3>
-                    <p class="text-xs text-neutral-400 mb-3">Set the max grade that <em>should have been</em> used as the baseline for this session.</p>
+                    <h3 class="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-3">Recalculate
+                        Points</h3>
+                    <p class="text-xs text-neutral-400 mb-3">Set the max grade that <em>should have been</em> used as
+                        the baseline for this session.</p>
                     <div class="flex gap-3 items-end">
                         <div class="flex-1">
-                            <label class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1">Max Grade Baseline</label>
-                            <select id="fixMaxGrade" class="w-full bg-neutral-900 text-emerald-400 border border-neutral-700 rounded-xl px-3 py-2.5 text-lg font-black focus:outline-none focus:border-emerald-500 appearance-none cursor-pointer">
+                            <label
+                                class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-1">Max
+                                Grade Baseline</label>
+                            <select id="fixMaxGrade"
+                                class="w-full bg-neutral-900 text-emerald-400 border border-neutral-700 rounded-xl px-3 py-2.5 text-lg font-black focus:outline-none focus:border-emerald-500 appearance-none cursor-pointer">
                             </select>
                         </div>
-                        <button onclick="previewRecalc()" class="px-5 py-2.5 bg-neutral-800 text-white border border-neutral-700 rounded-xl font-black text-sm active:scale-95 transition-all hover:bg-neutral-700 shrink-0">Preview</button>
+                        <button onclick="previewRecalc()"
+                            class="px-5 py-2.5 bg-neutral-800 text-white border border-neutral-700 rounded-xl font-black text-sm active:scale-95 transition-all hover:bg-neutral-700 shrink-0">Preview</button>
                     </div>
                 </div>
 
@@ -100,7 +137,9 @@
                         </div>
                     </div>
                     <ul id="previewList" class="space-y-1.5 max-h-[30vh] overflow-y-auto"></ul>
-                    <button onclick="applyRecalc()" class="w-full mt-4 py-3 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl font-black text-sm active:scale-95 transition-all hover:bg-emerald-500/30">✓ Apply Recalculated Points</button>
+                    <button onclick="applyRecalc()"
+                        class="w-full mt-4 py-3 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl font-black text-sm active:scale-95 transition-all hover:bg-emerald-500/30">✓
+                        Apply Recalculated Points</button>
                 </div>
             </div>
         </div>
@@ -108,9 +147,12 @@
         <!-- Export (hidden until file loaded) -->
         <div id="exportPanel" class="hidden">
             <div class="bg-neutral-900 rounded-[2rem] border border-neutral-800 p-6 shadow-lg">
-                <h2 class="text-xs font-black text-neutral-500 uppercase tracking-widest mb-3">Step 3: Export Fixed Backup</h2>
-                <p class="text-sm text-neutral-400 mb-4">Download the fixed backup, then import it back into the app via Profile → Import Code.</p>
-                <button onclick="exportFixed()" class="w-full py-4 bg-emerald-500 text-black font-black uppercase tracking-[0.2em] rounded-2xl text-lg active:scale-95 transition-all shadow-lg shadow-emerald-500/20 hover:bg-emerald-400">
+                <h2 class="text-xs font-black text-neutral-500 uppercase tracking-widest mb-3">Step 3: Export Fixed
+                    Backup</h2>
+                <p class="text-sm text-neutral-400 mb-4">Download the fixed backup, then import it back into the app via
+                    Profile → Import Code.</p>
+                <button onclick="exportFixed()"
+                    class="w-full py-4 bg-emerald-500 text-black font-black uppercase tracking-[0.2em] rounded-2xl text-lg active:scale-95 transition-all shadow-lg shadow-emerald-500/20 hover:bg-emerald-400">
                     Export Fixed Backup
                 </button>
                 <div id="changeLog" class="mt-4 hidden">
@@ -128,7 +170,7 @@
             '8A', '8A+', '8B', '8B+', '8C', '8C+', '9A'
         ];
 
-        const tryPtsMap   = [1, 2, 3, 5, 8, 12, 18, 25];
+        const tryPtsMap = [1, 2, 3, 5, 8, 12, 18, 25];
         const topBonusMap = [3, 5, 8, 12, 22, 35, 55, 80];
         const flashBonusMap = [2, 3, 5, 8, 15, 25, 40, 60];
 
@@ -141,7 +183,7 @@
             const topBonus = getMapValue(topBonusMap, delta);
             const flashBonus = getMapValue(flashBonusMap, delta);
             if (flashed) return tryPts + topBonus + flashBonus;
-            if (topped)  return (attempts * tryPts) + topBonus;
+            if (topped) return (attempts * tryPts) + topBonus;
             return Math.min(attempts, 8) * tryPts;
         }
 
@@ -165,7 +207,7 @@
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 try {
                     backupData = JSON.parse(e.target.result);
                     if (!backupData.history) throw new Error("No history found in backup");
@@ -369,4 +411,5 @@
         }
     </script>
 </body>
+
 </html>

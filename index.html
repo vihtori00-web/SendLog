@@ -532,7 +532,39 @@
         let climbIdCounter = 0;
         let selectedTags = [];
         let boulderHistory = JSON.parse(localStorage.getItem('boulderHistory')) || [];
-        const tagList = ['crimp', 'sloper', 'pinch', 'overhang', 'slab', 'dyno', 'comp'];
+        
+        let tagsMigrated = false;
+        boulderHistory.forEach(s => {
+            if (s.climbs) {
+                s.climbs.forEach(c => {
+                    if (c.tags) {
+                        const originalLength = c.tags.length;
+                        c.tags = c.tags.filter(t => t !== 'overhang' && t !== 'comp');
+                        if (c.tags.length !== originalLength) tagsMigrated = true;
+                    }
+                });
+            }
+        });
+        if (tagsMigrated) {
+            localStorage.setItem('boulderHistory', JSON.stringify(boulderHistory));
+        }
+
+        let boulderActiveSession = JSON.parse(localStorage.getItem('boulderActiveSession'));
+        if (boulderActiveSession) {
+            let activeMigrated = false;
+            (boulderActiveSession.climbs || []).forEach(c => {
+                if (c.tags) {
+                    const originalLength = c.tags.length;
+                    c.tags = c.tags.filter(t => t !== 'overhang' && t !== 'comp');
+                    if (c.tags.length !== originalLength) activeMigrated = true;
+                }
+            });
+            if (activeMigrated) {
+                localStorage.setItem('boulderActiveSession', JSON.stringify(boulderActiveSession));
+            }
+        }
+
+        const tagList = ['crimp', 'sloper', 'pinch', 'slab', 'dyno', 'board', 'technical', 'powerful'];
 
         function getSessionStats(session) {
             let sends = 0, flashes = 0, sumGrades = 0, sendCount = 0;
@@ -603,7 +635,7 @@
             { id: "double_digits", name: "Double Digits", desc: "Get 10+ sends in a single session.", icon: "🔟" },
             { id: "volume_day", name: "Volume Day", desc: "Log 15+ climbs in a session.", icon: "💪" },
             { id: "hat_trick", name: "Hat Trick", desc: "Send 3 different grades in one session.", icon: "🎩" },
-            { id: "all_rounder", name: "All-Rounder", desc: "Use all 7 style tags in one session.", icon: "🎯" },
+            { id: "all_rounder", name: "All-Rounder", desc: "Use all 8 style tags in one session.", icon: "🎯" },
             { id: "centurion", name: "Centurion", desc: "Reach 1,000 Total Points.", icon: "👑" },
             { id: "consistency", name: "Consistency", desc: "Complete 5 sessions.", icon: "📅" },
             { id: "marathon", name: "Marathon", desc: "Climb for over 3 hours.", icon: "⏱️" },
@@ -955,7 +987,7 @@
             if (uniqueSendGrades.size >= 3) unlockAchievement('hat_trick');
 
             const allSessionTags = new Set(sessionClimbs.flatMap(c => c.tags || []));
-            if (allSessionTags.size >= 7) unlockAchievement('all_rounder');
+            if (allSessionTags.size >= 8) unlockAchievement('all_rounder');
 
             renderSessionList();
             saveActiveSession();
@@ -1271,7 +1303,7 @@
                 });
             }
         } else if (currentChartType === 'radar') {
-                const tagCounts = { 'crimp': 0, 'sloper': 0, 'pinch': 0, 'overhang': 0, 'slab': 0, 'dyno': 0, 'comp': 0 };
+                const tagCounts = { 'crimp': 0, 'sloper': 0, 'pinch': 0, 'slab': 0, 'dyno': 0, 'board': 0, 'technical': 0, 'powerful': 0 };
                 filteredHistory.forEach(s => {
                     (s.climbs || []).forEach(c => {
                         if (c.tags) c.tags.forEach(t => { if (tagCounts[t] !== undefined) tagCounts[t]++; });
