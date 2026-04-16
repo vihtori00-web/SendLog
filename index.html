@@ -205,14 +205,17 @@
                             <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
                                 <span class="text-amber-400 text-xl font-black" id="statFlashRate">-</span>
                                 <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Flash %</span>
+                                <span class="text-[8px] font-bold mt-0.5 hidden" id="statFlashRateDelta"></span>
                             </div>
                             <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
                                 <span class="text-emerald-400 text-xl font-black" id="statAvgSends">0</span>
                                 <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Avg/Sess</span>
+                                <span class="text-[8px] font-bold mt-0.5 hidden" id="statAvgSendsDelta"></span>
                             </div>
                             <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
                                 <span class="text-emerald-400 text-xl font-black" id="statTotalPoints">0</span>
                                 <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Points</span>
+                                <span class="text-[8px] font-bold mt-0.5 hidden" id="statTotalPointsDelta"></span>
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-2">
@@ -228,6 +231,46 @@
                                 <span class="text-purple-400 text-xl font-black" id="statAvgGrade">-</span>
                                 <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Avg Grade</span>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Streak & Personal Records -->
+                    <div class="px-5 mt-3 flex flex-col gap-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                                <span class="text-orange-400 text-2xl font-black" id="statCurrentStreak">0</span>
+                                <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">🔥 Streak</span>
+                            </div>
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                                <span class="text-amber-400 text-2xl font-black" id="statLongestStreak">0</span>
+                                <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">🏅 Best Streak</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2">
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                                <span class="text-emerald-400 text-lg font-black" id="prBestScore">-</span>
+                                <span class="text-[7px] uppercase font-black tracking-widest text-neutral-500 mt-0.5">Best Score</span>
+                            </div>
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                                <span class="text-blue-400 text-lg font-black" id="prHighestGrade">-</span>
+                                <span class="text-[7px] uppercase font-black tracking-widest text-neutral-500 mt-0.5">Top Grade</span>
+                            </div>
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                                <span class="text-cyan-400 text-lg font-black" id="prMostSends">-</span>
+                                <span class="text-[7px] uppercase font-black tracking-widest text-neutral-500 mt-0.5">Most Sends</span>
+                            </div>
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                                <span class="text-purple-400 text-lg font-black" id="prLongestSession">-</span>
+                                <span class="text-[7px] uppercase font-black tracking-widest text-neutral-500 mt-0.5">Longest</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Heatmap -->
+                    <div class="px-5 mt-3">
+                        <h3 class="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-2">Activity</h3>
+                        <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-3 backdrop-blur-md overflow-x-auto">
+                            <div id="calendarHeatmap" class="flex justify-center"></div>
                         </div>
                     </div>
 
@@ -612,6 +655,193 @@
             const avgGradeScore = totalSuccessfulClimbs > 0 ? (sumGrades / totalSuccessfulClimbs) : 0;
             const avgGrade = totalSuccessfulClimbs > 0 ? fontGrades[Math.round(avgGradeScore)] : '-';
             return { totalPoints, totalSends, totalFlashes, totalProjTries, totalDuration, sumGrades, totalSuccessfulClimbs, flashRate, avgDur, avgSends, avgGrade, avgGradeScore };
+        }
+
+        function getPersonalRecords(historyArray) {
+            let bestScore = 0, highestGradeIdx = -1, mostSends = 0, longestDuration = 0;
+            historyArray.forEach(s => {
+                if (s.score > bestScore) bestScore = s.score;
+                if ((s.duration || 0) > longestDuration) longestDuration = s.duration;
+                let sends = 0;
+                (s.climbs || []).forEach(c => {
+                    if (c.statusText === 'Top' || c.statusText === 'Flash') {
+                        sends++;
+                        const gIdx = fontGrades.indexOf(c.gradeStr);
+                        if (gIdx > highestGradeIdx) highestGradeIdx = gIdx;
+                    }
+                });
+                if (sends > mostSends) mostSends = sends;
+            });
+            return {
+                bestScore,
+                highestGrade: highestGradeIdx >= 0 ? fontGrades[highestGradeIdx] : '-',
+                mostSends: mostSends || '-',
+                longestSession: longestDuration > 0 ? formatDuration(longestDuration) : '-'
+            };
+        }
+
+        function getStreakData() {
+            const sessionDates = [];
+            boulderHistory.forEach(s => {
+                if (s.timestamp) {
+                    const d = new Date(s.timestamp);
+                    d.setHours(0, 0, 0, 0);
+                    const key = d.getTime();
+                    if (!sessionDates.includes(key)) sessionDates.push(key);
+                }
+            });
+            sessionDates.sort((a, b) => b - a); // most recent first
+
+            if (sessionDates.length === 0) return { current: 0, longest: 0 };
+
+            const DAY_MS = 86400000;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayMs = today.getTime();
+
+            // Current streak: most recent session must be within 2 days of today
+            let current = 0;
+            if ((todayMs - sessionDates[0]) / DAY_MS <= 2) {
+                current = 1;
+                for (let i = 1; i < sessionDates.length; i++) {
+                    if ((sessionDates[i - 1] - sessionDates[i]) / DAY_MS <= 2) {
+                        current++;
+                    } else break;
+                }
+            }
+
+            // Longest streak ever
+            let longest = 1, chain = 1;
+            for (let i = 1; i < sessionDates.length; i++) {
+                if ((sessionDates[i - 1] - sessionDates[i]) / DAY_MS <= 2) {
+                    chain++;
+                } else {
+                    chain = 1;
+                }
+                if (chain > longest) longest = chain;
+            }
+
+            return { current, longest };
+        }
+
+        function renderCalendarHeatmap() {
+            const container = document.getElementById('calendarHeatmap');
+            if (!container) return;
+
+            const dateCounts = {};
+            boulderHistory.forEach(s => {
+                if (s.timestamp) {
+                    const d = new Date(s.timestamp);
+                    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                    dateCounts[key] = (dateCounts[key] || 0) + (s.climbs || []).length;
+                }
+            });
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Find this Monday
+            const dow = today.getDay();
+            const mondayOffset = dow === 0 ? -6 : 1 - dow;
+            const thisMonday = new Date(today);
+            thisMonday.setDate(today.getDate() + mondayOffset);
+
+            // Start 12 weeks before this Monday = 13 weeks total
+            const startDate = new Date(thisMonday);
+            startDate.setDate(startDate.getDate() - 12 * 7);
+
+            const dayLabels = ['M', '', 'W', '', 'F', '', 'S'];
+            let html = '<div class="flex gap-[3px] items-start"><div class="flex flex-col gap-[3px] mr-1">';
+            dayLabels.forEach(l => {
+                html += `<div class="w-3 h-3 flex items-center justify-center text-[6px] text-neutral-600 font-bold">${l}</div>`;
+            });
+            html += '</div>';
+
+            let lastMonth = -1;
+            const monthHeaders = [];
+
+            for (let week = 0; week < 13; week++) {
+                let weekHtml = '<div class="flex flex-col gap-[3px]">';
+                for (let day = 0; day < 7; day++) {
+                    const cellDate = new Date(startDate);
+                    cellDate.setDate(startDate.getDate() + week * 7 + day);
+                    const key = `${cellDate.getFullYear()}-${String(cellDate.getMonth()+1).padStart(2,'0')}-${String(cellDate.getDate()).padStart(2,'0')}`;
+                    const count = dateCounts[key] || 0;
+                    const isFuture = cellDate > today;
+
+                    if (day === 0 && cellDate.getMonth() !== lastMonth) {
+                        lastMonth = cellDate.getMonth();
+                        monthHeaders.push({ week, label: cellDate.toLocaleDateString(undefined, { month: 'short' }) });
+                    }
+
+                    let bg = 'bg-neutral-800/40';
+                    if (isFuture) bg = 'bg-neutral-900/20';
+                    else if (count >= 7) bg = 'bg-emerald-400';
+                    else if (count >= 4) bg = 'bg-emerald-500/70';
+                    else if (count >= 1) bg = 'bg-emerald-700/60';
+
+                    weekHtml += `<div class="w-3 h-3 rounded-[2px] ${bg} transition-colors" title="${key}: ${count} climbs"></div>`;
+                }
+                weekHtml += '</div>';
+                html += weekHtml;
+            }
+            html += '</div>';
+
+            // Month labels row
+            let monthRow = '<div class="flex ml-[19px] mb-1 gap-[3px]">';
+            let labelPositions = new Array(13).fill('');
+            monthHeaders.forEach(m => { labelPositions[m.week] = m.label; });
+            labelPositions.forEach(l => {
+                monthRow += `<div class="w-3 text-[6px] text-neutral-600 font-bold text-center">${l}</div>`;
+            });
+            monthRow += '</div>';
+
+            container.innerHTML = monthRow + html;
+        }
+
+        function updateComparisonDeltas() {
+            const ids = ['statFlashRateDelta', 'statAvgSendsDelta', 'statTotalPointsDelta'];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.classList.add('hidden'); el.innerText = ''; }
+            });
+
+            if (historyViewMode === 'ALL') return;
+
+            const now = new Date();
+            let currentFilter, prevFilter;
+
+            if (historyViewMode === 'WEEK') {
+                const startOfWeek = getStartOfWeek();
+                const prevWeekStart = startOfWeek - 7 * 86400000;
+                currentFilter = s => (s.timestamp || 0) >= startOfWeek;
+                prevFilter = s => (s.timestamp || 0) >= prevWeekStart && (s.timestamp || 0) < startOfWeek;
+            } else {
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+                const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+                currentFilter = s => (s.timestamp || 0) >= startOfMonth;
+                prevFilter = s => (s.timestamp || 0) >= prevMonthStart && (s.timestamp || 0) < startOfMonth;
+            }
+
+            const current = getHistoryStats(boulderHistory.filter(currentFilter));
+            const prev = getHistoryStats(boulderHistory.filter(prevFilter));
+
+            function showDelta(elId, curVal, prevVal, suffix = '') {
+                const el = document.getElementById(elId);
+                if (!el) return;
+                if (prevVal === 0 && curVal === 0) return;
+                const diff = curVal - prevVal;
+                if (diff === 0) return;
+                const sign = diff > 0 ? '↑' : '↓';
+                const color = diff > 0 ? 'text-emerald-400' : 'text-red-400';
+                el.className = `text-[8px] font-bold mt-0.5 ${color}`;
+                el.classList.remove('hidden');
+                el.innerText = `${sign} ${Math.abs(diff).toFixed(suffix === '%' ? 0 : 1)}${suffix}`;
+            }
+
+            showDelta('statFlashRateDelta', current.flashRate, prev.flashRate, '%');
+            showDelta('statAvgSendsDelta', parseFloat(current.avgSends), parseFloat(prev.avgSends));
+            showDelta('statTotalPointsDelta', current.totalPoints, prev.totalPoints);
         }
 
         function renderTags() {
@@ -1250,6 +1480,24 @@
             const gRem = (stats.avgGradeScore - gIdx).toFixed(1);
             const preciseG = stats.totalSuccessfulClimbs > 0 ? `${fontGrades[gIdx]}<span class="text-[10px] text-neutral-500 ml-1">+${gRem}</span>` : '-';
             document.getElementById('statAvgGrade').innerHTML = preciseG;
+
+            // Personal Records (filtered by current view mode)
+            const pr = getPersonalRecords(filteredHistory);
+            document.getElementById('prBestScore').innerText = pr.bestScore || '-';
+            document.getElementById('prHighestGrade').innerText = pr.highestGrade;
+            document.getElementById('prMostSends').innerText = pr.mostSends;
+            document.getElementById('prLongestSession').innerText = pr.longestSession;
+
+            // Streak (always computed from all history)
+            const streak = getStreakData();
+            document.getElementById('statCurrentStreak').innerText = streak.current;
+            document.getElementById('statLongestStreak').innerText = streak.longest;
+
+            // Calendar Heatmap
+            renderCalendarHeatmap();
+
+            // Period comparison deltas
+            updateComparisonDeltas();
 
             // Chart data rendering
             if (chart && chart.config.type !== currentChartType) {
