@@ -648,11 +648,13 @@
         function getHistoryStats(historyArray) {
             let totalPoints = 0, totalSends = 0, totalFlashes = 0, totalProjTries = 0;
             let totalDuration = 0, sumGrades = 0, totalSuccessfulClimbs = 0;
+            let totalAllClimbs = 0;
             historyArray.forEach(s => {
                 totalPoints += s.score || 0;
                 totalDuration += s.duration || 0;
                 if (s.climbs) {
                     s.climbs.forEach(c => {
+                        totalAllClimbs++;
                         if (c.statusText === 'Top' || c.statusText === 'Flash') {
                             totalSends++;
                             totalSuccessfulClimbs++;
@@ -663,7 +665,7 @@
                     });
                 }
             });
-            const flashRate = totalSends > 0 ? Math.round((totalFlashes / totalSends) * 100) : 0;
+            const flashRate = totalAllClimbs > 0 ? Math.round((totalFlashes / totalAllClimbs) * 100) : 0;
             const sessionsWithTime = historyArray.filter(s => (s.duration || 0) > 0);
             const avgDurDec = sessionsWithTime.length > 0 ? (totalDuration / sessionsWithTime.length) : 0;
             const avgDur = formatDuration(Math.round(avgDurDec));
