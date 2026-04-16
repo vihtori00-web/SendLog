@@ -187,60 +187,63 @@
                     </div>
                 </div>
 
-                <!-- Dashboard Stat Grid -->
-                <div class="px-5 mt-4 shrink-0 flex flex-col gap-2 relative z-10">
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="bg-neutral-900/80 border border-neutral-800 rounded-2xl p-3 flex flex-col items-center justify-center backdrop-blur-md shadow-sm">
-                            <span class="text-cyan-400 text-3xl font-black drop-shadow-sm" id="statSessions">0</span>
-                            <span class="text-[9px] uppercase font-black tracking-widest text-neutral-500 mt-1">Sessions</span>
+                <!-- Scrollable content area for stats + chart -->
+                <div class="flex-1 overflow-y-auto overflow-x-hidden mb-16 relative z-10">
+                    <!-- Dashboard Stat Grid -->
+                    <div class="px-5 mt-4 flex flex-col gap-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-2xl p-3 flex flex-col items-center justify-center backdrop-blur-md shadow-sm">
+                                <span class="text-cyan-400 text-3xl font-black drop-shadow-sm" id="statSessions">0</span>
+                                <span class="text-[9px] uppercase font-black tracking-widest text-neutral-500 mt-1">Sessions</span>
+                            </div>
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-2xl p-3 flex flex-col items-center justify-center backdrop-blur-md shadow-sm">
+                                <span class="text-emerald-400 text-3xl font-black drop-shadow-sm" id="statTotalSends">0</span>
+                                <span class="text-[9px] uppercase font-black tracking-widest text-neutral-500 mt-1">Total Sends</span>
+                            </div>
                         </div>
-                        <div class="bg-neutral-900/80 border border-neutral-800 rounded-2xl p-3 flex flex-col items-center justify-center backdrop-blur-md shadow-sm">
-                            <span class="text-emerald-400 text-3xl font-black drop-shadow-sm" id="statTotalSends">0</span>
-                            <span class="text-[9px] uppercase font-black tracking-widest text-neutral-500 mt-1">Total Sends</span>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                                <span class="text-amber-400 text-xl font-black" id="statFlashRate">-</span>
+                                <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Flash %</span>
+                            </div>
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                                <span class="text-emerald-400 text-xl font-black" id="statAvgSends">0</span>
+                                <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Avg/Sess</span>
+                            </div>
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                                <span class="text-emerald-400 text-xl font-black" id="statTotalPoints">0</span>
+                                <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Points</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                                <span class="text-orange-400 text-xl font-black" id="statProjectTries">0</span>
+                                <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Proj Tries</span>
+                            </div>
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                                <span class="text-blue-400 text-xl font-black font-mono text-xs" id="statAvgTime">-</span>
+                                <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Avg Time</span>
+                            </div>
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                                <span class="text-purple-400 text-xl font-black" id="statAvgGrade">-</span>
+                                <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Avg Grade</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
-                            <span class="text-amber-400 text-xl font-black" id="statFlashRate">-</span>
-                            <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Flash %</span>
-                        </div>
-                        <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
-                            <span class="text-emerald-400 text-xl font-black" id="statAvgSends">0</span>
-                            <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Avg/Sess</span>
-                        </div>
-                        <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
-                            <span class="text-emerald-400 text-xl font-black" id="statTotalPoints">0</span>
-                            <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Points</span>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
-                            <span class="text-orange-400 text-xl font-black" id="statProjectTries">0</span>
-                            <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Proj Tries</span>
-                        </div>
-                        <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
-                            <span class="text-blue-400 text-xl font-black font-mono text-xs" id="statAvgTime">-</span>
-                            <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Avg Time</span>
-                        </div>
-                        <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
-                            <span class="text-purple-400 text-xl font-black" id="statAvgGrade">-</span>
-                            <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Avg Grade</span>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Chart card -->
-                <div class="mx-5 mt-2 bg-transparent shrink-0 overflow-hidden flex-1 relative z-0 flex flex-col mb-16">
-                    <div class="flex justify-between items-center px-2 pt-2 pb-1 relative z-10">
-                        <div class="flex items-center bg-neutral-900/80 backdrop-blur-md rounded-lg p-1 border border-neutral-800 shadow-md">
-                            <button onclick="setChartType('line')" id="chartBtnLine" class="text-[9px] font-black px-3 py-1.5 rounded transition-colors bg-emerald-500 text-black uppercase tracking-widest">Trend</button>
-                            <button onclick="setChartType('radar')" id="chartBtnRadar" class="text-[9px] font-black px-3 py-1.5 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest">Style</button>
-                            <button onclick="setChartType('bar')" id="chartBtnBar" class="text-[9px] font-black px-3 py-1.5 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest">Pyramid</button>
+                    <!-- Chart card -->
+                    <div class="mx-5 mt-2 bg-transparent overflow-hidden relative z-0 flex flex-col">
+                        <div class="flex justify-between items-center px-2 pt-2 pb-1 relative z-10">
+                            <div class="flex items-center bg-neutral-900/80 backdrop-blur-md rounded-lg p-1 border border-neutral-800 shadow-md">
+                                <button onclick="setChartType('line')" id="chartBtnLine" class="text-[9px] font-black px-3 py-1.5 rounded transition-colors bg-emerald-500 text-black uppercase tracking-widest">Trend</button>
+                                <button onclick="setChartType('radar')" id="chartBtnRadar" class="text-[9px] font-black px-3 py-1.5 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest">Style</button>
+                                <button onclick="setChartType('bar')" id="chartBtnBar" class="text-[9px] font-black px-3 py-1.5 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest">Pyramid</button>
+                            </div>
+                            <button onclick="if(chart && chart.resetZoom) { chart.resetZoom(); if('vibrate' in navigator) navigator.vibrate(10); }" class="text-[8px] font-black text-blue-400 bg-neutral-900 border border-neutral-800 px-3 py-1.5 rounded-lg hover:bg-neutral-800 active:scale-95 transition-all uppercase tracking-wider backdrop-blur-md">Reset Zoom</button>
                         </div>
-                        <button onclick="if(chart && chart.resetZoom) { chart.resetZoom(); if('vibrate' in navigator) navigator.vibrate(10); }" class="text-[8px] font-black text-blue-400 bg-neutral-900 border border-neutral-800 px-3 py-1.5 rounded-lg hover:bg-neutral-800 active:scale-95 transition-all uppercase tracking-wider backdrop-blur-md">Reset Zoom</button>
-                    </div>
-                    <div class="flex-1 w-full min-h-[50%] px-2 pb-1 cursor-pointer">
-                        <canvas id="progressionChart" class="w-full h-full"></canvas>
+                        <div class="w-full px-2 pb-4 cursor-pointer" style="min-height: 280px; height: 40vh;">
+                            <canvas id="progressionChart" class="w-full h-full"></canvas>
+                        </div>
                     </div>
                 </div>
 
