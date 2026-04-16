@@ -838,30 +838,6 @@
 
             container.innerHTML = html;
 
-            // Setup touch swipe logic once
-            if (!container.dataset.swipeBound) {
-                let touchstartX = 0;
-                let touchendX = 0;
-                
-                const handleGesture = () => {
-                    const threshold = 40; // minimum swipe distance
-                    if (touchendX < touchstartX - threshold) changeHeatmapMonth(1); // Swipe left = next month
-                    if (touchendX > touchstartX + threshold) changeHeatmapMonth(-1); // Swipe right = prev month
-                };
-
-                const heatmapWrapper = document.getElementById('heatmapContainer');
-                if (heatmapWrapper) {
-                    heatmapWrapper.addEventListener('touchstart', e => {
-                        touchstartX = e.changedTouches[0].screenX;
-                    });
-                    
-                    heatmapWrapper.addEventListener('touchend', e => {
-                        touchendX = e.changedTouches[0].screenX;
-                        handleGesture();
-                    });
-                }
-                container.dataset.swipeBound = "true";
-            }
         }
         
         function changeHeatmapMonth(delta) {
