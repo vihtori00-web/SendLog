@@ -1882,6 +1882,7 @@
         let restTimerInterval = null;
         let defaultRestSeconds = 120;
         let restTimeRemaining = 0;
+        let restTimerTargetEpoch = 0;
 
         function formatTimerDisplay(secs) {
             const m = Math.floor(secs / 60);
@@ -1891,7 +1892,8 @@
 
         function adjRestTimer(delta) {
             if (restTimerInterval) {
-                restTimeRemaining = Math.max(5, restTimeRemaining + delta);
+                restTimerTargetEpoch += (delta * 1000);
+                restTimeRemaining = Math.max(5, Math.ceil((restTimerTargetEpoch - Date.now()) / 1000));
             } else {
                 defaultRestSeconds = Math.max(30, Math.min(900, defaultRestSeconds + delta));
             }
@@ -1938,12 +1940,13 @@
             if (restTimerInterval) return;
 
             restTimeRemaining = defaultRestSeconds;
+            restTimerTargetEpoch = Date.now() + (defaultRestSeconds * 1000);
 
             if ('vibrate' in navigator) navigator.vibrate(20);
             setTimeout(initAudio, 0);
 
             restTimerInterval = setInterval(() => {
-                restTimeRemaining--;
+                restTimeRemaining = Math.ceil((restTimerTargetEpoch - Date.now()) / 1000);
                 if (restTimeRemaining <= 0) {
                     clearInterval(restTimerInterval);
                     restTimerInterval = null;
