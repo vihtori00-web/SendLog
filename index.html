@@ -815,7 +815,13 @@
                      bg += ' border-neutral-500/50 ring-1 ring-neutral-500/50';
                 }
 
-                html += `<div class="aspect-square rounded-md ${bg} flex items-center justify-center text-[10px] ${txt} transition-all relative overflow-hidden" title="${key}: ${count} climbs">
+                let actionAttr = '';
+                let cursorClass = count > 0 ? 'cursor-pointer active:scale-95' : 'pointer-events-none';
+                if (count > 0) {
+                    actionAttr = `onclick="openHeatmapSession('${key}')"`;
+                }
+
+                html += `<div ${actionAttr} class="aspect-square rounded-md ${bg} flex items-center justify-center text-[10px] ${txt} transition-all relative overflow-hidden ${cursorClass}" title="${key}: ${count} climbs">
                             <span class="z-10">${day}</span>
                             ${count > 0 ? `<div class="absolute bottom-0 left-0 right-0 h-1 bg-black/10"></div>` : ''}
                          </div>`;
@@ -865,6 +871,21 @@
             // Re-render and add a small haptic bump
             renderCalendarHeatmap();
             if ('vibrate' in navigator) navigator.vibrate(10);
+        }
+
+        function openHeatmapSession(dateStr) {
+            // Find the most recent session for this specific date
+            for (let i = boulderHistory.length - 1; i >= 0; i--) {
+                const s = boulderHistory[i];
+                if (s.timestamp) {
+                    const d = new Date(s.timestamp);
+                    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                    if (key === dateStr) {
+                        openSessionDetail(i, true);
+                        return;
+                    }
+                }
+            }
         }
 
         function updateComparisonDeltas() {
@@ -1630,7 +1651,8 @@
                         if (c.tags) c.tags.forEach(t => { if (tagCounts[t] !== undefined) tagCounts[t]++; });
                     });
                 });
-                const tagPct = Object.values(tagCounts).map(v => totalClimbs > 0 ? Math.round((v / totalClimbs) * 100) : 0);
+                const maxTagCount = Math.max(...Object.values(tagCounts), 1);
+                const tagPct = Object.values(tagCounts).map(v => Math.round((v / maxTagCount) * 100));
                 
                 chart = new Chart(ctx, {
                     type: 'radar',
