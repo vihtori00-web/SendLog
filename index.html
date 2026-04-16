@@ -1307,19 +1307,22 @@
             }
         } else if (currentChartType === 'radar') {
                 const tagCounts = { 'crimp': 0, 'sloper': 0, 'pinch': 0, 'slab': 0, 'dyno': 0, 'board': 0, 'technical': 0, 'powerful': 0 };
+                let totalClimbs = 0;
                 filteredHistory.forEach(s => {
                     (s.climbs || []).forEach(c => {
+                        totalClimbs++;
                         if (c.tags) c.tags.forEach(t => { if (tagCounts[t] !== undefined) tagCounts[t]++; });
                     });
                 });
+                const tagPct = Object.values(tagCounts).map(v => totalClimbs > 0 ? Math.round((v / totalClimbs) * 100) : 0);
                 
                 chart = new Chart(ctx, {
                     type: 'radar',
                     data: {
                         labels: Object.keys(tagCounts).map(k => k.toUpperCase()),
                         datasets: [{
-                            label: 'Style Volume',
-                            data: Object.values(tagCounts),
+                            label: 'Style %',
+                            data: tagPct,
                             backgroundColor: 'rgba(16, 185, 129, 0.2)',
                             borderColor: '#10b981',
                             pointBackgroundColor: '#10b981',
@@ -1330,11 +1333,18 @@
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false }, tooltip: { enabled: true } },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                enabled: true,
+                                callbacks: { label: ctx => ctx.parsed.r + '%' }
+                            }
+                        },
                         scales: {
                             r: {
                                 beginAtZero: true,
-                                ticks: { display: false, stepSize: 1 },
+                                max: 100,
+                                ticks: { display: false, stepSize: 25 },
                                 grid: { color: '#262626' },
                                 angleLines: { color: '#262626' },
                                 pointLabels: { font: { size: 9, weight: 'bold' }, color: '#737373' }
