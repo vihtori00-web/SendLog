@@ -1710,42 +1710,48 @@
                 const maxTagCount = Math.max(...Object.values(tagCounts), 1);
                 const tagPct = Object.values(tagCounts).map(v => Math.round((v / maxTagCount) * 100));
                 
-                chart = new Chart(ctx, {
-                    type: 'radar',
-                    data: {
-                        labels: Object.keys(tagCounts).map(k => k.toUpperCase()),
-                        datasets: [{
-                            label: 'Style %',
-                            data: tagPct,
-                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                            borderColor: '#10b981',
-                            pointBackgroundColor: '#10b981',
-                            pointRadius: 4,
-                            pointHoverRadius: 6,
-                            borderWidth: 1.5
-                        }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                enabled: true,
-                                callbacks: { label: ctx => ctx.parsed.r + '%' }
-                            }
+                if (chart) {
+                    chart.data.labels = Object.keys(tagCounts).map(k => k.toUpperCase());
+                    chart.data.datasets[0].data = tagPct;
+                    chart.update('none');
+                } else {
+                    chart = new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: Object.keys(tagCounts).map(k => k.toUpperCase()),
+                            datasets: [{
+                                label: 'Style %',
+                                data: tagPct,
+                                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                                borderColor: '#10b981',
+                                pointBackgroundColor: '#10b981',
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                borderWidth: 1.5
+                            }]
                         },
-                        scales: {
-                            r: {
-                                beginAtZero: true,
-                                max: 100,
-                                ticks: { display: false, stepSize: 25 },
-                                grid: { color: '#262626' },
-                                angleLines: { color: '#262626' },
-                                pointLabels: { font: { size: 9, weight: 'bold' }, color: '#737373' }
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    enabled: true,
+                                    callbacks: { label: ctx => ctx.parsed.r + '%' }
+                                }
+                            },
+                            scales: {
+                                r: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    ticks: { display: false, stepSize: 25 },
+                                    grid: { color: '#262626' },
+                                    angleLines: { color: '#262626' },
+                                    pointLabels: { font: { size: 9, weight: 'bold' }, color: '#737373' }
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             } else if (currentChartType === 'bar') {
                 const gradeCounts = {};
                 filteredHistory.forEach(s => {
@@ -1758,26 +1764,32 @@
                 const sortedKeys = Object.keys(gradeCounts).sort((a,b) => fontGrades.indexOf(a) - fontGrades.indexOf(b));
                 const dataValues = sortedKeys.map(k => gradeCounts[k]);
                 
-                chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: sortedKeys,
-                        datasets: [{
-                            label: 'Tops',
-                            data: dataValues,
-                            backgroundColor: '#3b82f6',
-                            borderRadius: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
-                        scales: {
-                            y: { beginAtZero: true, grid: { color: '#1a1a1a' }, border: { display: false }, ticks: { font: { size: 9 } } },
-                            x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 9 }, color: '#737373' } }
+                if (chart) {
+                    chart.data.labels = sortedKeys;
+                    chart.data.datasets[0].data = dataValues;
+                    chart.update('none');
+                } else {
+                    chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: sortedKeys,
+                            datasets: [{
+                                label: 'Tops',
+                                data: dataValues,
+                                backgroundColor: '#3b82f6',
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: '#1a1a1a' }, border: { display: false }, ticks: { font: { size: 9 } } },
+                                x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 9 }, color: '#737373' } }
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         }
 
