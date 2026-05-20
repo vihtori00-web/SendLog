@@ -1507,22 +1507,28 @@
         window.addEventListener('popstate', (event) => {
             const state = event.state;
             
-            // Close all overlays first by default
+            // Close all overlays first by default (only if they are not the target destination)
             const settingsOverlay = document.getElementById('settingsOverlay');
             if (settingsOverlay && settingsOverlay.classList.contains('flex')) {
-                document.getElementById('settingsOverlay').classList.replace('flex', 'hidden'); 
+                if (!state || state.overlay !== 'settings') {
+                    settingsOverlay.classList.replace('flex', 'hidden'); 
+                }
             }
             
             const sessionOverlay = document.getElementById('sessionDetailOverlay');
             if (sessionOverlay && sessionOverlay.classList.contains('flex')) {
-                const sheet = document.getElementById('sessionDetailSheet');
-                sheet.style.transform = 'translateY(100%)';
-                setTimeout(() => sessionOverlay.classList.replace('flex', 'hidden'), 300);
+                if (!state || state.overlay !== 'sessionDetail') {
+                    const sheet = document.getElementById('sessionDetailSheet');
+                    sheet.style.transform = 'translateY(100%)';
+                    setTimeout(() => sessionOverlay.classList.replace('flex', 'hidden'), 300);
+                }
             }
 
             const editOverlay = document.getElementById('editSessionOverlay');
             if (editOverlay && editOverlay.classList.contains('flex')) {
-                document.getElementById('editSessionOverlay').classList.replace('flex', 'hidden');
+                if (!state || state.overlay !== 'editSession') {
+                    editOverlay.classList.replace('flex', 'hidden');
+                }
             }
             
             if (state && state.overlay) {
@@ -2090,11 +2096,10 @@
             updateAnalytics();
             renderHistoryList();
 
-            // 5. Update the current session detail overlay to reflect new edited details
-            openSessionDetail(tempEditSessionIndex, false);
-
-            // 6. Close Edit Overlay
-            closeEditSession(null, false);
+            // 5. Go back to return from #edit-session state to #session-idx state.
+            // The popstate listener will automatically trigger openSessionDetail with the updated data
+            // and close the edit overlay smoothly.
+            history.back();
             
             if ('vibrate' in navigator) navigator.vibrate([10, 50, 10]);
         }
