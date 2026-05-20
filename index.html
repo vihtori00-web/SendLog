@@ -463,9 +463,17 @@
                         <p id="sdDate" class="text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-0.5"></p>
                         <h3 id="sdScore" class="text-3xl font-black text-emerald-400"></h3>
                     </div>
-                    <button onclick="closeSessionDetail()" class="text-neutral-500 hover:text-white transition active:scale-95 bg-neutral-800 p-2 rounded-full mt-1">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
+                    <div class="flex gap-2 items-center mt-1">
+                        <button onclick="openEditSession(currentSessionDetailIndex)" class="text-emerald-400 hover:text-white transition active:scale-95 bg-neutral-800 hover:bg-neutral-700 px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 border border-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.05)]">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                            </svg>
+                            EDIT
+                        </button>
+                        <button onclick="closeSessionDetail()" class="text-neutral-500 hover:text-white transition active:scale-95 bg-neutral-800 p-2 rounded-full">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <!-- Mini stats row -->
                 <div class="flex gap-3 mt-3">
@@ -494,6 +502,64 @@
             <div class="flex-1 overflow-y-auto px-4 py-3">
                 <p class="text-[9px] uppercase font-black tracking-widest text-neutral-500 mb-2">All Climbs</p>
                 <ul id="sdClimbList" class="space-y-2"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT SESSION OVERLAY -->
+    <div id="editSessionOverlay" class="fixed inset-0 bg-neutral-950 z-[160] hidden flex-col pointer-events-auto overflow-hidden">
+        <div class="p-5 flex justify-between items-center shrink-0 border-b border-neutral-800 bg-neutral-900/50 backdrop-blur-xl z-20">
+            <h2 class="text-2xl font-black text-white">Edit Session</h2>
+            <button onclick="closeEditSession()" class="text-neutral-500 hover:text-white transition active:scale-95 bg-neutral-800 p-2 rounded-full">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-5 pb-24 z-10 space-y-6">
+            <!-- Date & Time Section -->
+            <div>
+                <h3 class="text-xs font-black text-neutral-500 uppercase tracking-widest mb-3">Session Date & Time</h3>
+                <div class="bg-neutral-900 p-4 rounded-2xl border border-neutral-800">
+                    <input type="datetime-local" id="editSessionDateTime" class="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-bold">
+                </div>
+            </div>
+
+            <!-- Duration Section -->
+            <div>
+                <h3 class="text-xs font-black text-neutral-500 uppercase tracking-widest mb-3">Session Duration</h3>
+                <div class="bg-neutral-900 p-4 rounded-2xl border border-neutral-800 flex gap-4">
+                    <div class="flex-1">
+                        <label class="text-[9px] uppercase font-black tracking-widest text-neutral-500 block mb-1">Hours</label>
+                        <input type="number" id="editSessionHours" min="0" max="999" placeholder="0" class="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-bold text-center">
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-[9px] uppercase font-black tracking-widest text-neutral-500 block mb-1">Minutes</label>
+                        <input type="number" id="editSessionMinutes" min="0" max="59" placeholder="0" class="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-bold text-center">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Past Climbs Section -->
+            <div>
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-black text-neutral-500 uppercase tracking-widest">Logged Climbs</h3>
+                    <span id="editSessionScoreDisplay" class="text-xs font-black text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">0 pts</span>
+                </div>
+                <div class="bg-neutral-900 p-4 rounded-2xl border border-neutral-800">
+                    <ul id="editSessionClimbList" class="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                        <!-- Climbs list with delete buttons -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Save & Cancel Buttons -->
+            <div class="flex gap-4 pt-4 shrink-0">
+                <button onclick="closeEditSession()" class="flex-1 py-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-2xl text-white font-black uppercase tracking-wider transition active:scale-95 text-sm">
+                    Cancel
+                </button>
+                <button onclick="saveEditedSession()" class="flex-1 py-4 bg-emerald-500 hover:bg-emerald-400 text-black rounded-2xl font-black uppercase tracking-wider transition active:scale-95 shadow-[0_0_20px_rgba(16,185,129,0.3)] text-sm">
+                    Save Changes
+                </button>
             </div>
         </div>
     </div>
@@ -1453,10 +1519,16 @@
                 sheet.style.transform = 'translateY(100%)';
                 setTimeout(() => sessionOverlay.classList.replace('flex', 'hidden'), 300);
             }
+
+            const editOverlay = document.getElementById('editSessionOverlay');
+            if (editOverlay && editOverlay.classList.contains('flex')) {
+                document.getElementById('editSessionOverlay').classList.replace('flex', 'hidden');
+            }
             
             if (state && state.overlay) {
                 if (state.overlay === 'settings') openSettings(false);
                 if (state.overlay === 'sessionDetail') openSessionDetail(state.index, false);
+                if (state.overlay === 'editSession') openEditSession(state.index, false);
             } else if (state && state.tab) {
                 switchTab(state.tab, false);
             } else {
@@ -1911,6 +1983,130 @@
                 updateAnalytics();
                 renderHistoryList();
             }
+        }
+
+        // -- SESSION EDITOR LOGIC --
+        let tempEditSession = null;
+        let tempEditSessionIndex = null;
+
+        function openEditSession(index, push = true) {
+            tempEditSessionIndex = index;
+            const s = boulderHistory[index];
+            if (!s) return;
+            if ('vibrate' in navigator) navigator.vibrate(10);
+            
+            // Deep copy session climbs so edits aren't saved immediately
+            tempEditSession = {
+                ...s,
+                climbs: s.climbs ? s.climbs.map(c => ({ ...c })) : []
+            };
+
+            // Prefill Date & Time using local timezone
+            const d = tempEditSession.timestamp ? new Date(tempEditSession.timestamp) : new Date();
+            const tzOffset = d.getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(d.getTime() - tzOffset)).toISOString().slice(0, 16);
+            document.getElementById('editSessionDateTime').value = localISOTime;
+
+            // Prefill Duration
+            const durSeconds = tempEditSession.duration || 0;
+            const durHours = Math.floor(durSeconds / 3600);
+            const durMinutes = Math.floor((durSeconds % 3600) / 60);
+            document.getElementById('editSessionHours').value = durHours;
+            document.getElementById('editSessionMinutes').value = durMinutes;
+
+            // Render climbs and score
+            renderEditSessionClimbs();
+
+            // Show edit overlay
+            document.getElementById('editSessionOverlay').classList.replace('hidden', 'flex');
+            if (push) history.pushState({ overlay: 'editSession', index: index }, '', '#edit-session');
+        }
+
+        function renderEditSessionClimbs() {
+            const listEl = document.getElementById('editSessionClimbList');
+            const scoreEl = document.getElementById('editSessionScoreDisplay');
+            if (!listEl || !tempEditSession) return;
+
+            // Calculate current total score of remaining climbs
+            const currentScore = tempEditSession.climbs.reduce((sum, c) => sum + (c.points || 0), 0);
+            tempEditSession.score = currentScore;
+            scoreEl.innerText = `${currentScore.toLocaleString()} pts`;
+
+            if (tempEditSession.climbs.length === 0) {
+                listEl.innerHTML = '<li class="text-neutral-500 text-sm text-center py-4">No climbs left.</li>';
+                return;
+            }
+
+            listEl.innerHTML = tempEditSession.climbs.map((c, idx) => {
+                const statusColor = c.statusText === 'Flash' ? 'text-amber-400' : c.statusText === 'Top' ? 'text-blue-400' : 'text-neutral-400';
+                const bgColor = c.statusText === 'Flash' ? 'bg-amber-500/10 border-amber-500/20' : c.statusText === 'Top' ? 'bg-blue-500/10 border-blue-500/20' : 'bg-neutral-800/30 border-neutral-700/30';
+                return `
+                <li class="flex justify-between items-center p-2.5 ${bgColor} rounded-xl border border-neutral-800">
+                    <div class="flex items-center gap-3">
+                        <span class="text-base font-black w-8 text-center leading-tight">${c.gradeStr}</span>
+                        <div class="flex flex-col">
+                            <span class="${statusColor} text-[10px] font-bold uppercase tracking-wider">${c.statusText}</span>
+                            <span class="text-neutral-500 text-[8px]">${c.tries} Attempt${c.tries > 1 ? 's' : ''}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-emerald-400 font-bold text-xs">+${c.points} pts</span>
+                        <button onclick="removeTempClimb(${idx})" class="text-red-500/40 hover:text-red-500 active:scale-90 transition p-1">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                    </div>
+                </li>`;
+            }).join('');
+        }
+
+        function removeTempClimb(idx) {
+            if (tempEditSession) {
+                tempEditSession.climbs.splice(idx, 1);
+                renderEditSessionClimbs();
+                if ('vibrate' in navigator) navigator.vibrate(10);
+            }
+        }
+
+        function saveEditedSession() {
+            if (!tempEditSession || tempEditSessionIndex === null) return;
+
+            // 1. Parse Date & Time
+            const dateVal = document.getElementById('editSessionDateTime').value;
+            if (!dateVal) {
+                alert("Please select a valid date and time.");
+                return;
+            }
+            const newDate = new Date(dateVal);
+            tempEditSession.timestamp = newDate.getTime();
+            tempEditSession.date = newDate.toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+
+            // 2. Parse Duration
+            const hoursVal = parseInt(document.getElementById('editSessionHours').value) || 0;
+            const minsVal = parseInt(document.getElementById('editSessionMinutes').value) || 0;
+            tempEditSession.duration = (hoursVal * 3600) + (minsVal * 60);
+
+            // 3. Save to boulderHistory
+            boulderHistory[tempEditSessionIndex] = tempEditSession;
+            localStorage.setItem('boulderHistory', JSON.stringify(boulderHistory));
+
+            // 4. Update UI
+            updateAnalytics();
+            renderHistoryList();
+
+            // 5. Update the current session detail overlay to reflect new edited details
+            openSessionDetail(tempEditSessionIndex, false);
+
+            // 6. Close Edit Overlay
+            closeEditSession(null, false);
+            
+            if ('vibrate' in navigator) navigator.vibrate([10, 50, 10]);
+        }
+
+        function closeEditSession(event, pop = true) {
+            document.getElementById('editSessionOverlay').classList.replace('flex', 'hidden');
+            tempEditSession = null;
+            tempEditSessionIndex = null;
+            if (pop) history.back();
         }
 
         // -- LOGIC: LEADERBOARD & MODES --
