@@ -275,7 +275,44 @@
                                 <button onclick="setChartType('radar')" id="chartBtnRadar" class="text-[9px] font-black px-3 py-1.5 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest">Style</button>
                                 <button onclick="setChartType('bar')" id="chartBtnBar" class="text-[9px] font-black px-3 py-1.5 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest">Pyramid</button>
                             </div>
-                            <span id="chartMetricLabel" class="text-[9px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-400/10 border border-emerald-500/20 px-2.5 py-1 rounded-md transition-all">Trend: Score</span>
+                            
+                            <!-- Dynamic selector container (shows for 'line' chart type) -->
+                            <div id="chartSelectorsContainer" class="flex items-center gap-1.5 z-50">
+                                <!-- Primary Pill -->
+                                <div class="relative inline-block" id="primarySelectorWrapper">
+                                    <button onclick="toggleChartDropdown('primary')" id="primarySelBtn" class="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded bg-neutral-900 border border-emerald-500/60 text-emerald-400 select-none shadow-sm active:scale-95 transition-all">
+                                        <span class="text-[9px]">●</span>
+                                        <span id="primarySelText">Score</span>
+                                        <span class="text-[6px] opacity-75">▼</span>
+                                    </button>
+                                    <div id="primarySelDropdown" class="hidden absolute right-0 top-full mt-1.5 bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl py-1 min-w-[100px] z-50 text-[9px] font-black uppercase tracking-wider divide-y divide-neutral-800/40">
+                                        <button onclick="selectChartMetric('primary', 'score')" class="w-full text-left px-3 py-2 text-emerald-400 hover:bg-neutral-800/60 transition-colors">Score</button>
+                                        <button onclick="selectChartMetric('primary', 'sends')" class="w-full text-left px-3 py-2 text-emerald-400 hover:bg-neutral-800/60 transition-colors">Sends</button>
+                                        <button onclick="selectChartMetric('primary', 'avg_grade')" class="w-full text-left px-3 py-2 text-purple-400 hover:bg-neutral-800/60 transition-colors">Avg Grade</button>
+                                        <button onclick="selectChartMetric('primary', 'flash_pct')" class="w-full text-left px-3 py-2 text-amber-400 hover:bg-neutral-800/60 transition-colors">Flash %</button>
+                                        <button onclick="selectChartMetric('primary', 'projects')" class="w-full text-left px-3 py-2 text-orange-400 hover:bg-neutral-800/60 transition-colors">Proj Tries</button>
+                                        <button onclick="selectChartMetric('primary', 'duration')" class="w-full text-left px-3 py-2 text-blue-400 hover:bg-neutral-800/60 transition-colors">Duration</button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Secondary Pill -->
+                                <div class="relative inline-block" id="secondarySelectorWrapper">
+                                    <button onclick="toggleChartDropdown('secondary')" id="secondarySelBtn" class="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded bg-neutral-900 border border-purple-500/40 text-purple-400 select-none shadow-sm active:scale-95 transition-all">
+                                        <span class="text-[9px]">⦾</span>
+                                        <span id="secondarySelText">Avg Grade</span>
+                                        <span class="text-[6px] opacity-75">▼</span>
+                                    </button>
+                                    <div id="secondarySelDropdown" class="hidden absolute right-0 top-full mt-1.5 bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl py-1 min-w-[100px] z-50 text-[9px] font-black uppercase tracking-wider divide-y divide-neutral-800/40">
+                                        <button onclick="selectChartMetric('secondary', 'score')" class="w-full text-left px-3 py-2 text-emerald-400 hover:bg-neutral-800/60 transition-colors">Score</button>
+                                        <button onclick="selectChartMetric('secondary', 'sends')" class="w-full text-left px-3 py-2 text-emerald-400 hover:bg-neutral-800/60 transition-colors">Sends</button>
+                                        <button onclick="selectChartMetric('secondary', 'avg_grade')" class="w-full text-left px-3 py-2 text-purple-400 hover:bg-neutral-800/60 transition-colors">Avg Grade</button>
+                                        <button onclick="selectChartMetric('secondary', 'flash_pct')" class="w-full text-left px-3 py-2 text-amber-400 hover:bg-neutral-800/60 transition-colors">Flash %</button>
+                                        <button onclick="selectChartMetric('secondary', 'projects')" class="w-full text-left px-3 py-2 text-orange-400 hover:bg-neutral-800/60 transition-colors">Proj Tries</button>
+                                        <button onclick="selectChartMetric('secondary', 'duration')" class="w-full text-left px-3 py-2 text-blue-400 hover:bg-neutral-800/60 transition-colors">Duration</button>
+                                        <button onclick="selectChartMetric('secondary', 'none')" class="w-full text-left px-3 py-2 text-neutral-500 hover:bg-neutral-800/60 transition-colors">None</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="w-full px-2 pb-4 cursor-pointer" style="min-height: 280px; height: 40vh;">
                             <canvas id="progressionChart" class="w-full h-full"></canvas>
@@ -1655,6 +1692,180 @@
         let chart = null;
         let currentChartType = 'line';
         let activeTrendMetric = 'score';
+        let activeTrendSecondary = 'avg_grade';
+
+        function getMetricConfig(metric, filteredHistory) {
+            const configs = {
+                score: {
+                    labelText: 'Score',
+                    color: '#10b981',
+                    bgColor: 'rgba(16, 185, 129, 0.07)',
+                    yAxisID: 'y',
+                    data: filteredHistory.map(s => s.score || 0)
+                },
+                sends: {
+                    labelText: 'Sends',
+                    color: '#10b981',
+                    bgColor: 'rgba(16, 185, 129, 0.07)',
+                    yAxisID: 'y',
+                    data: filteredHistory.map(s => (s.climbs || []).filter(c => c.statusText === 'Top' || c.statusText === 'Flash').length)
+                },
+                avg_grade: {
+                    labelText: 'Avg Grade',
+                    color: '#a855f7',
+                    bgColor: 'rgba(168, 85, 247, 0.07)',
+                    yAxisID: 'y1',
+                    data: filteredHistory.map(s => {
+                        let sSum = 0, sCount = 0;
+                        (s.climbs || []).forEach(c => {
+                            if (c.statusText === 'Top' || c.statusText === 'Flash') {
+                                sSum += fontGrades.indexOf(c.gradeStr);
+                                sCount++;
+                            }
+                        });
+                        return sCount > 0 ? (sSum / sCount) : 0;
+                    })
+                },
+                flash_pct: {
+                    labelText: 'Flash %',
+                    color: '#f59e0b',
+                    bgColor: 'rgba(245, 158, 11, 0.07)',
+                    yAxisID: 'y',
+                    data: filteredHistory.map(s => {
+                        const total = (s.climbs || []).length;
+                        const flashes = (s.climbs || []).filter(c => c.statusText === 'Flash').length;
+                        return total > 0 ? Math.round((flashes / total) * 100) : 0;
+                    })
+                },
+                projects: {
+                    labelText: 'Proj Tries',
+                    color: '#f97316',
+                    bgColor: 'rgba(249, 115, 22, 0.07)',
+                    yAxisID: 'y',
+                    data: filteredHistory.map(s => (s.climbs || []).filter(c => c.statusText === 'Project').reduce((sum, c) => sum + (c.tries || 0), 0))
+                },
+                duration: {
+                    labelText: 'Duration',
+                    color: '#3b82f6',
+                    bgColor: 'rgba(59, 130, 246, 0.07)',
+                    yAxisID: 'y',
+                    data: filteredHistory.map(s => Math.round((s.duration || 0) / 60))
+                }
+            };
+            return configs[metric] || null;
+        }
+
+        function toggleChartDropdown(type) {
+            if (window.event) window.event.stopPropagation();
+            if (type === 'primary') {
+                document.getElementById('primarySelDropdown').classList.toggle('hidden');
+                document.getElementById('secondarySelDropdown').classList.add('hidden');
+            } else {
+                document.getElementById('secondarySelDropdown').classList.toggle('hidden');
+                document.getElementById('primarySelDropdown').classList.add('hidden');
+            }
+        }
+
+        function selectChartMetric(type, metric) {
+            if (type === 'primary') {
+                activeTrendMetric = metric;
+                if (activeTrendMetric === activeTrendSecondary) {
+                    activeTrendSecondary = activeTrendMetric === 'avg_grade' ? 'score' : 'avg_grade';
+                }
+            } else {
+                activeTrendSecondary = metric;
+                if (activeTrendSecondary === activeTrendMetric && activeTrendSecondary !== 'none') {
+                    activeTrendMetric = activeTrendSecondary === 'avg_grade' ? 'score' : 'avg_grade';
+                }
+            }
+            
+            document.getElementById('primarySelDropdown').classList.add('hidden');
+            document.getElementById('secondarySelDropdown').classList.add('hidden');
+            
+            updateSelectorButtonsUI();
+            updateAnalytics();
+        }
+
+        function updateSelectorButtonsUI() {
+            const pBtn = document.getElementById('primarySelBtn');
+            const pText = document.getElementById('primarySelText');
+            if (pBtn && pText) {
+                const names = {
+                    score: 'Score', sends: 'Sends', avg_grade: 'Avg Grade',
+                    flash_pct: 'Flash %', projects: 'Proj Tries', duration: 'Duration'
+                };
+                pText.innerText = names[activeTrendMetric] || 'Score';
+                
+                pBtn.classList.remove(
+                    'border-emerald-500/60', 'text-emerald-400',
+                    'border-purple-500/60', 'text-purple-400',
+                    'border-amber-500/60', 'text-amber-400',
+                    'border-orange-500/60', 'text-orange-400',
+                    'border-blue-500/60', 'text-blue-400',
+                    'border-neutral-800', 'text-neutral-400'
+                );
+                
+                const classes = {
+                    score: ['border-emerald-500/60', 'text-emerald-400'],
+                    sends: ['border-emerald-500/60', 'text-emerald-400'],
+                    avg_grade: ['border-purple-500/60', 'text-purple-400'],
+                    flash_pct: ['border-amber-500/60', 'text-amber-400'],
+                    projects: ['border-orange-500/60', 'text-orange-400'],
+                    duration: ['border-blue-500/60', 'text-blue-400']
+                };
+                const activeClasses = classes[activeTrendMetric] || ['border-neutral-800', 'text-neutral-400'];
+                activeClasses.forEach(cls => pBtn.classList.add(cls));
+            }
+
+            const sBtn = document.getElementById('secondarySelBtn');
+            const sText = document.getElementById('secondarySelText');
+            if (sBtn && sText) {
+                const names = {
+                    score: 'Score', sends: 'Sends', avg_grade: 'Avg Grade',
+                    flash_pct: 'Flash %', projects: 'Proj Tries', duration: 'Duration',
+                    none: 'None'
+                };
+                sText.innerText = names[activeTrendSecondary] || 'Avg Grade';
+                
+                sBtn.classList.remove(
+                    'border-emerald-500/40', 'text-emerald-400/80',
+                    'border-purple-500/40', 'text-purple-400/80',
+                    'border-amber-500/40', 'text-amber-400/80',
+                    'border-orange-500/40', 'text-orange-400/80',
+                    'border-blue-500/40', 'text-blue-400/80',
+                    'border-neutral-800', 'text-neutral-500', 'text-neutral-400'
+                );
+                
+                if (activeTrendSecondary === 'none') {
+                    sBtn.classList.add('border-neutral-800', 'text-neutral-500');
+                } else {
+                    const classes = {
+                        score: ['border-emerald-500/40', 'text-emerald-400/80'],
+                        sends: ['border-emerald-500/40', 'text-emerald-400/80'],
+                        avg_grade: ['border-purple-500/40', 'text-purple-400/80'],
+                        flash_pct: ['border-amber-500/40', 'text-amber-400/80'],
+                        projects: ['border-orange-500/40', 'text-orange-400/80'],
+                        duration: ['border-blue-500/40', 'text-blue-400/80']
+                    };
+                    const activeClasses = classes[activeTrendSecondary] || ['border-neutral-800', 'text-neutral-400'];
+                    activeClasses.forEach(cls => sBtn.classList.add(cls));
+                }
+            }
+        }
+
+        // Global dismiss for chart selectors
+        document.addEventListener('click', (e) => {
+            const pWrap = document.getElementById('primarySelectorWrapper');
+            const sWrap = document.getElementById('secondarySelectorWrapper');
+            if (pWrap && !pWrap.contains(e.target)) {
+                const drop = document.getElementById('primarySelDropdown');
+                if (drop) drop.classList.add('hidden');
+            }
+            if (sWrap && !sWrap.contains(e.target)) {
+                const drop = document.getElementById('secondarySelDropdown');
+                if (drop) drop.classList.add('hidden');
+            }
+        });
 
         function setChartType(type) {
             currentChartType = type;
@@ -1664,12 +1875,13 @@
             document.getElementById('chartBtnRadar').className = type === 'radar' ? a : i;
             document.getElementById('chartBtnBar').className = type === 'bar' ? a : i;
             
-            const labelEl = document.getElementById('chartMetricLabel');
-            if (labelEl) {
+            const selectorsEl = document.getElementById('chartSelectorsContainer');
+            if (selectorsEl) {
                 if (type === 'line') {
-                    labelEl.classList.remove('hidden');
+                    selectorsEl.classList.remove('hidden');
+                    updateSelectorButtonsUI();
                 } else {
-                    labelEl.classList.add('hidden');
+                    selectorsEl.classList.add('hidden');
                 }
             }
             
@@ -1791,143 +2003,57 @@
             if (currentChartType === 'line') {
                 const labels = filteredHistory.map(() => '');
                 
-                // Compute average grade data for all sessions
-                const avgGradeData = filteredHistory.map(s => {
-                    let sSum = 0, sCount = 0;
-                    (s.climbs || []).forEach(c => {
-                        if (c.statusText === 'Top' || c.statusText === 'Flash') {
-                            sSum += fontGrades.indexOf(c.gradeStr);
-                            sCount++;
-                        }
+                const primaryConfig = getMetricConfig(activeTrendMetric, filteredHistory);
+                const secondaryConfig = activeTrendSecondary !== 'none' ? getMetricConfig(activeTrendSecondary, filteredHistory) : null;
+
+                const datasets = [
+                    { 
+                        label: primaryConfig.labelText, 
+                        data: primaryConfig.data, 
+                        borderColor: primaryConfig.color, 
+                        backgroundColor: primaryConfig.bgColor, 
+                        borderWidth: 2, 
+                        fill: true, 
+                        tension: 0.4, 
+                        yAxisID: primaryConfig.yAxisID, 
+                        pointRadius: 0, 
+                        hitRadius: 0, 
+                        hoverRadius: 0 
+                    }
+                ];
+
+                if (secondaryConfig) {
+                    const secBorderColor = secondaryConfig.color + 'bb';
+                    datasets.push({ 
+                        label: secondaryConfig.labelText, 
+                        data: secondaryConfig.data, 
+                        borderColor: secBorderColor, 
+                        backgroundColor: 'transparent', 
+                        borderDash: [4, 4], 
+                        borderWidth: 1.5, 
+                        tension: 0.3, 
+                        yAxisID: secondaryConfig.yAxisID, 
+                        pointRadius: 0, 
+                        hitRadius: 0, 
+                        hoverRadius: 0 
                     });
-                    return sCount > 0 ? (sSum / sCount).toFixed(2) : 0;
-                });
-
-                // Compute standard Score Data
-                const scoreData = filteredHistory.map(s => s.score || 0);
-
-                let primaryData = [];
-                let labelText = '';
-                let activeColor = '#10b981';
-                let activeBgColor = 'rgba(16, 185, 129, 0.07)';
-                let activeYAxis = 'y';
-
-                let secondaryData = [];
-                let secondaryLabelText = '';
-                let secondaryColor = '#3b82f6';
-                let secondaryYAxis = 'y1';
-                
-                // Track styling classes for the metric badge
-                let badgeClass = '';
-
-                if (activeTrendMetric === 'score') {
-                    primaryData = scoreData;
-                    labelText = 'Score';
-                    activeColor = '#10b981';
-                    activeBgColor = 'rgba(16, 185, 129, 0.07)';
-                    activeYAxis = 'y';
-
-                    secondaryData = avgGradeData;
-                    secondaryLabelText = 'Avg Grade';
-                    secondaryColor = '#3b82f6';
-                    secondaryYAxis = 'y1';
-                    badgeClass = 'text-emerald-400 bg-emerald-400/10 border-emerald-500/20';
-                } else if (activeTrendMetric === 'sends') {
-                    primaryData = filteredHistory.map(s => (s.climbs || []).filter(c => c.statusText === 'Top' || c.statusText === 'Flash').length);
-                    labelText = 'Sends';
-                    activeColor = '#10b981';
-                    activeBgColor = 'rgba(16, 185, 129, 0.07)';
-                    activeYAxis = 'y';
-
-                    secondaryData = avgGradeData;
-                    secondaryLabelText = 'Avg Grade';
-                    secondaryColor = '#3b82f6';
-                    secondaryYAxis = 'y1';
-                    badgeClass = 'text-emerald-400 bg-emerald-400/10 border-emerald-500/20';
-                } else if (activeTrendMetric === 'flash_pct') {
-                    primaryData = filteredHistory.map(s => {
-                        const total = (s.climbs || []).length;
-                        const flashes = (s.climbs || []).filter(c => c.statusText === 'Flash').length;
-                        return total > 0 ? Math.round((flashes / total) * 100) : 0;
-                    });
-                    labelText = 'Flash %';
-                    activeColor = '#f59e0b'; // Amber
-                    activeBgColor = 'rgba(245, 158, 11, 0.07)';
-                    activeYAxis = 'y';
-
-                    secondaryData = avgGradeData;
-                    secondaryLabelText = 'Avg Grade';
-                    secondaryColor = '#3b82f6';
-                    secondaryYAxis = 'y1';
-                    badgeClass = 'text-amber-400 bg-amber-400/10 border-amber-500/20';
-                } else if (activeTrendMetric === 'projects') {
-                    primaryData = filteredHistory.map(s => (s.climbs || []).filter(c => c.statusText === 'Project').reduce((sum, c) => sum + (c.tries || 0), 0));
-                    labelText = 'Project Tries';
-                    activeColor = '#f97316'; // Orange
-                    activeBgColor = 'rgba(249, 115, 22, 0.07)';
-                    activeYAxis = 'y';
-
-                    secondaryData = avgGradeData;
-                    secondaryLabelText = 'Avg Grade';
-                    secondaryColor = '#3b82f6';
-                    secondaryYAxis = 'y1';
-                    badgeClass = 'text-orange-400 bg-orange-400/10 border-orange-500/20';
-                } else if (activeTrendMetric === 'duration') {
-                    primaryData = filteredHistory.map(s => Math.round((s.duration || 0) / 60));
-                    labelText = 'Duration (min)';
-                    activeColor = '#3b82f6'; // Blue
-                    activeBgColor = 'rgba(59, 130, 246, 0.07)';
-                    activeYAxis = 'y';
-
-                    secondaryData = avgGradeData;
-                    secondaryLabelText = 'Avg Grade';
-                    secondaryColor = '#a855f7'; // Purple for average grade when duration is blue
-                    secondaryYAxis = 'y1';
-                    badgeClass = 'text-blue-400 bg-blue-400/10 border-blue-500/20';
-                } else if (activeTrendMetric === 'avg_grade') {
-                    primaryData = avgGradeData;
-                    labelText = 'Avg Grade';
-                    activeColor = '#a855f7'; // Purple
-                    activeBgColor = 'rgba(168, 85, 247, 0.07)';
-                    activeYAxis = 'y1';
-
-                    secondaryData = scoreData;
-                    secondaryLabelText = 'Score';
-                    secondaryColor = '#10b981'; // Green for score when avg grade is primary
-                    secondaryYAxis = 'y';
-                    badgeClass = 'text-purple-400 bg-purple-400/10 border-purple-500/20';
                 }
 
-                // Update the floating metric label badge
-                const labelEl = document.getElementById('chartMetricLabel');
-                if (labelEl) {
-                    labelEl.innerText = 'Trend: ' + labelText;
-                    labelEl.className = 'text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md transition-all ' + badgeClass;
-                }
+                updateSelectorButtonsUI();
+
+                const hasY1 = primaryConfig.yAxisID === 'y1' || (secondaryConfig && secondaryConfig.yAxisID === 'y1');
 
                 if (chart) {
                     chart.data.labels = labels;
-                    chart.data.datasets[0].data = primaryData;
-                    chart.data.datasets[0].label = labelText;
-                    chart.data.datasets[0].borderColor = activeColor;
-                    chart.data.datasets[0].backgroundColor = activeBgColor;
-                    chart.data.datasets[0].yAxisID = activeYAxis;
-
-                    chart.data.datasets[1].data = secondaryData;
-                    chart.data.datasets[1].label = secondaryLabelText;
-                    chart.data.datasets[1].borderColor = secondaryColor;
-                    chart.data.datasets[1].yAxisID = secondaryYAxis;
-
+                    chart.data.datasets = datasets;
+                    chart.options.scales.y1.display = hasY1;
                     chart.update('none');
                 } else {
                     chart = new Chart(ctx, {
                         type: 'line',
                         data: {
                             labels: labels,
-                            datasets: [
-                                { label: labelText, data: primaryData, borderColor: activeColor, backgroundColor: activeBgColor, borderWidth: 2, fill: true, tension: 0.4, yAxisID: activeYAxis, pointRadius: 0, hitRadius: 0, hoverRadius: 0 },
-                                { label: secondaryLabelText, data: secondaryData, borderColor: secondaryColor, backgroundColor: 'transparent', borderDash: [5, 5], borderWidth: 1.5, tension: 0.3, yAxisID: secondaryYAxis, pointRadius: 0, hitRadius: 0, hoverRadius: 0 }
-                            ]
+                            datasets: datasets
                         },
                         options: {
                             responsive: true, maintainAspectRatio: false,
@@ -1939,7 +2065,16 @@
                             events: ['mousedown', 'mouseup', 'mousemove', 'touchstart', 'touchend', 'touchmove'],
                             scales: {
                                 y: { beginAtZero: true, position: 'left', grid: { color: '#1a1a1a' }, border: { display: false }, ticks: { font: { size: 9 } } },
-                                y1: { position: 'right', grid: { display: false }, border: { display: false }, ticks: { font: { size: 9 }, callback: function (val) { return fontGrades[Math.round(val)] || ''; } } },
+                                y1: { 
+                                    display: hasY1,
+                                    position: 'right', 
+                                    grid: { display: false }, 
+                                    border: { display: false }, 
+                                    ticks: { 
+                                        font: { size: 9 }, 
+                                        callback: function (val) { return fontGrades[Math.round(val)] || ''; } 
+                                    } 
+                                },
                                 x: { grid: { display: false }, border: { display: false }, ticks: { display: false } }
                             }
                         }
