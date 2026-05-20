@@ -73,7 +73,7 @@
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
             <div class="flex flex-col">
                 <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span></h1>
-                <span class="app-version-text text-[8px] text-neutral-600 font-bold tracking-widest">v7.3.0</span>
+                <span class="app-version-text text-[8px] text-neutral-600 font-bold tracking-widest">v7.3.1</span>
             </div>
 
             <div class="flex items-center gap-2">
@@ -653,7 +653,7 @@
             
             <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group mb-6">
                 <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span id="hardRefreshText" class="text-sm font-bold text-white">Hard Refresh (v7.3.0)</span>
+                <span id="hardRefreshText" class="text-sm font-bold text-white">Hard Refresh (v7.3.1)</span>
             </button>
 
             <!-- GOOGLE DRIVE CLOUD SYNC -->
@@ -741,7 +741,7 @@
     </div>
 
     <script>
-        const APP_VERSION = 'v7.3.0';
+        const APP_VERSION = 'v7.3.1';
         const DOM = {
             sessionTimerStr: document.getElementById('sessionTimerDisplay'),
             sessionScoreStr: document.getElementById('sessionScoreDisplay'),
@@ -3033,10 +3033,9 @@
 
             shouldUseRedirect() {
                 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-                const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-                // We only redirect on iOS standalone PWA where popups are strictly blocked/unsupported.
-                // On Android Chrome-based PWAs and standard mobile/desktop browsers, GIS popups work flawlessly.
-                return isStandalone && isIOS;
+                // Redirect on all standalone PWAs (both iOS and Android) because popup auth relies on window.opener
+                // which is severed by standalone PWA sandboxes, causing white screen hangs on accounts.google.com/gsi/transform.
+                return isStandalone;
             },
 
             login(silentOAuth = false) {
