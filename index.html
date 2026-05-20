@@ -2737,7 +2737,18 @@
             return true;
         }
 
+        function isMobileOrPWA() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+            const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            return isStandalone || isMobileUA;
+        }
+
         function loginToGDrive(silentOAuth = false) {
+            if (!silentOAuth && isMobileOrPWA()) {
+                console.log("Mobile/PWA detected. Rerouting to Redirect Flow...");
+                loginToGDriveRedirect();
+                return;
+            }
             if (!tokenClient) {
                 initGIS();
                 // If not ready, wait a bit, but warn that it might be blocked as non-synchronous by some browsers
@@ -2814,6 +2825,15 @@
                     const accessToken = params.get('access_token');
                     const expiresIn = params.get('expires_in');
                     const state = params.get('state');
+                    const error = params.get('error');
+                    
+                    if (error && state === 'gdrive_auth') {
+                        console.warn("Google OAuth redirect error:", error);
+                        // Clear the hash from address bar immediately to keep it clean
+                        window.history.replaceState(null, null, window.location.pathname + window.location.search);
+                        showBackupToast("Sign-in Canceled", "Google sign-in was not completed.");
+                        return true;
+                    }
                     
                     if (accessToken && state === 'gdrive_auth') {
                         console.log("Detected Google OAuth redirect hash. Parsing token...");
