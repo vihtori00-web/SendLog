@@ -193,42 +193,42 @@
                     <!-- Dashboard Stat Grid -->
                     <div class="px-5 mt-4 flex flex-col gap-2">
                         <div class="grid grid-cols-2 gap-2">
-                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-2xl p-3 flex flex-col items-center justify-center backdrop-blur-md shadow-sm">
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-2xl p-3 flex flex-col items-center justify-center backdrop-blur-md shadow-sm transition-all hover:bg-neutral-800/80 active:scale-[0.98] cursor-pointer" data-metric="score" onclick="setActiveTrendMetric('score')">
                                 <span class="text-cyan-400 text-3xl font-black drop-shadow-sm" id="statSessions">0</span>
                                 <span class="text-[9px] uppercase font-black tracking-widest text-neutral-500 mt-1">Sessions</span>
                             </div>
-                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-2xl p-3 flex flex-col items-center justify-center backdrop-blur-md shadow-sm">
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-2xl p-3 flex flex-col items-center justify-center backdrop-blur-md shadow-sm transition-all hover:bg-neutral-800/80 active:scale-[0.98] cursor-pointer" data-metric="sends" onclick="setActiveTrendMetric('sends')">
                                 <span class="text-emerald-400 text-3xl font-black drop-shadow-sm" id="statTotalSends">0</span>
                                 <span class="text-[9px] uppercase font-black tracking-widest text-neutral-500 mt-1">Total Sends</span>
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-2">
-                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md transition-all hover:bg-neutral-800/80 active:scale-[0.98] cursor-pointer" data-metric="flash_pct" onclick="setActiveTrendMetric('flash_pct')">
                                 <span class="text-amber-400 text-xl font-black" id="statFlashRate">-</span>
                                 <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Flash %</span>
                                 <span class="text-[8px] font-bold mt-0.5 hidden" id="statFlashRateDelta"></span>
                             </div>
-                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md transition-all hover:bg-neutral-800/80 active:scale-[0.98] cursor-pointer" data-metric="sends" onclick="setActiveTrendMetric('sends')">
                                 <span class="text-emerald-400 text-xl font-black" id="statAvgSends">0</span>
                                 <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Avg/Sess</span>
                                 <span class="text-[8px] font-bold mt-0.5 hidden" id="statAvgSendsDelta"></span>
                             </div>
-                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md transition-all hover:bg-neutral-800/80 active:scale-[0.98] cursor-pointer" data-metric="score" onclick="setActiveTrendMetric('score')">
                                 <span class="text-emerald-400 text-xl font-black" id="statTotalPoints">0</span>
                                 <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Points</span>
                                 <span class="text-[8px] font-bold mt-0.5 hidden" id="statTotalPointsDelta"></span>
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-2">
-                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md transition-all hover:bg-neutral-800/80 active:scale-[0.98] cursor-pointer" data-metric="projects" onclick="setActiveTrendMetric('projects')">
                                 <span class="text-orange-400 text-xl font-black" id="statProjectTries">0</span>
                                 <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Proj Tries</span>
                             </div>
-                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md transition-all hover:bg-neutral-800/80 active:scale-[0.98] cursor-pointer" data-metric="duration" onclick="setActiveTrendMetric('duration')">
                                 <span class="text-blue-400 text-xl font-black font-mono text-xs" id="statAvgTime">-</span>
                                 <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Avg Time</span>
                             </div>
-                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md transition-all hover:bg-neutral-800/80 active:scale-[0.98] cursor-pointer" data-metric="avg_grade" onclick="setActiveTrendMetric('avg_grade')">
                                 <span class="text-purple-400 text-xl font-black" id="statAvgGrade">-</span>
                                 <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">Avg Grade</span>
                             </div>
@@ -275,7 +275,7 @@
                                 <button onclick="setChartType('radar')" id="chartBtnRadar" class="text-[9px] font-black px-3 py-1.5 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest">Style</button>
                                 <button onclick="setChartType('bar')" id="chartBtnBar" class="text-[9px] font-black px-3 py-1.5 rounded transition-colors text-neutral-500 hover:text-white uppercase tracking-widest">Pyramid</button>
                             </div>
-
+                            <span id="chartMetricLabel" class="text-[9px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-400/10 border border-emerald-500/20 px-2.5 py-1 rounded-md transition-all">Trend: Score</span>
                         </div>
                         <div class="w-full px-2 pb-4 cursor-pointer" style="min-height: 280px; height: 40vh;">
                             <canvas id="progressionChart" class="w-full h-full"></canvas>
@@ -704,7 +704,7 @@
     </div>
 
     <script>
-        const APP_VERSION = 'v7.2.0';
+        const APP_VERSION = 'v7.2.1';
         const DOM = {
             sessionTimerStr: document.getElementById('sessionTimerDisplay'),
             sessionScoreStr: document.getElementById('sessionScoreDisplay'),
@@ -1654,6 +1654,7 @@
 
         let chart = null;
         let currentChartType = 'line';
+        let activeTrendMetric = 'score';
 
         function setChartType(type) {
             currentChartType = type;
@@ -1662,7 +1663,54 @@
             document.getElementById('chartBtnLine').className = type === 'line' ? a : i;
             document.getElementById('chartBtnRadar').className = type === 'radar' ? a : i;
             document.getElementById('chartBtnBar').className = type === 'bar' ? a : i;
+            
+            const labelEl = document.getElementById('chartMetricLabel');
+            if (labelEl) {
+                if (type === 'line') {
+                    labelEl.classList.remove('hidden');
+                } else {
+                    labelEl.classList.add('hidden');
+                }
+            }
+            
             updateAnalytics();
+        }
+
+        function setActiveTrendMetric(metric) {
+            activeTrendMetric = metric;
+            if (currentChartType !== 'line') {
+                setChartType('line');
+            } else {
+                updateAnalytics();
+            }
+        }
+
+        function updateCardHighlights() {
+            const metric = activeTrendMetric;
+            const styles = {
+                score: { border: 'border-emerald-500/60', shadow: 'shadow-[0_0_12px_rgba(16,185,129,0.15)]' },
+                sends: { border: 'border-emerald-500/60', shadow: 'shadow-[0_0_12px_rgba(16,185,129,0.15)]' },
+                flash_pct: { border: 'border-amber-500/60', shadow: 'shadow-[0_0_12px_rgba(245,158,11,0.15)]' },
+                projects: { border: 'border-orange-500/60', shadow: 'shadow-[0_0_12px_rgba(249,115,22,0.15)]' },
+                duration: { border: 'border-blue-500/60', shadow: 'shadow-[0_0_12px_rgba(59,130,246,0.15)]' },
+                avg_grade: { border: 'border-purple-500/60', shadow: 'shadow-[0_0_12px_rgba(168,85,247,0.15)]' }
+            };
+
+            const cards = document.querySelectorAll('[data-metric]');
+            cards.forEach(card => {
+                const cardMetric = card.getAttribute('data-metric');
+                Object.values(styles).forEach(s => {
+                    card.classList.remove(s.border);
+                    s.shadow.split(' ').forEach(cls => card.classList.remove(cls));
+                });
+                card.classList.add('border-neutral-800');
+
+                if (cardMetric === metric) {
+                    card.classList.remove('border-neutral-800');
+                    card.classList.add(styles[metric].border);
+                    styles[metric].shadow.split(' ').forEach(cls => card.classList.add(cls));
+                }
+            });
         }
 
         let historyViewMode = 'ALL';
@@ -1742,7 +1790,8 @@
             
             if (currentChartType === 'line') {
                 const labels = filteredHistory.map(() => '');
-                const scoreData = filteredHistory.map(s => s.score);
+                
+                // Compute average grade data for all sessions
                 const avgGradeData = filteredHistory.map(s => {
                     let sSum = 0, sCount = 0;
                     (s.climbs || []).forEach(c => {
@@ -1754,39 +1803,149 @@
                     return sCount > 0 ? (sSum / sCount).toFixed(2) : 0;
                 });
 
+                // Compute standard Score Data
+                const scoreData = filteredHistory.map(s => s.score || 0);
+
+                let primaryData = [];
+                let labelText = '';
+                let activeColor = '#10b981';
+                let activeBgColor = 'rgba(16, 185, 129, 0.07)';
+                let activeYAxis = 'y';
+
+                let secondaryData = [];
+                let secondaryLabelText = '';
+                let secondaryColor = '#3b82f6';
+                let secondaryYAxis = 'y1';
+                
+                // Track styling classes for the metric badge
+                let badgeClass = '';
+
+                if (activeTrendMetric === 'score') {
+                    primaryData = scoreData;
+                    labelText = 'Score';
+                    activeColor = '#10b981';
+                    activeBgColor = 'rgba(16, 185, 129, 0.07)';
+                    activeYAxis = 'y';
+
+                    secondaryData = avgGradeData;
+                    secondaryLabelText = 'Avg Grade';
+                    secondaryColor = '#3b82f6';
+                    secondaryYAxis = 'y1';
+                    badgeClass = 'text-emerald-400 bg-emerald-400/10 border-emerald-500/20';
+                } else if (activeTrendMetric === 'sends') {
+                    primaryData = filteredHistory.map(s => (s.climbs || []).filter(c => c.statusText === 'Top' || c.statusText === 'Flash').length);
+                    labelText = 'Sends';
+                    activeColor = '#10b981';
+                    activeBgColor = 'rgba(16, 185, 129, 0.07)';
+                    activeYAxis = 'y';
+
+                    secondaryData = avgGradeData;
+                    secondaryLabelText = 'Avg Grade';
+                    secondaryColor = '#3b82f6';
+                    secondaryYAxis = 'y1';
+                    badgeClass = 'text-emerald-400 bg-emerald-400/10 border-emerald-500/20';
+                } else if (activeTrendMetric === 'flash_pct') {
+                    primaryData = filteredHistory.map(s => {
+                        const total = (s.climbs || []).length;
+                        const flashes = (s.climbs || []).filter(c => c.statusText === 'Flash').length;
+                        return total > 0 ? Math.round((flashes / total) * 100) : 0;
+                    });
+                    labelText = 'Flash %';
+                    activeColor = '#f59e0b'; // Amber
+                    activeBgColor = 'rgba(245, 158, 11, 0.07)';
+                    activeYAxis = 'y';
+
+                    secondaryData = avgGradeData;
+                    secondaryLabelText = 'Avg Grade';
+                    secondaryColor = '#3b82f6';
+                    secondaryYAxis = 'y1';
+                    badgeClass = 'text-amber-400 bg-amber-400/10 border-amber-500/20';
+                } else if (activeTrendMetric === 'projects') {
+                    primaryData = filteredHistory.map(s => (s.climbs || []).filter(c => c.statusText === 'Project').reduce((sum, c) => sum + (c.tries || 0), 0));
+                    labelText = 'Project Tries';
+                    activeColor = '#f97316'; // Orange
+                    activeBgColor = 'rgba(249, 115, 22, 0.07)';
+                    activeYAxis = 'y';
+
+                    secondaryData = avgGradeData;
+                    secondaryLabelText = 'Avg Grade';
+                    secondaryColor = '#3b82f6';
+                    secondaryYAxis = 'y1';
+                    badgeClass = 'text-orange-400 bg-orange-400/10 border-orange-500/20';
+                } else if (activeTrendMetric === 'duration') {
+                    primaryData = filteredHistory.map(s => Math.round((s.duration || 0) / 60));
+                    labelText = 'Duration (min)';
+                    activeColor = '#3b82f6'; // Blue
+                    activeBgColor = 'rgba(59, 130, 246, 0.07)';
+                    activeYAxis = 'y';
+
+                    secondaryData = avgGradeData;
+                    secondaryLabelText = 'Avg Grade';
+                    secondaryColor = '#a855f7'; // Purple for average grade when duration is blue
+                    secondaryYAxis = 'y1';
+                    badgeClass = 'text-blue-400 bg-blue-400/10 border-blue-500/20';
+                } else if (activeTrendMetric === 'avg_grade') {
+                    primaryData = avgGradeData;
+                    labelText = 'Avg Grade';
+                    activeColor = '#a855f7'; // Purple
+                    activeBgColor = 'rgba(168, 85, 247, 0.07)';
+                    activeYAxis = 'y1';
+
+                    secondaryData = scoreData;
+                    secondaryLabelText = 'Score';
+                    secondaryColor = '#10b981'; // Green for score when avg grade is primary
+                    secondaryYAxis = 'y';
+                    badgeClass = 'text-purple-400 bg-purple-400/10 border-purple-500/20';
+                }
+
+                // Update the floating metric label badge
+                const labelEl = document.getElementById('chartMetricLabel');
+                if (labelEl) {
+                    labelEl.innerText = 'Trend: ' + labelText;
+                    labelEl.className = 'text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md transition-all ' + badgeClass;
+                }
+
                 if (chart) {
                     chart.data.labels = labels;
-                    chart.data.datasets[0].data = scoreData;
-                    chart.data.datasets[1].data = avgGradeData;
+                    chart.data.datasets[0].data = primaryData;
+                    chart.data.datasets[0].label = labelText;
+                    chart.data.datasets[0].borderColor = activeColor;
+                    chart.data.datasets[0].backgroundColor = activeBgColor;
+                    chart.data.datasets[0].yAxisID = activeYAxis;
+
+                    chart.data.datasets[1].data = secondaryData;
+                    chart.data.datasets[1].label = secondaryLabelText;
+                    chart.data.datasets[1].borderColor = secondaryColor;
+                    chart.data.datasets[1].yAxisID = secondaryYAxis;
+
                     chart.update('none');
                 } else {
                     chart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            { label: 'Score', data: scoreData, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.07)', borderWidth: 2, fill: true, tension: 0.4, yAxisID: 'y', pointRadius: 0, hitRadius: 0, hoverRadius: 0 },
-                            { label: 'Avg Grade', data: avgGradeData, borderColor: '#3b82f6', backgroundColor: 'transparent', borderDash: [5, 5], borderWidth: 1.5, tension: 0.3, yAxisID: 'y1', pointRadius: 0, hitRadius: 0, hoverRadius: 0 }
-                        ]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: { enabled: false },
-
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                { label: labelText, data: primaryData, borderColor: activeColor, backgroundColor: activeBgColor, borderWidth: 2, fill: true, tension: 0.4, yAxisID: activeYAxis, pointRadius: 0, hitRadius: 0, hoverRadius: 0 },
+                                { label: secondaryLabelText, data: secondaryData, borderColor: secondaryColor, backgroundColor: 'transparent', borderDash: [5, 5], borderWidth: 1.5, tension: 0.3, yAxisID: secondaryYAxis, pointRadius: 0, hitRadius: 0, hoverRadius: 0 }
+                            ]
                         },
-                        interaction: { mode: 'index', intersect: false },
-                        events: ['mousedown', 'mouseup', 'mousemove', 'touchstart', 'touchend', 'touchmove'],
-                        scales: {
-                            y: { beginAtZero: true, position: 'left', grid: { color: '#1a1a1a' }, border: { display: false }, ticks: { font: { size: 9 } } },
-                            y1: { position: 'right', grid: { display: false }, border: { display: false }, ticks: { font: { size: 9 }, callback: function (val) { return fontGrades[Math.round(val)] || ''; } } },
-                            x: { grid: { display: false }, border: { display: false }, ticks: { display: false } }
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { enabled: false },
+                            },
+                            interaction: { mode: 'index', intersect: false },
+                            events: ['mousedown', 'mouseup', 'mousemove', 'touchstart', 'touchend', 'touchmove'],
+                            scales: {
+                                y: { beginAtZero: true, position: 'left', grid: { color: '#1a1a1a' }, border: { display: false }, ticks: { font: { size: 9 } } },
+                                y1: { position: 'right', grid: { display: false }, border: { display: false }, ticks: { font: { size: 9 }, callback: function (val) { return fontGrades[Math.round(val)] || ''; } } },
+                                x: { grid: { display: false }, border: { display: false }, ticks: { display: false } }
+                            }
                         }
-                    }
-                });
-            }
-        } else if (currentChartType === 'radar') {
+                    });
+                }
+            } else if (currentChartType === 'radar') {
                 const tagCounts = { 'crimp': 0, 'sloper': 0, 'pinch': 0, 'slab': 0, 'dyno': 0, 'board': 0, 'technical': 0, 'powerful': 0 };
                 let totalClimbs = 0;
                 filteredHistory.forEach(s => {
@@ -1879,7 +2038,7 @@
                     });
                 }
             }
-        }
+            updateCardHighlights();
 
 
         function renderHistoryList() {
