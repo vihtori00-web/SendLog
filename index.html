@@ -643,6 +643,9 @@
                             </svg>
                             Sign in with Google
                         </button>
+                        <button onclick="loginToGDriveRedirect()" class="text-[10px] text-neutral-500 hover:text-white transition underline cursor-pointer mt-0.5 font-semibold tracking-wide">
+                            Stuck on a white screen? Try Redirect Sign-in
+                        </button>
                     </div>
                     
                     <!-- Connected State -->
@@ -2767,6 +2770,18 @@
             }
         }
 
+        function loginToGDriveRedirect() {
+            const clientId = getClientId();
+            if (!clientId) {
+                showBackupToast("Error", "No Google Client ID configured.");
+                return;
+            }
+            const redirectUri = window.location.origin + window.location.pathname;
+            console.log("Initiating full window Google OAuth redirect with redirectUri:", redirectUri);
+            const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent('https://www.googleapis.com/auth/drive.file email profile')}&state=gdrive_auth&prompt=consent`;
+            window.location.href = oauthUrl;
+        }
+
         function logoutFromGDrive() {
             if (confirm("Are you sure you want to disconnect your Google Drive account? No further automatic backups will be saved.")) {
                 if (gdriveAccessToken) {
@@ -2791,7 +2806,46 @@
             }
         }
 
+        function handleGDriveOAuthRedirect() {
+            if (window.location.hash) {
+                try {
+                    const hash = window.location.hash.substring(1);
+                    const params = new URLSearchParams(hash);
+                    const accessToken = params.get('access_token');
+                    const expiresIn = params.get('expires_in');
+                    const state = params.get('state');
+                    
+                    if (accessToken && state === 'gdrive_auth') {
+                        console.log("Detected Google OAuth redirect hash. Parsing token...");
+                        gdriveAccessToken = accessToken;
+                        localStorage.setItem('gdrive_access_token', gdriveAccessToken);
+                        localStorage.setItem('gdrive_token_expires_at', Date.now() + (parseInt(expiresIn || 3600) * 1000));
+                        localStorage.setItem('gdrive_connected', 'true');
+                        
+                        // Clear the hash from address bar immediately to keep it clean
+                        window.history.replaceState(null, null, window.location.pathname + window.location.search);
+                        
+                        // Retrieve user info and populate backup list
+                        showLoadingOverlay("Connecting Account...");
+                        fetchUserInfo().then(() => {
+                            showLoadingOverlay(false);
+                            showBackupToast("Connected", "Signed in as " + gdriveUserEmail, "🟢");
+                            renderBackupUI();
+                            gdriveSyncListBackups();
+                        });
+                        return true;
+                    }
+                } catch (e) {
+                    console.error("Error parsing Google OAuth redirect hash:", e);
+                }
+            }
+            return false;
+        }
+
         function checkGDriveConnection() {
+            if (handleGDriveOAuthRedirect()) {
+                return;
+            }
             const isConnected = localStorage.getItem('gdrive_connected') === 'true';
             if (isConnected) {
                 gdriveAccessToken = localStorage.getItem('gdrive_access_token');
