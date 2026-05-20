@@ -2965,7 +2965,13 @@
             `;
             
             try {
-                const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=name+contains+'sendlog_backup_'+and+mimeType+%3D+'application/json'+and+trashed+%3D+false&orderBy=name+desc&fields=files(id,name,size,createdTime)&pageSize=100`, {
+                const queryParams = new URLSearchParams({
+                    q: "name contains 'sendlog_backup_' and mimeType = 'application/json' and trashed = false",
+                    orderBy: "name desc",
+                    fields: "files(id,name,size,createdTime)",
+                    pageSize: "100"
+                });
+                const res = await fetch(`https://www.googleapis.com/drive/v3/files?${queryParams.toString()}`, {
                     headers: { Authorization: `Bearer ${gdriveAccessToken}` }
                 });
                 
