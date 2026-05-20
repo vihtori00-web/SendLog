@@ -2836,46 +2836,34 @@
         }
 
         function handleGDriveOAuthRedirect() {
-            if (window.location.hash) {
-                try {
-                    const hash = window.location.hash.substring(1);
-                    const params = new URLSearchParams(hash);
-                    const accessToken = params.get('access_token');
-                    const expiresIn = params.get('expires_in');
-                    const state = params.get('state');
-                    const error = params.get('error');
+            try {
+                const combined = (window.location.hash || '').replace(/^#\/?\??/, '') + '&' + (window.location.search || '').substring(1);
+                const params = new URLSearchParams(combined);
+                const accessToken = params.get('access_token');
+                const expiresIn = params.get('expires_in');
+                
+                if (accessToken) {
+                    console.log("Detected Google OAuth redirect. Parsing token...");
+                    gdriveAccessToken = accessToken;
+                    localStorage.setItem('gdrive_access_token', gdriveAccessToken);
+                    localStorage.setItem('gdrive_token_expires_at', Date.now() + (parseInt(expiresIn || 3600) * 1000));
+                    localStorage.setItem('gdrive_connected', 'true');
                     
-                    if (error && state === 'gdrive_auth') {
-                        console.warn("Google OAuth redirect error:", error);
-                        // Clear the hash from address bar immediately to keep it clean
-                        window.history.replaceState(null, null, window.location.pathname + window.location.search);
-                        showBackupToast("Sign-in Canceled", "Google sign-in was not completed.");
-                        return true;
-                    }
+                    // Clear the hash and query from address bar immediately to keep it clean
+                    window.history.replaceState(null, null, window.location.pathname);
                     
-                    if (accessToken && state === 'gdrive_auth') {
-                        console.log("Detected Google OAuth redirect hash. Parsing token...");
-                        gdriveAccessToken = accessToken;
-                        localStorage.setItem('gdrive_access_token', gdriveAccessToken);
-                        localStorage.setItem('gdrive_token_expires_at', Date.now() + (parseInt(expiresIn || 3600) * 1000));
-                        localStorage.setItem('gdrive_connected', 'true');
-                        
-                        // Clear the hash from address bar immediately to keep it clean
-                        window.history.replaceState(null, null, window.location.pathname + window.location.search);
-                        
-                        // Retrieve user info and populate backup list
-                        showLoadingOverlay("Connecting Account...");
-                        fetchUserInfo().then(() => {
-                            showLoadingOverlay(false);
-                            showBackupToast("Connected", "Signed in as " + gdriveUserEmail, "🟢");
-                            renderBackupUI();
-                            gdriveSyncListBackups();
-                        });
-                        return true;
-                    }
-                } catch (e) {
-                    console.error("Error parsing Google OAuth redirect hash:", e);
+                    // Retrieve user info and populate backup list
+                    showLoadingOverlay("Connecting Account...");
+                    fetchUserInfo().then(() => {
+                        showLoadingOverlay(false);
+                        showBackupToast("Connected", "Signed in as " + (gdriveUserEmail || "Connected Account"), "🟢");
+                        renderBackupUI();
+                        gdriveSyncListBackups();
+                    });
+                    return true;
                 }
+            } catch (e) {
+                console.error("Error parsing Google OAuth redirect:", e);
             }
             return false;
         }
@@ -2918,23 +2906,23 @@
                 return;
             }
             
-            let urlHash = '';
-            if (text.includes('#')) {
-                urlHash = text.substring(text.indexOf('#') + 1);
-            } else if (text.includes('access_token=')) {
-                urlHash = text;
-            } else {
-                showBackupToast("Invalid Input", "Pasted text does not contain an access token.");
-                return;
-            }
-            
             try {
-                const params = new URLSearchParams(urlHash);
+                // Parse out the search/hash parts from any pasted text or URL
+                let cleanText = text;
+                if (cleanText.includes('#')) {
+                    cleanText = cleanText.substring(cleanText.indexOf('#') + 1);
+                } else if (cleanText.includes('?')) {
+                    cleanText = cleanText.substring(cleanText.indexOf('?') + 1);
+                }
+                
+                // Clean leading slash/router prefix (e.g. /access_token=...)
+                if (cleanText.startsWith('/')) cleanText = cleanText.substring(1);
+                
+                const params = new URLSearchParams(cleanText);
                 const accessToken = params.get('access_token');
                 const expiresIn = params.get('expires_in');
                 
                 if (accessToken) {
-                    console.log("Manually parsed pasted access token...");
                     gdriveAccessToken = accessToken;
                     localStorage.setItem('gdrive_access_token', gdriveAccessToken);
                     localStorage.setItem('gdrive_token_expires_at', Date.now() + (parseInt(expiresIn || 3600) * 1000));
@@ -2943,7 +2931,7 @@
                     showLoadingOverlay("Connecting Account...");
                     fetchUserInfo().then(() => {
                         showLoadingOverlay(false);
-                        showBackupToast("Connected", "Signed in as " + gdriveUserEmail, "🟢");
+                        showBackupToast("Connected", "Signed in as " + (gdriveUserEmail || "Connected Account"), "🟢");
                         renderBackupUI();
                         gdriveSyncListBackups();
                         
@@ -3076,6 +3064,7 @@
                     if (res.status === 401) {
                         gdriveAccessToken = null;
                         localStorage.removeItem('gdrive_access_token');
+                        localStorage.removeItem('gdrive_connected');
                         renderBackupUI();
                         return;
                     }
