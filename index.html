@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#10b981">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -449,6 +450,15 @@
         </div>
     </div>
 
+    <!-- CLOUD SYNC TOAST -->
+    <div id="cloudToast" class="fixed top-4 left-4 right-4 bg-neutral-900/95 border border-neutral-800 rounded-2xl p-4 shadow-[0_0_30px_rgba(0,0,0,0.5)] z-[200] transform -translate-y-[150%] transition-transform duration-500 flex items-center gap-4 backdrop-blur-md">
+        <div id="cloudToastIcon" class="text-3xl">☁️</div>
+        <div>
+            <p id="cloudToastHeader" class="text-[10px] text-emerald-400 font-black uppercase tracking-widest">Google Drive Sync</p>
+            <h3 id="cloudToastBody" class="text-sm font-bold text-white">Connecting...</h3>
+        </div>
+    </div>
+
     <!-- SESSION DETAIL OVERLAY -->
     <div id="sessionDetailOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] hidden items-end justify-center pointer-events-auto" onclick="closeSessionDetail(event)">
         <div id="sessionDetailSheet" class="bg-neutral-950 border border-neutral-800 rounded-t-[2.5rem] w-full max-w-md max-h-[90dvh] flex flex-col shadow-2xl pointer-events-auto transform translate-y-full transition-transform duration-300 ease-out">
@@ -604,10 +614,97 @@
                 </button>
             </div>
             
-            <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group">
+            <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group mb-6">
                 <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span class="text-sm font-bold text-white">Hard Refresh (v7.0.0)</span>
+                <span class="text-sm font-bold text-white">Hard Refresh (v7.1.0)</span>
             </button>
+
+            <!-- GOOGLE DRIVE CLOUD SYNC -->
+            <h3 class="text-xs font-black text-neutral-500 uppercase tracking-widest mb-3">Google Drive Cloud Sync</h3>
+            <div class="bg-neutral-900 p-4 rounded-2xl border border-neutral-800 mb-6">
+                <div id="gdriveAuthContainer" class="flex flex-col gap-4">
+                    <!-- Disconnected State -->
+                    <div id="gdriveDisconnected" class="flex flex-col items-center gap-3 py-4">
+                        <div class="w-12 h-12 rounded-full bg-neutral-850 flex items-center justify-center border border-neutral-800 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                            <svg class="w-6 h-6 text-neutral-400" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/>
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <span class="text-sm font-bold text-white block">Cloud Backups</span>
+                            <span class="text-[10px] text-neutral-500 uppercase tracking-wider block mt-0.5">Securely sync your climbs to your Google Drive</span>
+                        </div>
+                        <button onclick="loginToGDrive()" class="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white hover:bg-neutral-100 text-neutral-900 font-bold rounded-xl active:scale-95 transition text-sm">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22-.03-.63z"/>
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                            </svg>
+                            Sign in with Google
+                        </button>
+                    </div>
+                    
+                    <!-- Connected State -->
+                    <div id="gdriveConnected" class="hidden flex-col gap-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <div class="max-w-[180px] overflow-hidden">
+                                    <span class="text-[9px] text-neutral-500 block uppercase tracking-widest font-black">Logged in as</span>
+                                    <span id="gdriveUserEmail" class="text-xs font-bold text-white block truncate">climber@gmail.com</span>
+                                </div>
+                            </div>
+                            <button onclick="logoutFromGDrive()" class="text-[9px] font-black text-red-400 hover:text-red-300 transition uppercase tracking-widest py-1.5 px-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                                Sign Out
+                            </button>
+                        </div>
+                        
+                        <hr class="border-neutral-800" />
+                        
+                        <!-- Preferences & Auto Save Toggle -->
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-xs font-bold text-neutral-300 block">Milestone Auto-Backup</span>
+                                <span class="text-[9px] text-neutral-500 block uppercase tracking-wider mt-0.5">Save on end/edit/delete</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer select-none">
+                                <input type="checkbox" id="gdriveAutoBackupToggle" class="sr-only peer" onchange="toggleAutoBackup(this)" checked>
+                                <div class="w-11 h-6 bg-neutral-800 rounded-full peer peer-focus:ring-0 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-neutral-500 peer-checked:after:bg-emerald-400 after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-950/30 peer-checked:border-emerald-500/30 border border-neutral-700"></div>
+                            </label>
+                        </div>
+                        
+                        <!-- Manual Backup Button -->
+                        <button onclick="gdriveSyncUpload(false)" class="w-full flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase tracking-wider rounded-xl transition active:scale-95 shadow-[0_0_15px_rgba(16,185,129,0.2)] text-xs">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            Create New Checkpoint
+                        </button>
+                        
+                        <hr class="border-neutral-800" />
+                        
+                        <!-- Checkpoints Timeline -->
+                        <div>
+                            <span class="text-[10px] font-black text-neutral-500 uppercase tracking-widest block mb-3">Past Checkpoints</span>
+                            <div id="gdriveBackupsList" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
+                                <!-- Backup items dynamically rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CUSTOM CLIENT ID PANEL -->
+            <div class="bg-neutral-900 p-4 rounded-2xl border border-neutral-800 mb-6">
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-neutral-300 block">Custom Client ID (Optional)</span>
+                        <span class="text-[9px] text-neutral-500 block uppercase tracking-wider font-semibold">Forks / Self-hosting</span>
+                    </div>
+                    <input type="text" id="gdriveCustomClientId" placeholder="Default Sendlog client ID is active" class="w-full bg-neutral-950 text-neutral-300 border border-neutral-800 rounded-xl px-4 py-2.5 text-xs focus:border-emerald-500 focus:outline-none placeholder-neutral-600 transition" onchange="saveCustomClientId(this)">
+                </div>
+            </div>
 
             <div class="flex justify-between items-end mb-4">
                 <h3 class="text-xs font-black text-neutral-500 uppercase tracking-widest">Achievements</h3>
@@ -1452,6 +1549,7 @@
             updateAnalytics();
             renderHistoryList();
             switchTab('history');
+            triggerMilestoneBackup();
         }
 
         function switchTab(tabId, push = true) {
@@ -1997,6 +2095,7 @@
                 localStorage.setItem('boulderHistory', JSON.stringify(boulderHistory));
                 updateAnalytics();
                 renderHistoryList();
+                triggerMilestoneBackup();
             }
         }
 
@@ -2107,6 +2206,7 @@
             // 4. Update UI
             updateAnalytics();
             renderHistoryList();
+            triggerMilestoneBackup();
 
             // 5. Go back to return from #edit-session state to #session-idx state.
             // The popstate listener will automatically trigger openSessionDetail with the updated data
@@ -2540,6 +2640,529 @@
             });
         }
 
+        // ==========================================
+        // GOOGLE DRIVE CLOUD SYNC & BACKUP INTEGRATION
+        // ==========================================
+        const DEFAULT_CLIENT_ID = '1004179782531-kld0b4q47r2r502nplv2c366m9chd6b4.apps.googleusercontent.com';
+        let tokenClient = null;
+        let gdriveAccessToken = null;
+        let gdriveUserEmail = null;
+
+        function getClientId() {
+            return localStorage.getItem('gdrive_custom_client_id') || DEFAULT_CLIENT_ID;
+        }
+
+        function initGIS() {
+            if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
+                console.warn("Google Identity Services script not fully loaded yet.");
+                if (!document.querySelector('script[src*="gsi/client"]')) {
+                    const script = document.createElement('script');
+                    script.src = "https://accounts.google.com/gsi/client";
+                    script.async = true;
+                    script.defer = true;
+                    script.onload = () => {
+                        setTimeout(initGIS, 100);
+                    };
+                    document.head.appendChild(script);
+                }
+                return;
+            }
+            
+            const clientId = getClientId();
+            if (!clientId) {
+                console.error("No Google Client ID configured.");
+                return;
+            }
+            
+            try {
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: clientId,
+                    scope: 'https://www.googleapis.com/auth/drive.file email profile',
+                    callback: (tokenResponse) => {
+                        if (tokenResponse.error !== undefined) {
+                            console.error("GIS Token Error:", tokenResponse.error);
+                            showBackupToast("Sign-in Failed", "Google OAuth error: " + tokenResponse.error);
+                            return;
+                        }
+                        
+                        gdriveAccessToken = tokenResponse.access_token;
+                        localStorage.setItem('gdrive_access_token', gdriveAccessToken);
+                        localStorage.setItem('gdrive_token_expires_at', Date.now() + (tokenResponse.expires_in * 1000));
+                        localStorage.setItem('gdrive_connected', 'true');
+                        
+                        showLoadingOverlay("Connecting Account...");
+                        fetchUserInfo().then(() => {
+                            showLoadingOverlay(false);
+                            showBackupToast("Connected", "Signed in as " + gdriveUserEmail, "🟢");
+                            renderBackupUI();
+                            gdriveSyncListBackups();
+                        });
+                    }
+                });
+            } catch (err) {
+                console.error("Error initializing Google Identity Services:", err);
+            }
+        }
+
+        async function fetchUserInfo() {
+            if (!gdriveAccessToken) return;
+            try {
+                const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                    headers: { Authorization: `Bearer ${gdriveAccessToken}` }
+                });
+                if (res.ok) {
+                    const info = await res.json();
+                    gdriveUserEmail = info.email;
+                    localStorage.setItem('gdrive_user_email', gdriveUserEmail);
+                }
+            } catch (err) {
+                console.error("Error fetching user info:", err);
+            }
+        }
+
+        function ensureTokenValid() {
+            if (!gdriveAccessToken) {
+                gdriveAccessToken = localStorage.getItem('gdrive_access_token');
+            }
+            if (!gdriveAccessToken) return false;
+            const expiresAt = localStorage.getItem('gdrive_token_expires_at');
+            if (!expiresAt || Date.now() >= parseInt(expiresAt)) {
+                gdriveAccessToken = null;
+                localStorage.removeItem('gdrive_access_token');
+                return false;
+            }
+            return true;
+        }
+
+        function loginToGDrive(silentOAuth = false) {
+            if (!tokenClient) {
+                initGIS();
+            }
+            setTimeout(() => {
+                if (tokenClient) {
+                    try {
+                        tokenClient.requestAccessToken({ prompt: silentOAuth ? 'none' : '' });
+                    } catch (e) {
+                        console.error("Failed to request access token:", e);
+                        if (!silentOAuth) {
+                            showBackupToast("OAuth Error", "Failed to start Google sign-in flow.");
+                        }
+                    }
+                } else {
+                    if (!silentOAuth) {
+                        showBackupToast("Error", "Google auth client is not ready. Please try again.");
+                    }
+                }
+            }, tokenClient ? 0 : 500);
+        }
+
+        function logoutFromGDrive() {
+            if (confirm("Are you sure you want to disconnect your Google Drive account? No further automatic backups will be saved.")) {
+                if (gdriveAccessToken) {
+                    try {
+                        google.accounts.oauth2.revoke(gdriveAccessToken, () => {
+                            console.log("Access token successfully revoked.");
+                        });
+                    } catch (e) {
+                        console.warn("Token revocation failed:", e);
+                    }
+                }
+                
+                gdriveAccessToken = null;
+                gdriveUserEmail = null;
+                localStorage.removeItem('gdrive_access_token');
+                localStorage.removeItem('gdrive_token_expires_at');
+                localStorage.removeItem('gdrive_user_email');
+                localStorage.removeItem('gdrive_connected');
+                
+                showBackupToast("Disconnected", "Account signed out successfully.", "🚪");
+                renderBackupUI();
+            }
+        }
+
+        function checkGDriveConnection() {
+            const isConnected = localStorage.getItem('gdrive_connected') === 'true';
+            if (isConnected) {
+                gdriveAccessToken = localStorage.getItem('gdrive_access_token');
+                gdriveUserEmail = localStorage.getItem('gdrive_user_email');
+                
+                renderBackupUI();
+                
+                const expiresAt = localStorage.getItem('gdrive_token_expires_at');
+                if (!expiresAt || Date.now() >= parseInt(expiresAt)) {
+                    attemptSilentTokenRenewal();
+                } else {
+                    gdriveSyncListBackups();
+                }
+            } else {
+                renderBackupUI();
+            }
+        }
+
+        function attemptSilentTokenRenewal() {
+            console.log("Attempting silent Google token renewal...");
+            if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
+                initGIS();
+                setTimeout(() => {
+                    if (tokenClient) {
+                        try { tokenClient.requestAccessToken({ prompt: 'none' }); } catch(e) {}
+                    }
+                }, 1000);
+                return;
+            }
+            if (!tokenClient) {
+                initGIS();
+            }
+            if (tokenClient) {
+                try { tokenClient.requestAccessToken({ prompt: 'none' }); } catch(e) {}
+            }
+        }
+
+        async function gdriveSyncUpload(silent = false) {
+            if (!ensureTokenValid()) {
+                if (!silent) {
+                    loginToGDrive();
+                } else {
+                    attemptSilentTokenRenewal();
+                }
+                return;
+            }
+            
+            if (!silent) showLoadingOverlay("Saving Checkpoint...");
+            
+            try {
+                const payload = {
+                    history: boulderHistory,
+                    maxGradeIndex: localStorage.getItem('boulderMaxGradeIndex') || '14',
+                    playerName: localStorage.getItem('boulderPlayerName') || '',
+                    achievements: achievementsUnlocked
+                };
+                
+                const timestamp = Date.now();
+                const filename = `sendlog_backup_${timestamp}.json`;
+                
+                const metaRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${gdriveAccessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: filename,
+                        mimeType: 'application/json'
+                    })
+                });
+                
+                if (!metaRes.ok) throw new Error("Metadata creation failed");
+                const metaData = await metaRes.json();
+                const fileId = metaData.id;
+                
+                const uploadRes = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${gdriveAccessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!uploadRes.ok) throw new Error("Payload upload failed");
+                
+                if (!silent) {
+                    showBackupToast("Success", "Checkpoint saved successfully!", "📤");
+                    gdriveSyncListBackups();
+                } else {
+                    console.log("Background milestone auto-backup uploaded successfully:", filename);
+                }
+            } catch (error) {
+                console.error("Backup upload error:", error);
+                if (!silent) {
+                    showBackupToast("Backup Failed", "Failed to upload checkpoint.", "🔴");
+                }
+            } finally {
+                if (!silent) showLoadingOverlay(false);
+            }
+        }
+
+        async function gdriveSyncListBackups() {
+            if (!gdriveAccessToken) return;
+            const listContainer = document.getElementById('gdriveBackupsList');
+            if (!listContainer) return;
+            
+            listContainer.innerHTML = `
+                <div class="flex justify-center items-center py-8 text-neutral-500 gap-2">
+                    <svg class="animate-spin h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-neutral-400">Loading checkpoints...</span>
+                </div>
+            `;
+            
+            try {
+                const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=name+contains+'sendlog_backup_'+and+mimeType+%3D+'application/json'+and+trashed+%3D+false&orderBy=name+desc&fields=files(id,name,size,createdTime)&pageSize=100`, {
+                    headers: { Authorization: `Bearer ${gdriveAccessToken}` }
+                });
+                
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        gdriveAccessToken = null;
+                        localStorage.removeItem('gdrive_access_token');
+                        renderBackupUI();
+                        return;
+                    }
+                    throw new Error("Failed to list files");
+                }
+                
+                const data = await res.json();
+                renderBackupsTimeline(data.files || []);
+            } catch (error) {
+                console.error("Error listing backups:", error);
+                listContainer.innerHTML = `<div class="text-[10px] uppercase font-black tracking-wider text-red-400 text-center py-4">Failed to load checkpoints from Drive.</div>`;
+            }
+        }
+
+        async function gdriveSyncRestore(fileId) {
+            if (!confirm("Are you sure you want to restore this checkpoint? This will replace your local climbing history with this backup!")) return;
+            
+            showLoadingOverlay("Restoring Backup...");
+            try {
+                const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                    headers: { Authorization: `Bearer ${gdriveAccessToken}` }
+                });
+                
+                if (!res.ok) throw new Error("Failed to download checkpoint");
+                const data = await res.json();
+                
+                if (data.history) {
+                    localStorage.setItem('boulderHistory', JSON.stringify(data.history));
+                    boulderHistory = data.history;
+                }
+                if (data.maxGradeIndex !== undefined) {
+                    localStorage.setItem('boulderMaxGradeIndex', data.maxGradeIndex);
+                }
+                if (data.playerName) {
+                    localStorage.setItem('boulderPlayerName', data.playerName);
+                }
+                if (data.achievements) {
+                    localStorage.setItem('boulderAchievements', JSON.stringify(data.achievements));
+                }
+                
+                showBackupToast("Success", "Restored successfully! Reloading...", "🟢");
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } catch (error) {
+                console.error("Error restoring checkpoint:", error);
+                showBackupToast("Restore Failed", "Failed to load checkpoint file.", "🔴");
+                showLoadingOverlay(false);
+            }
+        }
+
+        async function gdriveSyncDelete(fileId) {
+            if (!confirm("Are you sure you want to delete this checkpoint? This cannot be undone.")) return;
+            
+            showLoadingOverlay("Deleting Checkpoint...");
+            try {
+                const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+                    method: 'DELETE',
+                    headers: { Authorization: `Bearer ${gdriveAccessToken}` }
+                });
+                
+                if (!res.ok) throw new Error("Failed to delete file");
+                
+                showBackupToast("Deleted", "Checkpoint successfully deleted from Google Drive.", "🗑️");
+                gdriveSyncListBackups();
+            } catch (error) {
+                console.error("Error deleting checkpoint:", error);
+                showBackupToast("Delete Failed", "Failed to delete file from Google Drive.", "🔴");
+            } finally {
+                showLoadingOverlay(false);
+            }
+        }
+
+        function renderBackupUI() {
+            const disconnectedEl = document.getElementById('gdriveDisconnected');
+            const connectedEl = document.getElementById('gdriveConnected');
+            const emailEl = document.getElementById('gdriveUserEmail');
+            const autoToggle = document.getElementById('gdriveAutoBackupToggle');
+            const customClientIdInput = document.getElementById('gdriveCustomClientId');
+            
+            if (!disconnectedEl || !connectedEl) return;
+            
+            const isConnected = localStorage.getItem('gdrive_connected') === 'true';
+            
+            if (isConnected) {
+                disconnectedEl.classList.add('hidden');
+                connectedEl.classList.remove('hidden');
+                
+                if (emailEl) {
+                    emailEl.innerText = gdriveUserEmail || localStorage.getItem('gdrive_user_email') || 'Connected Account';
+                }
+                
+                if (autoToggle) {
+                    autoToggle.checked = localStorage.getItem('boulderAutoBackup') !== 'false';
+                }
+            } else {
+                disconnectedEl.classList.remove('hidden');
+                connectedEl.classList.add('hidden');
+            }
+            
+            if (customClientIdInput) {
+                customClientIdInput.value = localStorage.getItem('gdrive_custom_client_id') || '';
+            }
+        }
+
+        function renderBackupsTimeline(files) {
+            const listContainer = document.getElementById('gdriveBackupsList');
+            if (!listContainer) return;
+            
+            if (files.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-6 text-neutral-500 text-xs flex flex-col items-center gap-1">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-neutral-600">No checkpoints found</span>
+                        <span class="text-[9px] text-neutral-700">Click "Create New Checkpoint" to save your first backup!</span>
+                    </div>
+                `;
+                return;
+            }
+            
+            listContainer.innerHTML = files.map(file => {
+                const tsMatch = file.name.match(/sendlog_backup_(\d+)\.json/);
+                let dateStr = 'Unknown Date';
+                if (tsMatch && tsMatch[1]) {
+                    const ms = parseInt(tsMatch[1]);
+                    const d = new Date(ms);
+                    dateStr = d.toLocaleDateString(undefined, { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                } else if (file.createdTime) {
+                    const d = new Date(file.createdTime);
+                    dateStr = d.toLocaleDateString(undefined, { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                }
+                
+                const sizeBytes = parseInt(file.size) || 0;
+                const sizeStr = sizeBytes > 0 ? `${(sizeBytes / 1024).toFixed(1)} KB` : 'Unknown size';
+                
+                return `
+                    <div class="flex items-center justify-between bg-neutral-950/40 p-3 rounded-xl border border-neutral-800/80 hover:border-neutral-700/80 transition group/item">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold text-neutral-200">${dateStr}</span>
+                            <span class="text-[9px] text-neutral-500 font-bold uppercase tracking-wider">${sizeStr}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="gdriveSyncRestore('${file.id}')" class="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 border border-emerald-500/20 rounded-lg text-[9px] font-black uppercase tracking-widest transition active:scale-95">
+                                Restore
+                            </button>
+                            <button onclick="gdriveSyncDelete('${file.id}')" class="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 rounded-lg transition active:scale-95" title="Delete Checkpoint">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showBackupToast(title, body, icon = "☁️") {
+            const toast = document.getElementById('cloudToast');
+            const header = document.getElementById('cloudToastHeader');
+            const b = document.getElementById('cloudToastBody');
+            const ic = document.getElementById('cloudToastIcon');
+            if (toast && header && b && ic) {
+                header.innerText = title;
+                b.innerText = body;
+                ic.innerText = icon;
+                
+                if (title.toLowerCase().includes("failed") || title.toLowerCase().includes("error") || body.toLowerCase().includes("failed")) {
+                    toast.style.borderColor = '#ef4444';
+                    header.style.color = '#f87171';
+                } else {
+                    toast.style.borderColor = '#10b981';
+                    header.style.color = '#34d399';
+                }
+                
+                toast.classList.remove('-translate-y-[150%]');
+                setTimeout(() => {
+                    toast.classList.add('-translate-y-[150%]');
+                }, 3500);
+            }
+        }
+
+        function showLoadingOverlay(show) {
+            let overlay = document.getElementById('gdriveLoadingOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'gdriveLoadingOverlay';
+                overlay.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm z-[250] flex flex-col items-center justify-center hidden transition duration-300';
+                overlay.innerHTML = `
+                    <div class="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col items-center gap-4 max-w-xs shadow-2xl">
+                        <svg class="animate-spin h-8 w-8 text-emerald-500" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <div class="text-center">
+                            <span id="gdriveLoadingText" class="text-xs font-bold text-white block">Syncing with Google...</span>
+                            <span class="text-[9px] text-neutral-500 uppercase tracking-widest mt-1 block">Please wait</span>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            }
+            
+            const textEl = document.getElementById('gdriveLoadingText');
+            if (textEl && typeof show === 'string') {
+                textEl.innerText = show;
+            } else if (textEl) {
+                textEl.innerText = "Syncing with Google...";
+            }
+            
+            if (show) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function toggleAutoBackup(checkbox) {
+            localStorage.setItem('boulderAutoBackup', checkbox.checked ? 'true' : 'false');
+            showBackupToast("Auto-Backup", checkbox.checked ? "Auto-backups enabled!" : "Auto-backups disabled.", "⚙️");
+        }
+
+        function saveCustomClientId(input) {
+            const val = input.value.trim();
+            if (val) {
+                localStorage.setItem('gdrive_custom_client_id', val);
+                showBackupToast("Config Updated", "Custom Client ID saved. Re-authenticating...", "⚙️");
+            } else {
+                localStorage.removeItem('gdrive_custom_client_id');
+                showBackupToast("Config Reset", "Default Sendlog Client ID restored.", "⚙️");
+            }
+            
+            gdriveAccessToken = null;
+            gdriveUserEmail = null;
+            localStorage.removeItem('gdrive_access_token');
+            localStorage.removeItem('gdrive_token_expires_at');
+            localStorage.removeItem('gdrive_user_email');
+            localStorage.removeItem('gdrive_connected');
+            
+            initGIS();
+            renderBackupUI();
+        }
+
+        function triggerMilestoneBackup() {
+            if (localStorage.getItem('boulderAutoBackup') !== 'false') {
+                gdriveSyncUpload(true);
+            }
+        }
+
         // Init on load with safety guards
         try {
             updateAnalytics();
@@ -2547,6 +3170,8 @@
             loadActiveSession();
             renderAchievements();
             renderTags();
+            checkGDriveConnection();
+            initGIS();
 
             // Final sanity check for achievements
             if (boulderHistory && boulderHistory.length >= 5) unlockAchievement('consistency');
