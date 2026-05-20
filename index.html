@@ -2737,23 +2737,34 @@
         function loginToGDrive(silentOAuth = false) {
             if (!tokenClient) {
                 initGIS();
-            }
-            setTimeout(() => {
-                if (tokenClient) {
-                    try {
-                        tokenClient.requestAccessToken({ prompt: silentOAuth ? 'none' : '' });
-                    } catch (e) {
-                        console.error("Failed to request access token:", e);
+                // If not ready, wait a bit, but warn that it might be blocked as non-synchronous by some browsers
+                setTimeout(() => {
+                    if (tokenClient) {
+                        try {
+                            tokenClient.requestAccessToken({ prompt: silentOAuth ? 'none' : '' });
+                        } catch (e) {
+                            console.error("Failed to request access token:", e);
+                            if (!silentOAuth) {
+                                showBackupToast("OAuth Error", "Failed to start Google sign-in flow.");
+                            }
+                        }
+                    } else {
                         if (!silentOAuth) {
-                            showBackupToast("OAuth Error", "Failed to start Google sign-in flow.");
+                            showBackupToast("Error", "Google auth client is not ready. Please try again.");
                         }
                     }
-                } else {
+                }, 500);
+            } else {
+                // RUN COMPLETELY SYNCHRONOUSLY to preserve the user activation context!
+                try {
+                    tokenClient.requestAccessToken({ prompt: silentOAuth ? 'none' : '' });
+                } catch (e) {
+                    console.error("Failed to request access token synchronously:", e);
                     if (!silentOAuth) {
-                        showBackupToast("Error", "Google auth client is not ready. Please try again.");
+                        showBackupToast("OAuth Error", "Failed to start Google sign-in flow.");
                     }
                 }
-            }, tokenClient ? 0 : 500);
+            }
         }
 
         function logoutFromGDrive() {
