@@ -646,6 +646,24 @@
                         <button onclick="loginToGDriveRedirect()" class="text-[10px] text-neutral-500 hover:text-white transition underline cursor-pointer mt-0.5 font-semibold tracking-wide">
                             Stuck on a white screen? Try Redirect Sign-in
                         </button>
+                        
+                        <!-- PWA Manual Connection Fallback -->
+                        <div class="w-full mt-2 pt-3 border-t border-neutral-800/60">
+                            <button onclick="togglePwaConnectFallback()" class="w-full text-center text-[10px] text-neutral-500 hover:text-white transition cursor-pointer font-semibold tracking-wide">
+                                Installed App / PWA login issues? Click here
+                            </button>
+                            <div id="pwaConnectFallback" class="hidden flex flex-col gap-2 mt-3 p-3 bg-neutral-950/40 border border-neutral-800 rounded-xl transition">
+                                <span class="text-[9px] text-neutral-400 leading-relaxed block text-center">
+                                    iOS Home Screen apps run in an isolated space. If sign-in opened Safari, complete it, **copy the resulting Safari address bar URL**, paste it below to link your account:
+                                </span>
+                                <div class="flex gap-2 mt-1">
+                                    <input type="text" id="pwaPasteInput" placeholder="Paste Safari URL here..." class="flex-1 bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-blue-500" />
+                                    <button onclick="handlePwaManualConnect()" class="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg transition">
+                                        Link
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Connected State -->
@@ -2862,7 +2880,7 @@
             return false;
         }
 
-        function checkGDriveConnection() {
+        function checkGDriveConnection(lightweight = false) {
             if (handleGDriveOAuthRedirect()) {
                 return;
             }
@@ -2876,11 +2894,70 @@
                 const expiresAt = localStorage.getItem('gdrive_token_expires_at');
                 if (!expiresAt || Date.now() >= parseInt(expiresAt)) {
                     attemptSilentTokenRenewal();
-                } else {
+                } else if (!lightweight) {
                     gdriveSyncListBackups();
                 }
             } else {
                 renderBackupUI();
+            }
+        }
+
+        function togglePwaConnectFallback() {
+            const el = document.getElementById('pwaConnectFallback');
+            if (el) {
+                el.classList.toggle('hidden');
+            }
+        }
+
+        function handlePwaManualConnect() {
+            const input = document.getElementById('pwaPasteInput');
+            if (!input) return;
+            const text = input.value.trim();
+            if (!text) {
+                showBackupToast("Error", "Please paste the redirect URL first.");
+                return;
+            }
+            
+            let urlHash = '';
+            if (text.includes('#')) {
+                urlHash = text.substring(text.indexOf('#') + 1);
+            } else if (text.includes('access_token=')) {
+                urlHash = text;
+            } else {
+                showBackupToast("Invalid Input", "Pasted text does not contain an access token.");
+                return;
+            }
+            
+            try {
+                const params = new URLSearchParams(urlHash);
+                const accessToken = params.get('access_token');
+                const expiresIn = params.get('expires_in');
+                
+                if (accessToken) {
+                    console.log("Manually parsed pasted access token...");
+                    gdriveAccessToken = accessToken;
+                    localStorage.setItem('gdrive_access_token', gdriveAccessToken);
+                    localStorage.setItem('gdrive_token_expires_at', Date.now() + (parseInt(expiresIn || 3600) * 1000));
+                    localStorage.setItem('gdrive_connected', 'true');
+                    
+                    showLoadingOverlay("Connecting Account...");
+                    fetchUserInfo().then(() => {
+                        showLoadingOverlay(false);
+                        showBackupToast("Connected", "Signed in as " + gdriveUserEmail, "🟢");
+                        renderBackupUI();
+                        gdriveSyncListBackups();
+                        
+                        // Collapse panel and clear input
+                        input.value = '';
+                        const fallbackPanel = document.getElementById('pwaConnectFallback');
+                        if (fallbackPanel) fallbackPanel.classList.add('hidden');
+                    });
+                } else {
+                    showBackupToast("Failed", "No access token found in the pasted content.");
+                }
+            } catch (e) {
+                console.error("Error manual connection parsing:", e);
+                showBackupToast("Error", "Failed to parse the pasted URL.");
             }
         }
 
@@ -3253,6 +3330,17 @@
                 gdriveSyncUpload(true);
             }
         }
+
+        // Auto-check connection when app gains focus or visibility (crucial for PWA sheets/in-app tabs)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                checkGDriveConnection(true);
+            }
+        });
+
+        window.addEventListener('focus', () => {
+            checkGDriveConnection(true);
+        });
 
         // Init on load with safety guards
         try {
