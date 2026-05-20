@@ -1798,11 +1798,8 @@
                 return;
             }
 
-            const today = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-            const yesterday = new Date(Date.now() - 86400000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-
-            listEl.innerHTML = boulderHistory.slice().reverse().map((s, reversedIndex) => {
-                const actualIndex = boulderHistory.length - 1 - reversedIndex;
+            listEl.innerHTML = filteredHistory.slice().reverse().map((s) => {
+                const actualIndex = boulderHistory.indexOf(s);
                 const { sends, flashes, avgGrade } = getSessionStats(s);
 
                 // Robust Date Logic using timestamp
