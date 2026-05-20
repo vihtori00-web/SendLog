@@ -73,7 +73,7 @@
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
             <div class="flex flex-col">
                 <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span></h1>
-                <span class="app-version-text text-[8px] text-neutral-600 font-bold tracking-widest">v7.3.1</span>
+                <span class="app-version-text text-[8px] text-neutral-600 font-bold tracking-widest">v7.3.2</span>
             </div>
 
             <div class="flex items-center gap-2">
@@ -651,9 +651,9 @@
                 </button>
             </div>
             
-            <button onclick="location.reload(true)" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group mb-6">
+            <button onclick="forceHardRefresh()" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group mb-6">
                 <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span id="hardRefreshText" class="text-sm font-bold text-white">Hard Refresh (v7.3.1)</span>
+                <span id="hardRefreshText" class="text-sm font-bold text-white">Hard Refresh (v7.3.2)</span>
             </button>
 
             <!-- GOOGLE DRIVE CLOUD SYNC -->
@@ -741,7 +741,7 @@
     </div>
 
     <script>
-        const APP_VERSION = 'v7.3.1';
+        const APP_VERSION = 'v7.3.2';
         const DOM = {
             sessionTimerStr: document.getElementById('sessionTimerDisplay'),
             sessionScoreStr: document.getElementById('sessionScoreDisplay'),
@@ -2947,6 +2947,42 @@
             });
         }
 
+        async function forceHardRefresh() {
+            try {
+                if (typeof GDrive !== 'undefined' && GDrive.showLoadingOverlay) {
+                    GDrive.showLoadingOverlay("Force Refreshing App...");
+                }
+            } catch (e) {}
+
+            // Unregister all service workers
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                    }
+                } catch (e) {
+                    console.error("Failed to unregister service worker:", e);
+                }
+            }
+            // Clear all caches
+            if ('caches' in window) {
+                try {
+                    const keys = await caches.keys();
+                    for (let key of keys) {
+                        await caches.delete(key);
+                    }
+                } catch (e) {
+                    console.error("Failed to delete caches:", e);
+                }
+            }
+            // Clear session storage and force reload from server
+            try {
+                sessionStorage.clear();
+            } catch(e) {}
+            window.location.reload(true);
+        }
+
         // ==========================================
         // GOOGLE DRIVE CLOUD SYNC & BACKUP INTEGRATION (GDrive Module)
         // ==========================================
@@ -3033,9 +3069,10 @@
 
             shouldUseRedirect() {
                 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-                // Redirect on all standalone PWAs (both iOS and Android) because popup auth relies on window.opener
-                // which is severed by standalone PWA sandboxes, causing white screen hangs on accounts.google.com/gsi/transform.
-                return isStandalone;
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                // Redirect on all mobile devices and standalone PWAs because popup auth relies on window.opener
+                // which is easily blocked or severed, causing white screen hangs on accounts.google.com/gsi/transform.
+                return isStandalone || isMobile;
             },
 
             login(silentOAuth = false) {
