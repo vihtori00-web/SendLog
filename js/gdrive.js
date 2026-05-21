@@ -1,5 +1,4 @@
-﻿        // ==========================================
-        // GOOGLE DRIVE CLOUD SYNC & BACKUP INTEGRATION (GDrive Module)
+﻿        // GOOGLE DRIVE CLOUD SYNC & BACKUP INTEGRATION (GDrive Module)
         // ==========================================
         const GDrive = {
             CLIENT_ID: '283005114720-b879l8c73oufpe1juk74v243frc3uod5.apps.googleusercontent.com',
@@ -41,7 +40,7 @@
                             this.showLoadingOverlay("Connecting Account...");
                             this.fetchUserInfo().then(() => {
                                 this.showLoadingOverlay(false);
-                                this.showToast("Connected", "Signed in as " + this.userEmail, "ðŸŸ¢");
+                                this.showToast("Connected", "Signed in as " + this.userEmail, "🟢");
                                 this.renderUI();
                                 this.listBackups();
                             });
@@ -149,7 +148,7 @@
                     localStorage.removeItem('gdrive_user_email');
                     localStorage.removeItem('gdrive_connected');
 
-                    this.showToast("Disconnected", "Account signed out successfully.", "ðŸšª");
+                    this.showToast("Disconnected", "Account signed out successfully.", "🚪");
                     this.renderUI();
                 }
             },
@@ -167,7 +166,7 @@
                             this.showLoadingOverlay("Connecting Account...");
                             this.fetchUserInfo().then(() => {
                                 this.showLoadingOverlay(false);
-                                this.showToast("Connected", "Signed in as " + (this.userEmail || "Connected Account"), "ðŸŸ¢");
+                                this.showToast("Connected", "Signed in as " + (this.userEmail || "Connected Account"), "🟢");
                                 this.renderUI();
                                 this.listBackups();
                             });
@@ -193,7 +192,7 @@
                         this.showLoadingOverlay("Connecting Account...");
                         this.fetchUserInfo().then(() => {
                             this.showLoadingOverlay(false);
-                            this.showToast("Connected", "Signed in as " + (this.userEmail || "Connected Account"), "ðŸŸ¢");
+                            this.showToast("Connected", "Signed in as " + (this.userEmail || "Connected Account"), "🟢");
                             this.renderUI();
                             this.listBackups();
                         });
@@ -208,7 +207,7 @@
                         if (elapsed < 300000) {
                             localStorage.removeItem('gdrive_auth_pending');
                             console.warn('[SendLog] OAuth redirect returned but no token found. Elapsed:', elapsed, 'ms');
-                            this.showToast("Sign-in Issue", "Token was lost during redirect. Please try again.", "âš ï¸");
+                            this.showToast("Sign-in Issue", "Token was lost during redirect. Please try again.", "⚠️");
                         } else {
                             localStorage.removeItem('gdrive_auth_pending');
                         }
@@ -306,12 +305,12 @@
                     if (!uploadRes.ok) throw new Error("Payload upload failed");
 
                     if (!silent) {
-                        this.showToast("Success", "Checkpoint saved successfully!", "ðŸ“¤");
+                        this.showToast("Success", "Checkpoint saved successfully!", "📤");
                         this.listBackups();
                     }
                 } catch (error) {
                     console.error("Backup upload error:", error);
-                    if (!silent) this.showToast("Backup Failed", "Failed to upload checkpoint.", "ðŸ”´");
+                    if (!silent) this.showToast("Backup Failed", "Failed to upload checkpoint.", "🔴");
                 } finally {
                     if (!silent) this.showLoadingOverlay(false);
                 }
@@ -382,13 +381,13 @@
                     if (data.playerName) localStorage.setItem('boulderPlayerName', data.playerName);
                     if (data.achievements) localStorage.setItem('boulderAchievements', JSON.stringify(data.achievements));
 
-                    this.showToast("Success", "Restored successfully! Reloading...", "ðŸŸ¢");
+                    this.showToast("Success", "Restored successfully! Reloading...", "🟢");
                     setTimeout(() => {
                         window.location.reload();
                     }, 1500);
                 } catch (error) {
                     console.error("Error restoring checkpoint:", error);
-                    this.showToast("Restore Failed", "Failed to load checkpoint file.", "ðŸ”´");
+                    this.showToast("Restore Failed", "Failed to load checkpoint file.", "🔴");
                     this.showLoadingOverlay(false);
                 }
             },
@@ -405,11 +404,11 @@
 
                     if (!res.ok) throw new Error("Failed to delete file");
 
-                    this.showToast("Deleted", "Checkpoint successfully deleted from Google Drive.", "ðŸ—‘ï¸");
+                    this.showToast("Deleted", "Checkpoint successfully deleted from Google Drive.", "🗑️");
                     this.listBackups();
                 } catch (error) {
                     console.error("Error deleting checkpoint:", error);
-                    this.showToast("Delete Failed", "Failed to delete file from Google Drive.", "ðŸ”´");
+                    this.showToast("Delete Failed", "Failed to delete file from Google Drive.", "🔴");
                 } finally {
                     this.showLoadingOverlay(false);
                 }
@@ -502,10 +501,10 @@
 
             toggleAutoBackup(checkbox) {
                 localStorage.setItem('boulderAutoBackup', checkbox.checked ? 'true' : 'false');
-                this.showToast("Auto-Backup", checkbox.checked ? "Auto-backups enabled!" : "Auto-backups disabled.", "âš™ï¸");
+                this.showToast("Auto-Backup", checkbox.checked ? "Auto-backups enabled!" : "Auto-backups disabled.", "⚙️");
             },
 
-            showToast(title, body, icon = "â˜ï¸") {
+            showToast(title, body, icon = "☁️") {
                 const toast = document.getElementById('cloudToast');
                 const header = document.getElementById('cloudToastHeader');
                 const b = document.getElementById('cloudToastBody');
@@ -604,4 +603,3 @@
         } catch (e) {
             console.error("App boot sequence failed:", e);
         }
-    

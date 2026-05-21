@@ -474,7 +474,7 @@
                 const gradeCounts = {};
                 filteredHistory.forEach(s => {
                     (s.climbs || []).forEach(c => {
-                        if ((c.statusText === 'Top' || c.statusText === 'Flash') && c.gradeStr && c.gradeStr !== 'ðŸº') {
+                        if ((c.statusText === 'Top' || c.statusText === 'Flash') && c.gradeStr && c.gradeStr !== '🍺') {
                             gradeCounts[c.gradeStr] = (gradeCounts[c.gradeStr] || 0) + 1;
                         }
                     });
@@ -528,7 +528,7 @@
             if (filteredHistory.length === 0) {
                 listEl.innerHTML = `
                 <div class="flex flex-col items-center justify-center py-20 opacity-30">
-                    <div class="text-6xl mb-4">ðŸ†</div>
+                    <div class="text-6xl mb-4">🏆</div>
                     <p class="text-sm font-black uppercase tracking-widest">No history yet</p>
                     <p class="text-[10px] mt-1">Your climbing journey starts here</p>
                 </div>`;
@@ -560,7 +560,7 @@
                 // Mini Grade Bar Logic
                 const gradeCounts = {};
                 (s.climbs || []).forEach(c => {
-                    if (c.gradeStr && c.gradeStr !== 'ðŸº') {
+                    if (c.gradeStr && c.gradeStr !== '🍺') {
                         gradeCounts[c.gradeStr] = (gradeCounts[c.gradeStr] || 0) + 1;
                     }
                 });
@@ -585,11 +585,11 @@
                                 <h4 class="text-base font-black text-white uppercase tracking-tight">${fullDateTitle}</h4>
                                 <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                     <span class="text-[10px] font-bold text-neutral-500">${climbCount} Climbs</span>
-                                    <span class="text-neutral-800 text-[8px]">â—</span>
+                                    <span class="text-neutral-800 text-[8px]">●</span>
                                     <span class="text-[10px] font-bold text-emerald-400">${sends} Sends</span>
-                                    <span class="text-neutral-800 text-[8px]">â—</span>
+                                    <span class="text-neutral-800 text-[8px]">●</span>
                                     <span class="text-[10px] font-bold text-blue-400">Avg: ${avgGrade}</span>
-                                    ${flashes > 0 ? ` <span class="text-neutral-800 text-[8px]">â—</span> <span class="text-[10px] font-bold text-amber-500">âš¡ ${flashes} Flash</span>` : ''}
+                                    ${flashes > 0 ? ` <span class="text-neutral-800 text-[8px]">●</span> <span class="text-[10px] font-bold text-amber-500">⚡ ${flashes} Flash</span>` : ''}
                                 </div>
                             </div>
                         </div>
@@ -643,7 +643,7 @@
             const gradeLabels = document.getElementById('sdGradeLabels');
             const gradeCounts = {};
             climbs.forEach(c => {
-                if (c.gradeStr && c.gradeStr !== 'ðŸº') {
+                if (c.gradeStr && c.gradeStr !== '🍺') {
                     gradeCounts[c.gradeStr] = (gradeCounts[c.gradeStr] || 0) + 1;
                 }
             });
@@ -661,7 +661,7 @@
                     const pct = (gradeCounts[g] / Math.max(1, total)) * 100;
                     const col = barColors[i % barColors.length];
                     return `<div style="width:${pct}%;overflow:hidden" class="text-[8px] font-black truncate" style="color:${col}">
-                        <span style="color:${col}">${g}Ã—${gradeCounts[g]}</span>
+                        <span style="color:${col}">${g}×${gradeCounts[g]}</span>
                     </div>`;
                 }).join('');
             } else {
@@ -1297,3 +1297,4 @@
             window.location.reload(true);
         }
 
+        // ==========================================

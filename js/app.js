@@ -1,5 +1,4 @@
-
-        const APP_VERSION = 'v7.5.0';
+﻿        const APP_VERSION = 'v7.4.0';
 
         // =============================================
         // EARLY OAUTH REDIRECT INTERCEPTOR
@@ -379,7 +378,7 @@
                 if (prevVal === 0 && curVal === 0) return;
                 const diff = curVal - prevVal;
                 if (diff === 0) return;
-                const sign = diff > 0 ? 'â†‘' : 'â†“';
+                const sign = diff > 0 ? '↑' : '↓';
                 const color = diff > 0 ? 'text-emerald-400' : 'text-red-400';
                 el.className = `text-[8px] font-bold mt-0.5 ${color}`;
                 el.classList.remove('hidden');
@@ -408,18 +407,18 @@
 
         // --- ACHIEVEMENTS & DATA ---
         const achievementDefinitions = [
-            { id: "first_blood", name: "First Blood", desc: "Log your first climb.", icon: "ðŸ©¸" },
-            { id: "the_flash", name: "The Flash", desc: "Flash a climb at your Max Grade.", icon: "âš¡" },
-            { id: "crusher", name: "Crusher", desc: "Send a climb above your Max Grade.", icon: "ðŸ’¥" },
-            { id: "dedication", name: "Dedication", desc: "Top a route after 5+ attempts.", icon: "ðŸ”¥" },
-            { id: "double_digits", name: "Double Digits", desc: "Get 10+ sends in a single session.", icon: "ðŸ”Ÿ" },
-            { id: "volume_day", name: "Volume Day", desc: "Log 15+ climbs in a session.", icon: "ðŸ’ª" },
-            { id: "hat_trick", name: "Hat Trick", desc: "Send 3 different grades in one session.", icon: "ðŸŽ©" },
-            { id: "all_rounder", name: "All-Rounder", desc: "Use all 8 style tags in one session.", icon: "ðŸŽ¯" },
-            { id: "centurion", name: "Centurion", desc: "Reach 1,000 Total Points.", icon: "ðŸ‘‘" },
-            { id: "consistency", name: "Consistency", desc: "Complete 5 sessions.", icon: "ðŸ“…" },
-            { id: "marathon", name: "Marathon", desc: "Climb for over 3 hours.", icon: "â±ï¸" },
-            { id: "sixty_seven", name: "The 67 Beers", desc: "Beat the secret minigame.", icon: "ðŸº" }
+            { id: "first_blood", name: "First Blood", desc: "Log your first climb.", icon: "🩸" },
+            { id: "the_flash", name: "The Flash", desc: "Flash a climb at your Max Grade.", icon: "⚡" },
+            { id: "crusher", name: "Crusher", desc: "Send a climb above your Max Grade.", icon: "💥" },
+            { id: "dedication", name: "Dedication", desc: "Top a route after 5+ attempts.", icon: "🔥" },
+            { id: "double_digits", name: "Double Digits", desc: "Get 10+ sends in a single session.", icon: "🔟" },
+            { id: "volume_day", name: "Volume Day", desc: "Log 15+ climbs in a session.", icon: "💪" },
+            { id: "hat_trick", name: "Hat Trick", desc: "Send 3 different grades in one session.", icon: "🎩" },
+            { id: "all_rounder", name: "All-Rounder", desc: "Use all 8 style tags in one session.", icon: "🎯" },
+            { id: "centurion", name: "Centurion", desc: "Reach 1,000 Total Points.", icon: "👑" },
+            { id: "consistency", name: "Consistency", desc: "Complete 5 sessions.", icon: "📅" },
+            { id: "marathon", name: "Marathon", desc: "Climb for over 3 hours.", icon: "⏱️" },
+            { id: "sixty_seven", name: "The 67 Beers", desc: "Beat the secret minigame.", icon: "🍺" }
         ];
 
         let achievementsUnlocked = JSON.parse(localStorage.getItem('boulderAchievements')) || [];
