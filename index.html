@@ -67,6 +67,39 @@
         </div>
     </div>
 
+    <!-- Session Summary Overlay -->
+    <div id="sessionSummaryOverlay" class="fixed inset-0 z-[70] bg-neutral-950/95 backdrop-blur-md hidden flex-col items-center justify-center p-6" style="touch-action: none;">
+        <div class="w-full max-w-sm bg-neutral-900 border border-neutral-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+            <!-- Decorative gradient bg -->
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/20 blur-3xl rounded-full pointer-events-none"></div>
+            <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-cyan-500/20 blur-3xl rounded-full pointer-events-none"></div>
+            
+            <h2 class="text-3xl font-black text-white text-center mb-2 relative z-10">SESSION<br><span class="text-emerald-400">COMPLETE</span></h2>
+            <p class="text-center text-neutral-500 text-sm font-bold tracking-widest uppercase mb-8 relative z-10" id="summaryDate">Today</p>
+
+            <div class="grid grid-cols-2 gap-4 mb-8 relative z-10">
+                <div class="bg-neutral-950/50 p-4 rounded-2xl border border-neutral-800/50 text-center">
+                    <div class="text-4xl font-black text-emerald-400" id="summaryScore">0</div>
+                    <div class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mt-1">Total Score</div>
+                </div>
+                <div class="bg-neutral-950/50 p-4 rounded-2xl border border-neutral-800/50 text-center">
+                    <div class="text-4xl font-black text-white" id="summaryTime">0m</div>
+                    <div class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mt-1">Duration</div>
+                </div>
+                <div class="bg-neutral-950/50 p-4 rounded-2xl border border-neutral-800/50 text-center">
+                    <div class="text-4xl font-black text-white" id="summaryClimbs">0</div>
+                    <div class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mt-1">Sends</div>
+                </div>
+                <div class="bg-neutral-950/50 p-4 rounded-2xl border border-neutral-800/50 text-center">
+                    <div class="text-4xl font-black text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.3)]" id="summaryBest">V0</div>
+                    <div class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mt-1">Best Climb</div>
+                </div>
+            </div>
+
+            <button onclick="closeSessionSummary()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-black text-lg py-4 rounded-2xl transition-colors haptic-feedback relative z-10 shadow-[0_0_20px_rgba(16,185,129,0.3)]">SAVE & CLOSE</button>
+        </div>
+    </div>
+
     <div
         class="max-w-md mx-auto h-[100dvh] bg-neutral-950 relative overflow-hidden flex flex-col sm:border-x sm:border-neutral-800 shadow-2xl">
 
@@ -1588,6 +1621,44 @@
             localStorage.removeItem('boulderActiveSession');
 
             if (boulderHistory.length >= 5) unlockAchievement('consistency');
+
+            // Calculate Summary Stats
+            let bestScore = -1;
+            let bestName = "-";
+            sessionClimbs.forEach(c => {
+                if (c.points > bestScore) {
+                    bestScore = c.points;
+                    bestName = c.gradeStr || "-";
+                }
+            });
+            if (bestScore === -1 && sessionClimbs.length > 0) bestName = sessionClimbs[0].gradeStr || "V?";
+
+            const durationMinutes = Math.round(durationSeconds / 60);
+
+            // Populate Summary Modal
+            document.getElementById('summaryScore').innerText = sessionScore;
+            document.getElementById('summaryTime').innerText = durationMinutes + "m";
+            document.getElementById('summaryClimbs').innerText = sessionClimbs.length;
+            document.getElementById('summaryBest').innerText = bestName;
+            document.getElementById('summaryDate').innerText = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+
+            // Show Summary Modal
+            document.getElementById('sessionSummaryOverlay').classList.replace('hidden', 'flex');
+
+            // Confetti!
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 150,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    colors: ['#10b981', '#06b6d4', '#fbbf24'],
+                    zIndex: 200
+                });
+            }
+        }
+
+        function closeSessionSummary() {
+            document.getElementById('sessionSummaryOverlay').classList.replace('flex', 'hidden');
 
             if (sessionTimerInterval) {
                 clearInterval(sessionTimerInterval);
