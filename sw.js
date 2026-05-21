@@ -1,11 +1,13 @@
-const CACHE_NAME = 'sendlog-v61';
+const CACHE_NAME = 'sendlog-v62';
 const ASSETS = [
   './',
   'index.html',
   'manifest.json',
   'app_icon.png',
   'fix_tool.html',
-  'js/app.js'
+  'js/app.js',
+  'js/chart.js',
+  'js/gdrive.js'
 ];
 
 self.addEventListener('install', (event) => {
