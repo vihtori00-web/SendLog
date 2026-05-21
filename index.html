@@ -73,7 +73,7 @@
         <header class="p-5 border-b border-neutral-800 flex justify-between items-center z-10 shrink-0">
             <div class="flex flex-col">
                 <h1 class="text-2xl font-black tracking-widest bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">SEND<span class="text-white">LOG</span></h1>
-                <span class="app-version-text text-[8px] text-neutral-600 font-bold tracking-widest">v7.3.2</span>
+                <span class="app-version-text text-[8px] text-neutral-600 font-bold tracking-widest">v7.4.0</span>
             </div>
 
             <div class="flex items-center gap-2">
@@ -653,7 +653,7 @@
             
             <button onclick="forceHardRefresh()" class="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-neutral-900 border border-neutral-800 rounded-2xl active:scale-95 transition hover:border-blue-500/50 group mb-6">
                 <svg class="w-6 h-6 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span id="hardRefreshText" class="text-sm font-bold text-white">Hard Refresh (v7.3.2)</span>
+                <span id="hardRefreshText" class="text-sm font-bold text-white">Hard Refresh (v7.4.0)</span>
             </button>
 
             <!-- GOOGLE DRIVE CLOUD SYNC -->
@@ -741,7 +741,39 @@
     </div>
 
     <script>
-        const APP_VERSION = 'v7.3.2';
+        const APP_VERSION = 'v7.4.0';
+
+        // =============================================
+        // EARLY OAUTH REDIRECT INTERCEPTOR
+        // Must run BEFORE anything else to catch tokens
+        // from Google OAuth redirects immediately.
+        // =============================================
+        (function earlyOAuthIntercept() {
+            try {
+                const fullUrl = window.location.href || document.URL || '';
+                const hashPart = (window.location.hash || '').replace(/^#\/?\??/, '');
+                const searchPart = (window.location.search || '').substring(1);
+                const combined = hashPart + '&' + searchPart;
+                const params = new URLSearchParams(combined);
+                const token = params.get('access_token');
+                const expiresIn = params.get('expires_in');
+
+                if (token) {
+                    // Save token immediately to localStorage before anything can go wrong
+                    localStorage.setItem('gdrive_access_token', token);
+                    localStorage.setItem('gdrive_token_expires_at', String(Date.now() + (parseInt(expiresIn || '3600') * 1000)));
+                    localStorage.setItem('gdrive_connected', 'true');
+                    localStorage.setItem('gdrive_early_token', 'true');
+                    localStorage.removeItem('gdrive_auth_pending');
+                    // Clean URL immediately
+                    window.history.replaceState(null, null, window.location.pathname);
+                    console.log('[SendLog] Early OAuth intercept: token captured and saved.');
+                }
+            } catch (e) {
+                console.error('[SendLog] Early OAuth intercept failed:', e);
+            }
+        })();
+
         const DOM = {
             sessionTimerStr: document.getElementById('sessionTimerDisplay'),
             sessionScoreStr: document.getElementById('sessionScoreDisplay'),
@@ -3103,8 +3135,17 @@
             },
 
             loginRedirect() {
-                const redirectUri = window.location.origin + window.location.pathname;
-                const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(this.CLIENT_ID)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent('https://www.googleapis.com/auth/drive.file email profile')}&state=gdrive_auth&prompt=consent`;
+                // Normalize redirect URI - always use the exact current page URL (origin + pathname)
+                let redirectUri = window.location.origin + window.location.pathname;
+                // Ensure it ends with a known file or slash for consistency
+                if (!redirectUri.endsWith('/') && !redirectUri.endsWith('.html')) {
+                    redirectUri += '/';
+                }
+                console.log('[SendLog] OAuth redirect URI:', redirectUri);
+                // Save pending flag so we can detect if the redirect failed
+                localStorage.setItem('gdrive_auth_pending', String(Date.now()));
+                const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(this.CLIENT_ID)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent('https://www.googleapis.com/auth/drive.file email profile')}&state=gdrive_auth&prompt=select_account`;
+                // Navigate the full page to Google OAuth
                 window.location.href = oauthUrl;
             },
 
@@ -3132,6 +3173,26 @@
 
             handleOAuthRedirect() {
                 try {
+                    // Check if early interceptor already saved a token
+                    const earlyToken = localStorage.getItem('gdrive_early_token');
+                    if (earlyToken) {
+                        localStorage.removeItem('gdrive_early_token');
+                        this.accessToken = localStorage.getItem('gdrive_access_token');
+                        if (this.accessToken) {
+                            console.log('[SendLog] Using token captured by early interceptor.');
+                            localStorage.removeItem('gdrive_auth_pending');
+                            this.showLoadingOverlay("Connecting Account...");
+                            this.fetchUserInfo().then(() => {
+                                this.showLoadingOverlay(false);
+                                this.showToast("Connected", "Signed in as " + (this.userEmail || "Connected Account"), "🟢");
+                                this.renderUI();
+                                this.listBackups();
+                            });
+                            return true;
+                        }
+                    }
+
+                    // Also try parsing from current URL (fallback)
                     const combined = (window.location.hash || '').replace(/^#\/?\??/, '') + '&' + (window.location.search || '').substring(1);
                     const params = new URLSearchParams(combined);
                     const accessToken = params.get('access_token');
@@ -3140,8 +3201,9 @@
                     if (accessToken) {
                         this.accessToken = accessToken;
                         localStorage.setItem('gdrive_access_token', this.accessToken);
-                        localStorage.setItem('gdrive_token_expires_at', Date.now() + (parseInt(expiresIn || 3600) * 1000));
+                        localStorage.setItem('gdrive_token_expires_at', String(Date.now() + (parseInt(expiresIn || '3600') * 1000)));
                         localStorage.setItem('gdrive_connected', 'true');
+                        localStorage.removeItem('gdrive_auth_pending');
 
                         window.history.replaceState(null, null, window.location.pathname);
 
@@ -3153,6 +3215,20 @@
                             this.listBackups();
                         });
                         return true;
+                    }
+
+                    // Check if auth was pending but token wasn't found (redirect failed to pass hash)
+                    const authPending = localStorage.getItem('gdrive_auth_pending');
+                    if (authPending) {
+                        const elapsed = Date.now() - parseInt(authPending);
+                        // Only show message within 5 minutes of redirect
+                        if (elapsed < 300000) {
+                            localStorage.removeItem('gdrive_auth_pending');
+                            console.warn('[SendLog] OAuth redirect returned but no token found. Elapsed:', elapsed, 'ms');
+                            this.showToast("Sign-in Issue", "Token was lost during redirect. Please try again.", "⚠️");
+                        } else {
+                            localStorage.removeItem('gdrive_auth_pending');
+                        }
                     }
                 } catch (e) {
                     console.error("Error parsing Google OAuth redirect:", e);
