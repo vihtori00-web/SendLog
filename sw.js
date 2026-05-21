@@ -1,10 +1,11 @@
-const CACHE_NAME = 'sendlog-v60';
+const CACHE_NAME = 'sendlog-v61';
 const ASSETS = [
   './',
   'index.html',
   'manifest.json',
   'app_icon.png',
-  'fix_tool.html'
+  'fix_tool.html',
+  'js/app.js'
 ];
 
 self.addEventListener('install', (event) => {
