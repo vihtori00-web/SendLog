@@ -1,4 +1,4 @@
-        const APP_VERSION = 'v7.5.8';
+        const APP_VERSION = 'v7.5.9';
 
         // =============================================
         // EARLY OAUTH REDIRECT INTERCEPTOR
@@ -77,17 +77,15 @@
         
         // Training Mode state variables
         let trainingActive = false;
-        let trainingState = 'climb'; // 'climb', 'rest', 'complete'
+        let trainingState = 'climb'; // 'prepare', 'climb', 'complete'
         let trainingCurrentGradeIndex = 0;
         let trainingStartGradeIndex = 0;
         let trainingFocus = 'best'; // 'best' or 'anti'
         let trainingTimerEndEpoch = 0;
-        let trainingRestStartEpoch = 0;
         let trainingRung = 1;
         let trainingConfigGradeIndex = 0;
         let trainingFocusTags = [];
         let trainingTimerInterval = null;
-        let trainingRestInterval = null;
         
         let tagsMigrated = false;
         boulderHistory.forEach(s => {
@@ -572,7 +570,6 @@
                     trainingStartGradeIndex,
                     trainingFocus,
                     trainingTimerEndEpoch,
-                    trainingRestStartEpoch,
                     trainingRung,
                     trainingConfigGradeIndex,
                     trainingFocusTags
@@ -615,7 +612,6 @@
                         trainingStartGradeIndex = active.trainingStartGradeIndex || trainingCurrentGradeIndex;
                         trainingFocus = active.trainingFocus || 'best';
                         trainingTimerEndEpoch = active.trainingTimerEndEpoch || 0;
-                        trainingRestStartEpoch = active.trainingRestStartEpoch || 0;
                         trainingRung = active.trainingRung || 1;
                         trainingConfigGradeIndex = active.trainingConfigGradeIndex || trainingCurrentGradeIndex;
                         trainingFocusTags = active.trainingFocusTags || [];
@@ -807,7 +803,7 @@
                 gradeStr: fontGrades[currentGradeIndex],
                 statusText, color, tries, points,
                 time: timeStr,
-                tags: [...selectedTags],
+                tags: trainingActive ? [...trainingFocusTags] : [...selectedTags],
                 ...(isLadderSend && { isLadderAscent: true })
             });
 
@@ -1023,15 +1019,14 @@
         function getTagsForRung(focus, rung, sorted) {
             if (!sorted || sorted.length < 8) return [];
             if (focus === 'best') {
-                const bestPool = [sorted[0], sorted[1], sorted[2], sorted[3]];
-                const idx1 = (rung - 1) % 4;
-                const idx2 = rung % 4;
-                return [bestPool[idx1], bestPool[idx2]];
+                // Rotate through best-climbed styles one per rung (best → 2nd best → ... → cycle)
+                const idx = (rung - 1) % sorted.length;
+                return [sorted[idx]];
             } else {
-                const antiPool = [sorted[7], sorted[6], sorted[5], sorted[4]];
-                const idx1 = (rung - 1) % 4;
-                const idx2 = rung % 4;
-                return [antiPool[idx1], antiPool[idx2]];
+                // Rotate through worst-climbed styles one per rung (worst → 2nd worst → ... → cycle)
+                const antiSorted = [...sorted].reverse();
+                const idx = (rung - 1) % antiSorted.length;
+                return [antiSorted[idx]];
             }
         }
 
@@ -1138,47 +1133,6 @@
                 });
             }
 
-            trainingState = 'rest';
-            trainingRestStartEpoch = Date.now();
-
-            updateTrainingHUD();
-            updateTrainingSessionBanner();
-            startTrainingRestStopwatch();
-            saveActiveSession();
-        }
-
-        function startTrainingRestStopwatch() {
-            if (trainingRestInterval) clearInterval(trainingRestInterval);
-            trainingRestInterval = setInterval(updateTrainingRestHUD, 1000);
-            updateTrainingRestHUD();
-        }
-
-        function updateTrainingRestHUD() {
-            if (!trainingActive || trainingState !== 'rest') {
-                if (trainingRestInterval) {
-                    clearInterval(trainingRestInterval);
-                    trainingRestInterval = null;
-                }
-                return;
-            }
-
-            const totalSeconds = Math.floor((Date.now() - trainingRestStartEpoch) / 1000);
-            const m = Math.floor(totalSeconds / 60);
-            const s = totalSeconds % 60;
-            const timerStr = `${m}:${s.toString().padStart(2, '0')}`;
-
-            const restTimerHUD = document.getElementById('trainingRestTimer');
-            if (restTimerHUD) restTimerHUD.innerText = timerStr;
-        }
-
-        function startNextRung() {
-            if ('vibrate' in navigator) navigator.vibrate(30);
-
-            if (trainingRestInterval) {
-                clearInterval(trainingRestInterval);
-                trainingRestInterval = null;
-            }
-
             trainingRung++;
             trainingCurrentGradeIndex = Math.min(fontGrades.length - 1, trainingCurrentGradeIndex + 1);
             trainingState = 'prepare';
@@ -1218,10 +1172,6 @@
                 clearInterval(trainingTimerInterval);
                 trainingTimerInterval = null;
             }
-            if (trainingRestInterval) {
-                clearInterval(trainingRestInterval);
-                trainingRestInterval = null;
-            }
 
             trainingActive = false;
             trainingState = 'climb';
@@ -1244,25 +1194,46 @@
             const hud = document.getElementById('trainingHUD');
             if (!hud) return;
 
+            const elGrade = document.getElementById('gradeControlContainer');
+            const elAttempts = document.getElementById('attemptsControlContainer');
+            const elStatus = document.getElementById('statusButtonsContainer');
+            const elTags = document.getElementById('tagContainer');
+            const elSubmit = document.getElementById('submitButtonContainer');
+            
+            const btnGradeDec = document.getElementById('gradeDecBtn');
+            const btnGradeInc = document.getElementById('gradeIncBtn');
+
             if (!trainingActive) {
                 hud.classList.add('hidden');
+                if (elGrade) elGrade.classList.remove('hidden');
+                if (elAttempts) elAttempts.classList.remove('hidden');
+                if (elStatus) elStatus.classList.remove('hidden');
+                if (elTags) elTags.classList.remove('hidden');
+                if (elSubmit) elSubmit.classList.remove('hidden');
+                
+                if (btnGradeDec) { btnGradeDec.style.opacity = '1'; btnGradeDec.style.pointerEvents = 'auto'; }
+                if (btnGradeInc) { btnGradeInc.style.opacity = '1'; btnGradeInc.style.pointerEvents = 'auto'; }
                 return;
             }
 
             hud.classList.remove('hidden');
 
             const climbPanel = document.getElementById('trainingHUDClimb');
-            const restPanel = document.getElementById('trainingHUDRest');
             const timeoutPanel = document.getElementById('trainingHUDTimeout');
             const preparePanel = document.getElementById('trainingHUDPrepare');
 
             if (climbPanel) climbPanel.classList.add('hidden');
-            if (restPanel) restPanel.classList.add('hidden');
             if (timeoutPanel) timeoutPanel.classList.add('hidden');
             if (preparePanel) preparePanel.classList.add('hidden');
 
             if (trainingState === 'prepare') {
                 if (preparePanel) preparePanel.classList.remove('hidden');
+
+                if (elGrade) elGrade.classList.add('hidden');
+                if (elAttempts) elAttempts.classList.add('hidden');
+                if (elStatus) elStatus.classList.add('hidden');
+                if (elTags) elTags.classList.add('hidden');
+                if (elSubmit) elSubmit.classList.add('hidden');
 
                 const rungLabel = document.getElementById('trainingPrepareRungLabel');
                 const targetGrade = document.getElementById('trainingPrepareTargetGrade');
@@ -1279,6 +1250,15 @@
             } else if (trainingState === 'climb') {
                 if (climbPanel) climbPanel.classList.remove('hidden');
                 
+                if (elGrade) elGrade.classList.remove('hidden');
+                if (elAttempts) elAttempts.classList.remove('hidden');
+                if (elStatus) elStatus.classList.remove('hidden');
+                if (elSubmit) elSubmit.classList.remove('hidden');
+                if (elTags) elTags.classList.add('hidden');
+                
+                if (btnGradeDec) { btnGradeDec.style.opacity = '0'; btnGradeDec.style.pointerEvents = 'none'; }
+                if (btnGradeInc) { btnGradeInc.style.opacity = '0'; btnGradeInc.style.pointerEvents = 'none'; }
+
                 const rungLabel = document.getElementById('trainingRungLabel');
                 const targetGrade = document.getElementById('trainingTargetGrade');
                 const focusTags = document.getElementById('trainingFocusTags');
@@ -1291,13 +1271,14 @@
                         `<span class="bg-orange-500/20 text-orange-400 border border-orange-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-md">${t}</span>`
                     ).join('');
                 }
-            } else if (trainingState === 'rest') {
-                if (restPanel) restPanel.classList.remove('hidden');
-
-                const nextGrade = document.getElementById('trainingNextGrade');
-                if (nextGrade) nextGrade.innerText = fontGrades[Math.min(fontGrades.length - 1, trainingCurrentGradeIndex + 1)];
             } else if (trainingState === 'complete') {
                 if (timeoutPanel) timeoutPanel.classList.remove('hidden');
+
+                if (elGrade) elGrade.classList.add('hidden');
+                if (elAttempts) elAttempts.classList.add('hidden');
+                if (elStatus) elStatus.classList.add('hidden');
+                if (elTags) elTags.classList.add('hidden');
+                if (elSubmit) elSubmit.classList.add('hidden');
 
                 const peakDisplay = document.getElementById('trainingPeakDisplay');
                 if (peakDisplay) {
@@ -1326,8 +1307,6 @@
                         gradeBanner.innerText = `${fontGrades[trainingCurrentGradeIndex]} (Prepare)`;
                     } else if (trainingState === 'climb') {
                         gradeBanner.innerText = fontGrades[trainingCurrentGradeIndex];
-                    } else if (trainingState === 'rest') {
-                        gradeBanner.innerText = `${fontGrades[trainingCurrentGradeIndex]} (Resting)`;
                     } else if (trainingState === 'complete') {
                         gradeBanner.innerText = "Completed";
                     }
@@ -1355,8 +1334,6 @@
                     } else {
                         handleTrainingTimeout();
                     }
-                } else if (trainingState === 'rest') {
-                    startTrainingRestStopwatch();
                 }
             }
         }
@@ -1368,7 +1345,6 @@
         window.setTrainingFocus = setTrainingFocus;
         window.startTrainingMode = startTrainingMode;
         window.startTrainingClimbTimer = startTrainingClimbTimer;
-        window.startNextRung = startNextRung;
         window.forfeitTraining = forfeitTraining;
         window.endTraining = endTraining;
 
@@ -1381,7 +1357,6 @@
 
             if (trainingActive) {
                 if (trainingTimerInterval) clearInterval(trainingTimerInterval);
-                if (trainingRestInterval) clearInterval(trainingRestInterval);
                 trainingActive = false;
                 trainingState = 'climb';
                 trainingFocusTags = [];

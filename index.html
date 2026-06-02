@@ -177,17 +177,6 @@
                         </div>
                         <div id="trainingFocusTags" class="px-5 pb-4 flex gap-2 flex-wrap"></div>
                     </div>
-                    <!-- Rest State -->
-                    <div id="trainingHUDRest" class="hidden">
-                        <div class="px-5 pt-4 pb-2 flex items-center justify-between">
-                            <span class="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-400">✅ Topped! Rest now</span>
-                            <span id="trainingRestTimer" class="text-[9px] font-mono text-neutral-500">0:00</span>
-                        </div>
-                        <div class="px-5 pb-4">
-                            <p class="text-xs text-neutral-500 mb-3">Take as long as you need. Next: <span id="trainingNextGrade" class="text-orange-400 font-black">6A+</span></p>
-                            <button onclick="startNextRung()" class="w-full py-3 rounded-2xl bg-orange-500 text-black font-black uppercase tracking-widest text-base active:scale-95 transition-all shadow-lg shadow-orange-500/20">👉 Start Next Climb</button>
-                        </div>
-                    </div>
                     <!-- Timeout State -->
                     <div id="trainingHUDTimeout" class="hidden">
                         <div class="px-5 pt-4 pb-4 text-center">
@@ -199,21 +188,21 @@
                 </div>
 
                 <!-- Grade Control (Extreme Resiliency) -->
-                <div class="bg-neutral-900 overflow-hidden rounded-[2rem] border border-neutral-800 flex flex-col items-center justify-center py-3 relative select-none touch-manipulation shadow-md">
+                <div id="gradeControlContainer" class="bg-neutral-900 overflow-hidden rounded-[2rem] border border-neutral-800 flex flex-col items-center justify-center py-3 relative select-none touch-manipulation shadow-md">
                     <p class="text-neutral-500 text-[9px] font-black uppercase tracking-[0.2em] mb-0.5 pointer-events-none">Font Grade</p>
                     <div class="flex items-center justify-between w-full px-6 min-h-[clamp(3.5rem,10vh,5rem)]">
-                        <button onclick="adjGrade(-1)" class="w-12 h-12 flex items-center justify-start text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
+                        <button id="gradeDecBtn" onclick="adjGrade(-1)" class="w-12 h-12 flex items-center justify-start text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
                             <span class="text-4xl font-black">&minus;</span>
                         </button>
                         <span id="displayGrade" class="text-[clamp(2.5rem,12vw,4rem)] font-black tracking-tighter text-white drop-shadow-md leading-none">6A</span>
-                        <button onclick="adjGrade(1)" class="w-12 h-12 flex items-center justify-end text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
+                        <button id="gradeIncBtn" onclick="adjGrade(1)" class="w-12 h-12 flex items-center justify-end text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
                             <span class="text-4xl font-black">+</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- Attempts Control (Extreme Resiliency) -->
-                <div class="bg-neutral-900 overflow-hidden rounded-[2rem] border border-neutral-800 flex flex-col items-center justify-center py-3 relative select-none touch-manipulation shadow-md">
+                <div id="attemptsControlContainer" class="bg-neutral-900 overflow-hidden rounded-[2rem] border border-neutral-800 flex flex-col items-center justify-center py-3 relative select-none touch-manipulation shadow-md">
                     <p class="text-neutral-500 text-[9px] font-black uppercase tracking-[0.2em] mb-0.5 pointer-events-none">Attempts</p>
                     <div class="flex items-center justify-between w-full px-6 min-h-[clamp(3.5rem,10vh,5rem)]">
                         <button onclick="adjTries(-1)" class="w-12 h-12 flex items-center justify-start text-neutral-600 active:text-neutral-400 transition-colors outline-none haptic-feedback">
@@ -226,7 +215,7 @@
                     </div>
                 </div>
 
-                <div class="flex gap-3 shrink-0 h-[clamp(4rem,12vh,5.5rem)]">
+                <div id="statusButtonsContainer" class="flex gap-3 shrink-0 h-[clamp(4rem,12vh,5.5rem)]">
                     <button id="btnTop" onclick="toggleTop()"
                         class="flex-1 rounded-[1.8rem] bg-neutral-900 border border-neutral-800 text-neutral-500 font-black uppercase tracking-[0.15em] text-sm flex items-center justify-center transition-all haptic-feedback">
                         Topped
@@ -241,7 +230,7 @@
                     <!-- Dynamic style tags go here -->
                 </div>
 
-                <div class="mt-auto pt-2 shrink-0">
+                <div id="submitButtonContainer" class="mt-auto pt-2 shrink-0">
                     <button onclick="logClimb()" id="mainAddButton"
                         class="w-full h-[clamp(4.5rem,14vh,6.5rem)] rounded-[2.5rem] bg-emerald-500 text-black font-black uppercase tracking-[0.3em] text-2xl shadow-xl shadow-emerald-500/20 active:scale-95 transition-all outline-none">
                         Log Climb
