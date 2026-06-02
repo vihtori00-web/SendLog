@@ -1,4 +1,4 @@
-        const APP_VERSION = 'v7.5.2';
+        const APP_VERSION = 'v7.5.3';
 
         // =============================================
         // EARLY OAUTH REDIRECT INTERCEPTOR
@@ -911,21 +911,6 @@
             if (push) {
                 history.pushState({ tab: tabId }, '', '#' + tabId);
                 if ('vibrate' in navigator) navigator.vibrate(5);
-            }
-        }
-
-        function toggleHistorySheet() {
-            const sheet = document.getElementById('sessionHistorySheet');
-            if(!sheet) return;
-            const isClosed = sheet.classList.contains('translate-y-[calc(100%-4rem)]');
-            
-            if (isClosed) {
-                sheet.classList.remove('translate-y-[calc(100%-4rem)]');
-                sheet.classList.add('translate-y-0');
-                if ('vibrate' in navigator) navigator.vibrate(10);
-            } else {
-                sheet.classList.add('translate-y-[calc(100%-4rem)]');
-                sheet.classList.remove('translate-y-0');
             }
         }
 

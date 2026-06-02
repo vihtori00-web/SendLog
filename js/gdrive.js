@@ -275,7 +275,8 @@
                         this.login();
                     } else {
                         console.log('[SendLog] Silent auto-backup skipped: Google session is expired.');
-                        this.showToast("Backup Skipped", "Google session expired. Tap Reconnect inside your profile to renew.", "⚠️");
+                        // Deliberately removed the showToast here so we don't annoy the user
+                        // every time they log a climb while the token is expired.
                     }
                     return;
                 }

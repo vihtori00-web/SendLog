@@ -1,4 +1,4 @@
-﻿        // -- LOGIC: CHART & ANALYTICS --
+        // -- LOGIC: CHART & ANALYTICS --
         const ctx = document.getElementById('progressionChart').getContext('2d');
         Chart.defaults.color = '#737373';
         Chart.defaults.font.family = 'system-ui, -apple-system, sans-serif';
@@ -71,65 +71,27 @@
 
         function toggleChartDropdown(type) {
             if (window.event) window.event.stopPropagation();
-            if (type === 'primary') {
-                document.getElementById('primarySelDropdown').classList.toggle('hidden');
-                document.getElementById('secondarySelDropdown').classList.add('hidden');
-            } else {
+            if (type === 'secondary') {
                 document.getElementById('secondarySelDropdown').classList.toggle('hidden');
-                document.getElementById('primarySelDropdown').classList.add('hidden');
             }
         }
 
         function selectChartMetric(type, metric) {
-            if (type === 'primary') {
-                activeTrendMetric = metric;
-                if (activeTrendMetric === activeTrendSecondary) {
-                    activeTrendSecondary = activeTrendMetric === 'avg_grade' ? 'score' : 'avg_grade';
-                }
-            } else {
+            if (type === 'secondary') {
                 activeTrendSecondary = metric;
                 if (activeTrendSecondary === activeTrendMetric && activeTrendSecondary !== 'none') {
                     activeTrendMetric = activeTrendSecondary === 'avg_grade' ? 'score' : 'avg_grade';
                 }
             }
             
-            document.getElementById('primarySelDropdown').classList.add('hidden');
-            document.getElementById('secondarySelDropdown').classList.add('hidden');
+            const drop = document.getElementById('secondarySelDropdown');
+            if (drop) drop.classList.add('hidden');
             
             updateSelectorButtonsUI();
             updateAnalytics();
         }
 
         function updateSelectorButtonsUI() {
-            const pBtn = document.getElementById('primarySelBtn');
-            const pText = document.getElementById('primarySelText');
-            if (pBtn && pText) {
-                const names = {
-                    score: 'Score', sends: 'Sends', avg_grade: 'Avg Grade',
-                    flash_pct: 'Flash %', projects: 'Proj Tries', duration: 'Duration'
-                };
-                pText.innerText = names[activeTrendMetric] || 'Score';
-                
-                pBtn.classList.remove(
-                    'border-emerald-500/60', 'text-emerald-400',
-                    'border-purple-500/60', 'text-purple-400',
-                    'border-amber-500/60', 'text-amber-400',
-                    'border-orange-500/60', 'text-orange-400',
-                    'border-blue-500/60', 'text-blue-400',
-                    'border-neutral-800', 'text-neutral-400'
-                );
-                
-                const classes = {
-                    score: ['border-emerald-500/60', 'text-emerald-400'],
-                    sends: ['border-emerald-500/60', 'text-emerald-400'],
-                    avg_grade: ['border-purple-500/60', 'text-purple-400'],
-                    flash_pct: ['border-amber-500/60', 'text-amber-400'],
-                    projects: ['border-orange-500/60', 'text-orange-400'],
-                    duration: ['border-blue-500/60', 'text-blue-400']
-                };
-                const activeClasses = classes[activeTrendMetric] || ['border-neutral-800', 'text-neutral-400'];
-                activeClasses.forEach(cls => pBtn.classList.add(cls));
-            }
 
             const sBtn = document.getElementById('secondarySelBtn');
             const sText = document.getElementById('secondarySelText');
@@ -169,12 +131,7 @@
 
         // Global dismiss for chart selectors
         document.addEventListener('click', (e) => {
-            const pWrap = document.getElementById('primarySelectorWrapper');
             const sWrap = document.getElementById('secondarySelectorWrapper');
-            if (pWrap && !pWrap.contains(e.target)) {
-                const drop = document.getElementById('primarySelDropdown');
-                if (drop) drop.classList.add('hidden');
-            }
             if (sWrap && !sWrap.contains(e.target)) {
                 const drop = document.getElementById('secondarySelDropdown');
                 if (drop) drop.classList.add('hidden');
@@ -203,12 +160,9 @@
         }
 
         function setActiveTrendMetric(metric) {
+            if (currentChartType !== 'line') return;
             activeTrendMetric = metric;
-            if (currentChartType !== 'line') {
-                setChartType('line');
-            } else {
-                updateAnalytics();
-            }
+            updateAnalytics();
         }
 
         function updateCardHighlights() {
@@ -223,6 +177,8 @@
             };
 
             const cards = document.querySelectorAll('[data-metric]');
+            const isLineChart = currentChartType === 'line';
+
             cards.forEach(card => {
                 const cardMetric = card.getAttribute('data-metric');
                 Object.values(styles).forEach(s => {
@@ -231,10 +187,15 @@
                 });
                 card.classList.add('border-neutral-800');
 
-                if (cardMetric === metric) {
-                    card.classList.remove('border-neutral-800');
-                    card.classList.add(styles[metric].border);
-                    styles[metric].shadow.split(' ').forEach(cls => card.classList.add(cls));
+                if (isLineChart) {
+                    card.classList.add('cursor-pointer', 'hover:bg-neutral-800/80', 'active:scale-[0.98]');
+                    if (cardMetric === metric) {
+                        card.classList.remove('border-neutral-800');
+                        card.classList.add(styles[metric].border);
+                        styles[metric].shadow.split(' ').forEach(cls => card.classList.add(cls));
+                    }
+                } else {
+                    card.classList.remove('cursor-pointer', 'hover:bg-neutral-800/80', 'active:scale-[0.98]');
                 }
             });
         }
@@ -277,11 +238,10 @@
 
             document.getElementById('statTotalPoints').innerText = stats.totalPoints;
             document.getElementById('statTotalSends').innerText = stats.totalSends;
-            document.getElementById('statSessions').innerText = filteredHistory.length;
+            document.getElementById('historyPeriodSummary').innerText = `${filteredHistory.length} sessions completed`;
             document.getElementById('statProjectTries').innerText = stats.totalProjTries;
             document.getElementById('statFlashRate').innerText = stats.flashRate + '%';
             document.getElementById('statAvgTime').innerText = stats.avgDur || '-';
-            document.getElementById('statAvgSends').innerText = stats.avgSends;
             
             const gIdx = Math.floor(stats.avgGradeScore);
             const gRem = (stats.avgGradeScore - gIdx).toFixed(1);
