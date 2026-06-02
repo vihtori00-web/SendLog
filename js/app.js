@@ -1,4 +1,4 @@
-        const APP_VERSION = 'v7.5.9';
+        const APP_VERSION = 'v7.5.10';
 
         // =============================================
         // EARLY OAUTH REDIRECT INTERCEPTOR
@@ -1019,14 +1019,17 @@
         function getTagsForRung(focus, rung, sorted) {
             if (!sorted || sorted.length < 8) return [];
             if (focus === 'best') {
-                // Rotate through best-climbed styles one per rung (best → 2nd best → ... → cycle)
-                const idx = (rung - 1) % sorted.length;
-                return [sorted[idx]];
+                // Rotate pairs through the top 4 best-climbed styles
+                const bestPool = [sorted[0], sorted[1], sorted[2], sorted[3]];
+                const idx1 = (rung - 1) % 4;
+                const idx2 = rung % 4;
+                return [bestPool[idx1], bestPool[idx2]];
             } else {
-                // Rotate through worst-climbed styles one per rung (worst → 2nd worst → ... → cycle)
-                const antiSorted = [...sorted].reverse();
-                const idx = (rung - 1) % antiSorted.length;
-                return [antiSorted[idx]];
+                // Rotate pairs through the 4 least-climbed styles (worst first)
+                const antiPool = [sorted[7], sorted[6], sorted[5], sorted[4]];
+                const idx1 = (rung - 1) % 4;
+                const idx2 = rung % 4;
+                return [antiPool[idx1], antiPool[idx2]];
             }
         }
 
@@ -1177,15 +1180,14 @@
             trainingState = 'climb';
             trainingFocusTags = [];
 
-            const hud = document.getElementById('trainingHUD');
-            if (hud) hud.classList.add('hidden');
-
             const banner = document.getElementById('trainingSessionBanner');
             if (banner) banner.classList.add('hidden');
 
             const card = document.getElementById('trainingLaunchCard');
             if (card) card.classList.remove('hidden');
 
+            // Restore all hidden log controls and hide the HUD
+            updateTrainingHUD();
             updateUI();
             saveActiveSession();
         }
@@ -1205,11 +1207,11 @@
 
             if (!trainingActive) {
                 hud.classList.add('hidden');
-                if (elGrade) elGrade.classList.remove('hidden');
-                if (elAttempts) elAttempts.classList.remove('hidden');
-                if (elStatus) elStatus.classList.remove('hidden');
-                if (elTags) elTags.classList.remove('hidden');
-                if (elSubmit) elSubmit.classList.remove('hidden');
+                if (elGrade) elGrade.style.display = '';
+                if (elAttempts) elAttempts.style.display = '';
+                if (elStatus) elStatus.style.display = '';
+                if (elTags) elTags.style.display = '';
+                if (elSubmit) elSubmit.style.display = '';
                 
                 if (btnGradeDec) { btnGradeDec.style.opacity = '1'; btnGradeDec.style.pointerEvents = 'auto'; }
                 if (btnGradeInc) { btnGradeInc.style.opacity = '1'; btnGradeInc.style.pointerEvents = 'auto'; }
@@ -1229,11 +1231,11 @@
             if (trainingState === 'prepare') {
                 if (preparePanel) preparePanel.classList.remove('hidden');
 
-                if (elGrade) elGrade.classList.add('hidden');
-                if (elAttempts) elAttempts.classList.add('hidden');
-                if (elStatus) elStatus.classList.add('hidden');
-                if (elTags) elTags.classList.add('hidden');
-                if (elSubmit) elSubmit.classList.add('hidden');
+                if (elGrade) elGrade.style.display = 'none';
+                if (elAttempts) elAttempts.style.display = 'none';
+                if (elStatus) elStatus.style.display = 'none';
+                if (elTags) elTags.style.display = 'none';
+                if (elSubmit) elSubmit.style.display = 'none';
 
                 const rungLabel = document.getElementById('trainingPrepareRungLabel');
                 const targetGrade = document.getElementById('trainingPrepareTargetGrade');
@@ -1250,11 +1252,11 @@
             } else if (trainingState === 'climb') {
                 if (climbPanel) climbPanel.classList.remove('hidden');
                 
-                if (elGrade) elGrade.classList.remove('hidden');
-                if (elAttempts) elAttempts.classList.remove('hidden');
-                if (elStatus) elStatus.classList.remove('hidden');
-                if (elSubmit) elSubmit.classList.remove('hidden');
-                if (elTags) elTags.classList.add('hidden');
+                if (elGrade) elGrade.style.display = '';
+                if (elAttempts) elAttempts.style.display = '';
+                if (elStatus) elStatus.style.display = '';
+                if (elSubmit) elSubmit.style.display = '';
+                if (elTags) elTags.style.display = 'none';
                 
                 if (btnGradeDec) { btnGradeDec.style.opacity = '0'; btnGradeDec.style.pointerEvents = 'none'; }
                 if (btnGradeInc) { btnGradeInc.style.opacity = '0'; btnGradeInc.style.pointerEvents = 'none'; }
@@ -1274,11 +1276,11 @@
             } else if (trainingState === 'complete') {
                 if (timeoutPanel) timeoutPanel.classList.remove('hidden');
 
-                if (elGrade) elGrade.classList.add('hidden');
-                if (elAttempts) elAttempts.classList.add('hidden');
-                if (elStatus) elStatus.classList.add('hidden');
-                if (elTags) elTags.classList.add('hidden');
-                if (elSubmit) elSubmit.classList.add('hidden');
+                if (elGrade) elGrade.style.display = 'none';
+                if (elAttempts) elAttempts.style.display = 'none';
+                if (elStatus) elStatus.style.display = 'none';
+                if (elTags) elTags.style.display = 'none';
+                if (elSubmit) elSubmit.style.display = 'none';
 
                 const peakDisplay = document.getElementById('trainingPeakDisplay');
                 if (peakDisplay) {
