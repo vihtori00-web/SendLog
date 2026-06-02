@@ -1,4 +1,4 @@
-        const APP_VERSION = 'v7.5.1';
+        const APP_VERSION = 'v7.5.2';
 
         // =============================================
         // EARLY OAUTH REDIRECT INTERCEPTOR

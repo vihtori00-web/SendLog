@@ -1,4 +1,4 @@
-﻿        // GOOGLE DRIVE CLOUD SYNC & BACKUP INTEGRATION (GDrive Module)
+        // GOOGLE DRIVE CLOUD SYNC & BACKUP INTEGRATION (GDrive Module)
         // ==========================================
         const GDrive = {
             CLIENT_ID: '283005114720-b879l8c73oufpe1juk74v243frc3uod5.apps.googleusercontent.com',
@@ -126,7 +126,7 @@
                 console.log('[SendLog] OAuth redirect URI:', redirectUri);
                 // Save pending flag so we can detect if the redirect failed
                 localStorage.setItem('gdrive_auth_pending', String(Date.now()));
-                const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(this.CLIENT_ID)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent('https://www.googleapis.com/auth/drive.file email profile')}&state=gdrive_auth&prompt=select_account`;
+                const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(this.CLIENT_ID)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent('https://www.googleapis.com/auth/drive.file email profile')}&state=gdrive_auth`;
                 // Navigate the full page to Google OAuth
                 window.location.href = oauthUrl;
             },
@@ -229,7 +229,22 @@
 
                     const expiresAt = localStorage.getItem('gdrive_token_expires_at');
                     if (!expiresAt || Date.now() >= parseInt(expiresAt)) {
-                        this.attemptSilentTokenRenewal();
+                        this.accessToken = null;
+                        localStorage.removeItem('gdrive_access_token');
+                        this.renderUI();
+                        
+                        const listContainer = document.getElementById('gdriveBackupsList');
+                        if (listContainer) {
+                            listContainer.innerHTML = `
+                                <div class="text-center py-6 text-neutral-500 text-xs flex flex-col items-center gap-2">
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-amber-500">Google Session Expired</span>
+                                    <span class="text-[9px] text-neutral-600">Your secure Drive connection has expired.</span>
+                                    <button onclick="GDrive.login()" class="mt-1 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase tracking-wider rounded-xl transition active:scale-95 text-[9px]">
+                                        Reconnect Now
+                                    </button>
+                                </div>
+                            `;
+                        }
                     } else if (!lightweight) {
                         this.listBackups();
                     }
@@ -259,7 +274,8 @@
                     if (!silent) {
                         this.login();
                     } else {
-                        this.attemptSilentTokenRenewal();
+                        console.log('[SendLog] Silent auto-backup skipped: Google session is expired.');
+                        this.showToast("Backup Skipped", "Google session expired. Tap Reconnect inside your profile to renew.", "⚠️");
                     }
                     return;
                 }
@@ -571,16 +587,6 @@
             }
         }
 
-        // Auto-check connection when app gains focus or visibility (crucial for PWA sheets/in-app tabs)
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                GDrive.checkConnection(true);
-            }
-        });
-
-        window.addEventListener('focus', () => {
-            GDrive.checkConnection(true);
-        });
 
         // Init on load with safety guards
         try {
