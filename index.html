@@ -130,6 +130,50 @@
 
             <section id="page-log" class="p-4 flex flex-col space-y-3 w-full shrink-0 h-[100%] overflow-y-auto snap-center snap-always relative">
 
+                <!-- Training Mode HUD (shown when training is active) -->
+                <div id="trainingHUD" class="hidden bg-neutral-900 border border-neutral-800 rounded-[2rem] overflow-hidden shadow-lg shrink-0">
+                    <!-- Active Climb State -->
+                    <div id="trainingHUDClimb">
+                        <div class="flex items-center justify-between px-5 pt-4 pb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] font-black uppercase tracking-[0.2em] text-orange-400">🏋️ Training</span>
+                                <span id="trainingRungLabel" class="text-[9px] font-black text-neutral-600 uppercase tracking-wider">Rung 1</span>
+                            </div>
+                            <button onclick="forfeitTraining()" class="text-[9px] font-black uppercase tracking-wider text-neutral-600 hover:text-red-400 active:scale-95 transition-all">End</button>
+                        </div>
+                        <div class="flex items-center justify-between px-5 pb-3">
+                            <div>
+                                <p class="text-[9px] font-black uppercase tracking-widest text-neutral-500 mb-1">Target Grade</p>
+                                <p id="trainingTargetGrade" class="text-4xl font-black text-orange-400 leading-none">6A</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[9px] font-black uppercase tracking-widest text-neutral-500 mb-1">Time Left</p>
+                                <p id="trainingTimerDisplay" class="text-3xl font-black font-mono text-white leading-none">5:00</p>
+                            </div>
+                        </div>
+                        <div id="trainingFocusTags" class="px-5 pb-4 flex gap-2 flex-wrap"></div>
+                    </div>
+                    <!-- Rest State -->
+                    <div id="trainingHUDRest" class="hidden">
+                        <div class="px-5 pt-4 pb-2 flex items-center justify-between">
+                            <span class="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-400">✅ Topped! Rest now</span>
+                            <span id="trainingRestTimer" class="text-[9px] font-mono text-neutral-500">0:00</span>
+                        </div>
+                        <div class="px-5 pb-4">
+                            <p class="text-xs text-neutral-500 mb-3">Take as long as you need. Next: <span id="trainingNextGrade" class="text-orange-400 font-black">6A+</span></p>
+                            <button onclick="startNextRung()" class="w-full py-3 rounded-2xl bg-orange-500 text-black font-black uppercase tracking-widest text-base active:scale-95 transition-all shadow-lg shadow-orange-500/20">👉 Start Next Climb</button>
+                        </div>
+                    </div>
+                    <!-- Timeout State -->
+                    <div id="trainingHUDTimeout" class="hidden">
+                        <div class="px-5 pt-4 pb-4 text-center">
+                            <p class="text-2xl font-black text-red-400 mb-1">⏰ Time's Up</p>
+                            <p class="text-xs text-neutral-500 mb-3">You reached <span id="trainingPeakDisplay" class="text-orange-400 font-black"></span></p>
+                            <button onclick="endTraining()" class="w-full py-3 rounded-2xl bg-neutral-800 text-white font-black uppercase tracking-widest text-sm active:scale-95 transition-all">Return to Session</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Grade Control (Extreme Resiliency) -->
                 <div class="bg-neutral-900 overflow-hidden rounded-[2rem] border border-neutral-800 flex flex-col items-center justify-center py-3 relative select-none touch-manipulation shadow-md">
                     <p class="text-neutral-500 text-[9px] font-black uppercase tracking-[0.2em] mb-0.5 pointer-events-none">Font Grade</p>
@@ -199,6 +243,28 @@
                     </div>
                 </div>
 
+                <!-- Training Mode Banner (shown in session when training is active) -->
+                <div id="trainingSessionBanner" class="hidden bg-orange-500/10 border border-orange-500/30 rounded-2xl px-4 py-3 flex items-center gap-3 shrink-0">
+                    <span class="text-xl">🏋️</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[10px] font-black uppercase tracking-wider text-orange-400">Training Active</p>
+                        <p class="text-xs text-neutral-400">Target: <span id="trainingBannerGrade" class="text-orange-400 font-black">6A</span> · <span id="trainingBannerTimer" class="font-mono text-neutral-300">5:00</span></p>
+                    </div>
+                    <button onclick="switchTab('log')" class="text-[9px] font-black uppercase tracking-wider text-orange-400 bg-orange-500/20 border border-orange-500/30 px-3 py-1.5 rounded-xl active:scale-95 transition-all">Go Log</button>
+                </div>
+
+                <!-- Training Ladder Launch Button -->
+                <div id="trainingLaunchCard" class="bg-neutral-900 border border-neutral-800 rounded-2xl px-4 py-3 flex items-center gap-3 shrink-0 cursor-pointer active:bg-neutral-800/80 transition-all" onclick="openTrainingConfig()">
+                    <div class="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center shrink-0">
+                        <span class="text-lg">🏋️</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-black text-white">Training Ladder</p>
+                        <p class="text-[10px] text-neutral-500">Grade-by-grade progressive challenge</p>
+                    </div>
+                    <svg class="w-4 h-4 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+
                 <div class="flex-1 overflow-y-auto mb-2 bg-neutral-900 rounded-[2rem] p-4 border border-neutral-800">
                     <h3 class="text-[10px] font-black text-neutral-500 mb-3 uppercase tracking-widest">Logged Climbs</h3>
                     <ul id="sessionList" class="space-y-2">
@@ -260,10 +326,14 @@
 
                     <!-- Streak & Personal Records -->
                     <div class="px-5 mt-3 flex flex-col gap-2">
-                        <div class="grid grid-cols-2 gap-2">
+                        <div class="grid grid-cols-3 gap-2">
                             <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
                                 <span class="text-orange-400 text-2xl font-black" id="statCurrentStreak">0</span>
                                 <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">🔥 Streak</span>
+                            </div>
+                            <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md border-orange-500/20 bg-orange-500/5">
+                                <span class="text-orange-400 text-2xl font-black" id="prHighestLadder">-</span>
+                                <span class="text-[8px] uppercase font-black tracking-widest text-neutral-500 mt-1">🪜 Peak Ladder</span>
                             </div>
                             <div class="bg-neutral-900/80 border border-neutral-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md">
                                 <span class="text-amber-400 text-2xl font-black" id="statLongestStreak">0</span>
@@ -476,6 +546,68 @@
 
         </div>
 
+
+    <!-- TRAINING MODE CONFIG MODAL -->
+    <div id="trainingConfigOverlay" class="fixed inset-0 z-[80] bg-black/70 backdrop-blur-sm hidden items-end justify-center" onclick="closeTrainingConfig(event)">
+        <div id="trainingConfigSheet" class="bg-neutral-950 border border-neutral-800 rounded-t-[2.5rem] w-full max-w-md flex flex-col shadow-2xl pointer-events-auto transform translate-y-full transition-transform duration-300 ease-out pb-10">
+            <!-- Handle -->
+            <div class="flex justify-center pt-3 pb-1 shrink-0">
+                <div class="w-10 h-1 bg-neutral-700 rounded-full"></div>
+            </div>
+            <!-- Header -->
+            <div class="px-6 pt-2 pb-5 border-b border-neutral-800">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-xl font-black text-white">🏋️ Training Ladder</h3>
+                        <p class="text-[10px] text-neutral-500 font-bold uppercase tracking-widest mt-0.5">Configure your challenge</p>
+                    </div>
+                    <button onclick="closeTrainingConfig()" class="text-neutral-500 hover:text-white bg-neutral-800 p-2 rounded-full active:scale-95 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+            <!-- Config Body -->
+            <div class="px-6 py-5 space-y-6">
+                <!-- Starting Grade Picker -->
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-3">Starting Grade</p>
+                    <div class="bg-neutral-900 border border-neutral-800 rounded-2xl flex items-center justify-between px-5 py-4">
+                        <button onclick="adjTrainingStartGrade(-1)" class="w-12 h-12 flex items-center justify-start text-neutral-500 active:text-white transition-colors">
+                            <span class="text-3xl font-black">&minus;</span>
+                        </button>
+                        <div class="text-center">
+                            <span id="trainingConfigGradeDisplay" class="text-4xl font-black text-orange-400">6A</span>
+                            <p class="text-[9px] text-neutral-600 font-bold uppercase tracking-widest mt-1" id="trainingConfigGradeHint">4 below max</p>
+                        </div>
+                        <button onclick="adjTrainingStartGrade(1)" class="w-12 h-12 flex items-center justify-end text-neutral-500 active:text-white transition-colors">
+                            <span class="text-3xl font-black">+</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Focus Style Selector -->
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-3">Training Focus</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="focusBtnBest" onclick="setTrainingFocus('best')" class="flex flex-col items-center gap-2 p-4 rounded-2xl border border-neutral-700 bg-neutral-900 transition-all active:scale-95">
+                            <span class="text-2xl">💪</span>
+                            <span class="text-xs font-black uppercase tracking-wider text-white">Best Style</span>
+                            <div id="bestStyleTags" class="flex flex-wrap gap-1 justify-center"></div>
+                        </button>
+                        <button id="focusBtnAnti" onclick="setTrainingFocus('anti')" class="flex flex-col items-center gap-2 p-4 rounded-2xl border border-neutral-700 bg-neutral-900 transition-all active:scale-95">
+                            <span class="text-2xl">🎯</span>
+                            <span class="text-xs font-black uppercase tracking-wider text-white">Anti-Style</span>
+                            <div id="antiStyleTags" class="flex flex-wrap gap-1 justify-center"></div>
+                        </button>
+                    </div>
+                    <p class="text-[9px] text-neutral-600 text-center mt-2 font-bold">Based on your climbing history</p>
+                </div>
+            </div>
+            <!-- Launch Button -->
+            <div class="px-6">
+                <button onclick="startTrainingMode()" class="w-full py-4 rounded-2xl bg-orange-500 text-black font-black uppercase tracking-[0.2em] text-lg active:scale-95 transition-all shadow-xl shadow-orange-500/20">🚀 Launch Ladder</button>
+            </div>
+        </div>
+    </div>
 
     <!-- ACHIEVEMENTS TOAST -->
     <div id="toastAlert" class="fixed top-4 left-4 right-4 bg-emerald-900/95 border-2 border-emerald-500 rounded-2xl p-4 shadow-[0_0_30px_rgba(16,185,129,0.4)] z-[200] transform -translate-y-[150%] transition-transform duration-500 flex items-center gap-4 backdrop-blur-md">

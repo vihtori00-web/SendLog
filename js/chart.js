@@ -254,6 +254,8 @@
             document.getElementById('prHighestGrade').innerText = pr.highestGrade;
             document.getElementById('prMostSends').innerText = pr.mostSends;
             document.getElementById('prLongestSession').innerText = pr.longestSession;
+            const hlEl = document.getElementById('prHighestLadder');
+            if (hlEl) hlEl.innerText = pr.highestLadder;
 
             // Streak (always computed from all history)
             const streak = getStreakData();
@@ -516,6 +518,16 @@
                 const fullDateTitle = isToday ? "Today's Session" : isYesterday ? "Yesterday's Session" : `Session on ${sDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
 
                 const climbCount = s.climbs ? s.climbs.length : 0;
+
+                // Training Mode: Check if there's any climb with isLadderAscent: true
+                const ladderClimbs = (s.climbs || []).filter(c => c.isLadderAscent);
+                let peakLadderBadge = "";
+                if (ladderClimbs.length > 0) {
+                    const peakGradeStr = ladderClimbs
+                        .map(c => c.gradeStr)
+                        .reduce((best, cur) => fontGrades.indexOf(cur) > fontGrades.indexOf(best) ? cur : best, ladderClimbs[0].gradeStr);
+                    peakLadderBadge = `<span class="bg-orange-500/20 text-orange-400 border border-orange-500/30 text-[9px] font-black uppercase px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0">🪜 Ladder Peak: ${peakGradeStr}</span>`;
+                }
                 
                 // Mini Grade Bar Logic
                 const gradeCounts = {};
@@ -550,6 +562,7 @@
                                     <span class="text-neutral-800 text-[8px]">●</span>
                                     <span class="text-[10px] font-bold text-blue-400">Avg: ${avgGrade}</span>
                                     ${flashes > 0 ? ` <span class="text-neutral-800 text-[8px]">●</span> <span class="text-[10px] font-bold text-amber-500">⚡ ${flashes} Flash</span>` : ''}
+                                    ${peakLadderBadge ? ` <span class="text-neutral-800 text-[8px]">●</span> ${peakLadderBadge}` : ''}
                                 </div>
                             </div>
                         </div>

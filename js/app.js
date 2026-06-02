@@ -1,4 +1,4 @@
-        const APP_VERSION = 'v7.5.5';
+        const APP_VERSION = 'v7.5.6';
 
         // =============================================
         // EARLY OAUTH REDIRECT INTERCEPTOR
@@ -74,6 +74,20 @@
         let climbIdCounter = 0;
         let selectedTags = [];
         let boulderHistory = JSON.parse(localStorage.getItem('boulderHistory')) || [];
+        
+        // Training Mode state variables
+        let trainingActive = false;
+        let trainingState = 'climb'; // 'climb', 'rest', 'complete'
+        let trainingCurrentGradeIndex = 0;
+        let trainingStartGradeIndex = 0;
+        let trainingFocus = 'best'; // 'best' or 'anti'
+        let trainingTimerEndEpoch = 0;
+        let trainingRestStartEpoch = 0;
+        let trainingRung = 1;
+        let trainingConfigGradeIndex = 0;
+        let trainingFocusTags = [];
+        let trainingTimerInterval = null;
+        let trainingRestInterval = null;
         
         let tagsMigrated = false;
         boulderHistory.forEach(s => {
@@ -156,7 +170,7 @@
         }
 
         function getPersonalRecords(historyArray) {
-            let bestScore = 0, highestGradeIdx = -1, mostSends = 0, longestDuration = 0;
+            let bestScore = 0, highestGradeIdx = -1, mostSends = 0, longestDuration = 0, highestLadderIdx = -1;
             historyArray.forEach(s => {
                 if (s.score > bestScore) bestScore = s.score;
                 if ((s.duration || 0) > longestDuration) longestDuration = s.duration;
@@ -166,6 +180,7 @@
                         sends++;
                         const gIdx = fontGrades.indexOf(c.gradeStr);
                         if (gIdx > highestGradeIdx) highestGradeIdx = gIdx;
+                        if (c.isLadderAscent && gIdx > highestLadderIdx) highestLadderIdx = gIdx;
                     }
                 });
                 if (sends > mostSends) mostSends = sends;
@@ -174,7 +189,8 @@
                 bestScore,
                 highestGrade: highestGradeIdx >= 0 ? fontGrades[highestGradeIdx] : '-',
                 mostSends: mostSends || '-',
-                longestSession: longestDuration > 0 ? formatDuration(longestDuration) : '-'
+                longestSession: longestDuration > 0 ? formatDuration(longestDuration) : '-',
+                highestLadder: highestLadderIdx >= 0 ? fontGrades[highestLadderIdx] : '-'
             };
         }
 
@@ -548,11 +564,22 @@
                 const activeSession = {
                     sessionStartTime,
                     sessionScore,
-                    sessionClimbs
+                    sessionClimbs,
+                    // Training state persistence
+                    trainingActive,
+                    trainingState,
+                    trainingCurrentGradeIndex,
+                    trainingStartGradeIndex,
+                    trainingFocus,
+                    trainingTimerEndEpoch,
+                    trainingRestStartEpoch,
+                    trainingRung,
+                    trainingConfigGradeIndex,
+                    trainingFocusTags
                 };
                 localStorage.setItem('boulderActiveSession', JSON.stringify(activeSession));
             } catch (e) {
-                console.error("Failed to save session:", e);
+                console.error('Failed to save session:', e);
             }
         }
 
@@ -565,12 +592,12 @@
                     sessionStartTime = active.sessionStartTime || Date.now();
                     sessionScore = active.sessionScore || 0;
                     sessionClimbs = active.sessionClimbs || [];
-                    
-                    // Restore climbIdCounter to avoid collisions 
+
+                    // Restore climbIdCounter to avoid collisions
                     if (sessionClimbs.length > 0) {
                         climbIdCounter = Math.max(...sessionClimbs.map(c => c.id)) + 1;
                     }
-                    
+
                     if (sessionStartTime) {
                         DOM.sessionTimerStr.classList.remove('hidden');
                         DOM.sessionScoreStr.classList.add('animate-score-pulse');
@@ -579,13 +606,27 @@
                         updateSessionTimer();
                         toggleSessionButtonUI(true);
                     }
-                    
-                    console.log(`Restored session with ${sessionClimbs.length} climbs and score ${sessionScore}`);
+
+                    // Restore training state if any
+                    if (active.trainingActive) {
+                        trainingActive = true;
+                        trainingState = active.trainingState || 'climb';
+                        trainingCurrentGradeIndex = active.trainingCurrentGradeIndex || 0;
+                        trainingStartGradeIndex = active.trainingStartGradeIndex || trainingCurrentGradeIndex;
+                        trainingFocus = active.trainingFocus || 'best';
+                        trainingTimerEndEpoch = active.trainingTimerEndEpoch || 0;
+                        trainingRestStartEpoch = active.trainingRestStartEpoch || 0;
+                        trainingRung = active.trainingRung || 1;
+                        trainingConfigGradeIndex = active.trainingConfigGradeIndex || trainingCurrentGradeIndex;
+                        trainingFocusTags = active.trainingFocusTags || [];
+                        restoreTrainingUI();
+                    }
+
                     renderSessionList();
                     updateAnalytics();
                 }
             } catch (e) {
-                console.error("Failed to load session:", e);
+                console.error('Failed to load session:', e);
             }
         }
 
@@ -631,6 +672,13 @@
 
         // -- LOGIC: INPUT --
         function adjGrade(dir) {
+            if (trainingActive && (trainingState === 'climb' || trainingState === 'rest')) {
+                if ('vibrate' in navigator) navigator.vibrate(30);
+                const elGrade = document.getElementById('displayGrade');
+                elGrade.classList.add('text-orange-500', 'scale-105');
+                setTimeout(() => elGrade.classList.remove('text-orange-500', 'scale-105'), 300);
+                return;
+            }
             if ('vibrate' in navigator) navigator.vibrate(15);
             currentGradeIndex = Math.max(0, Math.min(fontGrades.length - 1, currentGradeIndex + dir));
             elGrade.innerText = fontGrades[currentGradeIndex];
@@ -745,12 +793,17 @@
             const now = new Date();
             const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
 
+            const isLadderSend = trainingActive && trainingState === 'climb'
+                && currentGradeIndex === trainingCurrentGradeIndex
+                && (isTop || isFlash);
+
             sessionClimbs.unshift({
                 id: climbIdCounter++,
                 gradeStr: fontGrades[currentGradeIndex],
                 statusText, color, tries, points,
                 time: timeStr,
-                tags: [...selectedTags]
+                tags: [...selectedTags],
+                ...(isLadderSend && { isLadderAscent: true })
             });
 
             if (!sessionStartTime) {
@@ -781,6 +834,13 @@
             selectedTags = [];
             updateUI();
             renderTags();
+
+            // Training Mode: check if this climb completes a rung
+            if (trainingActive && trainingState === 'climb'
+                && currentGradeIndex === trainingCurrentGradeIndex
+                && (isTop || isFlash)) {
+                handleTrainingRungComplete();
+            }
         }
 
         // -- LOGIC: RENDER & DELETE SESSION CLIMBS --
@@ -826,11 +886,452 @@
             }
         }
 
+        // =============================================
+        // TRAINING MODE (ASCENT LADDER) IMPLEMENTATION
+        // =============================================
+
+        function openTrainingConfig() {
+            if (trainingActive) {
+                switchTab('log');
+                return;
+            }
+            const overlay = document.getElementById('trainingConfigOverlay');
+            const sheet = document.getElementById('trainingConfigSheet');
+            if (!overlay || !sheet) return;
+
+            const styles = analyzeHistoryStyles();
+            
+            const bestStyleTagsEl = document.getElementById('bestStyleTags');
+            const antiStyleTagsEl = document.getElementById('antiStyleTags');
+            
+            if (bestStyleTagsEl) {
+                bestStyleTagsEl.innerHTML = styles.best.map(t => 
+                    `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-md">${t}</span>`
+                ).join('') || `<span class="text-[8px] text-neutral-600">none</span>`;
+            }
+            if (antiStyleTagsEl) {
+                antiStyleTagsEl.innerHTML = styles.anti.map(t => 
+                    `<span class="bg-red-500/20 text-red-400 border border-red-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-md">${t}</span>`
+                ).join('') || `<span class="text-[8px] text-neutral-600">none</span>`;
+            }
+
+            trainingConfigGradeIndex = Math.max(0, maxGradeIndex - 4);
+            updateTrainingConfigGradeUI();
+            setTrainingFocus('best');
+
+            overlay.classList.replace('hidden', 'flex');
+            setTimeout(() => {
+                sheet.style.transform = 'translateY(0)';
+            }, 50);
+            
+            if (window.history.pushState) {
+                window.history.pushState({ overlay: 'trainingConfig' }, '', '#training-config');
+            }
+        }
+
+        function closeTrainingConfig(event) {
+            if (event && event.target !== event.currentTarget) {
+                if (event.target.closest('#trainingConfigSheet')) return;
+            }
+            const overlay = document.getElementById('trainingConfigOverlay');
+            const sheet = document.getElementById('trainingConfigSheet');
+            if (!overlay || !sheet) return;
+
+            sheet.style.transform = 'translateY(100%)';
+            setTimeout(() => {
+                overlay.classList.replace('flex', 'hidden');
+            }, 300);
+            
+            if (window.history.state && window.history.state.overlay === 'trainingConfig') {
+                window.history.back();
+            }
+        }
+
+        function adjTrainingStartGrade(dir) {
+            if ('vibrate' in navigator) navigator.vibrate(15);
+            trainingConfigGradeIndex = Math.max(0, Math.min(fontGrades.length - 1, trainingConfigGradeIndex + dir));
+            updateTrainingConfigGradeUI();
+        }
+
+        function updateTrainingConfigGradeUI() {
+            const displayEl = document.getElementById('trainingConfigGradeDisplay');
+            const hintEl = document.getElementById('trainingConfigGradeHint');
+            if (!displayEl) return;
+            
+            displayEl.innerText = fontGrades[trainingConfigGradeIndex];
+
+            if (hintEl) {
+                const diff = trainingConfigGradeIndex - maxGradeIndex;
+                if (diff === 0) {
+                    hintEl.innerText = "Equal to max";
+                } else if (diff < 0) {
+                    hintEl.innerText = `${Math.abs(diff)} below max`;
+                } else {
+                    hintEl.innerText = `${diff} above max`;
+                }
+            }
+        }
+
+        function setTrainingFocus(focus) {
+            if ('vibrate' in navigator) navigator.vibrate(15);
+            trainingFocus = focus;
+            const btnBest = document.getElementById('focusBtnBest');
+            const btnAnti = document.getElementById('focusBtnAnti');
+            if (!btnBest || !btnAnti) return;
+
+            if (focus === 'best') {
+                btnBest.className = "flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-orange-500 bg-orange-500/10 transition-all active:scale-95";
+                btnAnti.className = "flex flex-col items-center gap-2 p-4 rounded-2xl border border-neutral-800 bg-neutral-900/50 transition-all active:scale-95 opacity-50";
+            } else {
+                btnBest.className = "flex flex-col items-center gap-2 p-4 rounded-2xl border border-neutral-800 bg-neutral-900/50 transition-all active:scale-95 opacity-50";
+                btnAnti.className = "flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-orange-500 bg-orange-500/10 transition-all active:scale-95";
+            }
+        }
+
+        function analyzeHistoryStyles() {
+            const tagStats = {};
+            tagList.forEach(t => { tagStats[t] = 0; });
+
+            boulderHistory.forEach(session => {
+                if (session.climbs) {
+                    session.climbs.forEach(c => {
+                        if ((c.statusText === 'Top' || c.statusText === 'Flash') && c.tags) {
+                            c.tags.forEach(t => {
+                                if (tagStats[t] !== undefined) {
+                                    tagStats[t]++;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            const sortedTags = [...tagList].sort((a, b) => tagStats[b] - tagStats[a]);
+            const best = [sortedTags[0], sortedTags[1]];
+            const anti = [sortedTags[sortedTags.length - 2], sortedTags[sortedTags.length - 1]];
+
+            return { best, anti };
+        }
+
+        function startTrainingMode() {
+            if ('vibrate' in navigator) navigator.vibrate([30, 50, 30]);
+            
+            if (!sessionStartTime) {
+                startSession();
+            }
+
+            trainingActive = true;
+            trainingState = 'climb';
+            trainingStartGradeIndex = trainingConfigGradeIndex;
+            trainingCurrentGradeIndex = trainingConfigGradeIndex;
+            trainingRung = 1;
+
+            const styles = analyzeHistoryStyles();
+            trainingFocusTags = trainingFocus === 'best' ? styles.best : styles.anti;
+            trainingTimerEndEpoch = Date.now() + 5 * 60 * 1000;
+
+            const overlay = document.getElementById('trainingConfigOverlay');
+            if (overlay) overlay.classList.replace('flex', 'hidden');
+
+            currentGradeIndex = trainingCurrentGradeIndex;
+            const elGrade = document.getElementById('displayGrade');
+            if (elGrade) elGrade.innerText = fontGrades[currentGradeIndex];
+
+            updateTrainingHUD();
+            updateTrainingSessionBanner();
+            switchTab('log');
+            startTrainingCountdown();
+            saveActiveSession();
+        }
+
+        function startTrainingCountdown() {
+            if (trainingTimerInterval) clearInterval(trainingTimerInterval);
+            trainingTimerInterval = setInterval(updateTrainingTimerHUD, 1000);
+            updateTrainingTimerHUD();
+        }
+
+        function updateTrainingTimerHUD() {
+            if (!trainingActive || trainingState !== 'climb') {
+                if (trainingTimerInterval) {
+                    clearInterval(trainingTimerInterval);
+                    trainingTimerInterval = null;
+                }
+                return;
+            }
+
+            const totalSeconds = Math.max(0, Math.floor((trainingTimerEndEpoch - Date.now()) / 1000));
+            const m = Math.floor(totalSeconds / 60);
+            const s = totalSeconds % 60;
+            const timerStr = `${m}:${s.toString().padStart(2, '0')}`;
+
+            const timerHUD = document.getElementById('trainingTimerDisplay');
+            const timerBanner = document.getElementById('trainingBannerTimer');
+            if (timerHUD) timerHUD.innerText = timerStr;
+            if (timerBanner) timerBanner.innerText = timerStr;
+
+            if (totalSeconds === 10 && 'vibrate' in navigator) {
+                navigator.vibrate([100, 100, 100]);
+            }
+
+            if (totalSeconds === 0) {
+                clearInterval(trainingTimerInterval);
+                trainingTimerInterval = null;
+                handleTrainingTimeout();
+            }
+        }
+
+        function handleTrainingTimeout() {
+            if ('vibrate' in navigator) navigator.vibrate([500, 100, 500]);
+            trainingState = 'complete';
+
+            updateTrainingHUD();
+            updateTrainingSessionBanner();
+            saveActiveSession();
+        }
+
+        function handleTrainingRungComplete() {
+            if ('vibrate' in navigator) navigator.vibrate([100, 50, 100, 50, 200]);
+            if (trainingTimerInterval) {
+                clearInterval(trainingTimerInterval);
+                trainingTimerInterval = null;
+            }
+
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 60,
+                    origin: { y: 0.6 },
+                    colors: ['#f97316', '#fbbf24', '#ffffff']
+                });
+            }
+
+            trainingState = 'rest';
+            trainingRestStartEpoch = Date.now();
+
+            updateTrainingHUD();
+            updateTrainingSessionBanner();
+            startTrainingRestStopwatch();
+            saveActiveSession();
+        }
+
+        function startTrainingRestStopwatch() {
+            if (trainingRestInterval) clearInterval(trainingRestInterval);
+            trainingRestInterval = setInterval(updateTrainingRestHUD, 1000);
+            updateTrainingRestHUD();
+        }
+
+        function updateTrainingRestHUD() {
+            if (!trainingActive || trainingState !== 'rest') {
+                if (trainingRestInterval) {
+                    clearInterval(trainingRestInterval);
+                    trainingRestInterval = null;
+                }
+                return;
+            }
+
+            const totalSeconds = Math.floor((Date.now() - trainingRestStartEpoch) / 1000);
+            const m = Math.floor(totalSeconds / 60);
+            const s = totalSeconds % 60;
+            const timerStr = `${m}:${s.toString().padStart(2, '0')}`;
+
+            const restTimerHUD = document.getElementById('trainingRestTimer');
+            if (restTimerHUD) restTimerHUD.innerText = timerStr;
+        }
+
+        function startNextRung() {
+            if ('vibrate' in navigator) navigator.vibrate(30);
+
+            if (trainingRestInterval) {
+                clearInterval(trainingRestInterval);
+                trainingRestInterval = null;
+            }
+
+            trainingRung++;
+            trainingCurrentGradeIndex = Math.min(fontGrades.length - 1, trainingCurrentGradeIndex + 1);
+            trainingState = 'climb';
+            trainingTimerEndEpoch = Date.now() + 5 * 60 * 1000;
+
+            currentGradeIndex = trainingCurrentGradeIndex;
+            const elGrade = document.getElementById('displayGrade');
+            if (elGrade) elGrade.innerText = fontGrades[currentGradeIndex];
+
+            tries = 1;
+            const elTries = document.getElementById('displayTries');
+            if (elTries) elTries.innerText = "1";
+            isTop = false;
+            isFlash = false;
+            const btnTop = document.getElementById('btnTop');
+            const btnFlash = document.getElementById('btnFlash');
+            if (btnTop) btnTop.className = 'flex-1 py-3.5 rounded-2xl bg-neutral-800 text-white font-bold transition-all';
+            if (btnFlash) btnFlash.className = 'flex-1 py-3.5 rounded-2xl bg-neutral-800 text-white font-bold transition-all';
+
+            updateTrainingHUD();
+            updateTrainingSessionBanner();
+            startTrainingCountdown();
+            saveActiveSession();
+        }
+
+        function forfeitTraining() {
+            if (confirm("Forfeit the training ladder challenge? Your peak achieved grade will be logged!")) {
+                endTraining();
+            }
+        }
+
+        function endTraining() {
+            if ('vibrate' in navigator) navigator.vibrate(30);
+
+            if (trainingTimerInterval) {
+                clearInterval(trainingTimerInterval);
+                trainingTimerInterval = null;
+            }
+            if (trainingRestInterval) {
+                clearInterval(trainingRestInterval);
+                trainingRestInterval = null;
+            }
+
+            trainingActive = false;
+            trainingState = 'climb';
+            trainingFocusTags = [];
+
+            const hud = document.getElementById('trainingHUD');
+            if (hud) hud.classList.add('hidden');
+
+            const banner = document.getElementById('trainingSessionBanner');
+            if (banner) banner.classList.add('hidden');
+
+            const card = document.getElementById('trainingLaunchCard');
+            if (card) card.classList.remove('hidden');
+
+            updateUI();
+            saveActiveSession();
+        }
+
+        function updateTrainingHUD() {
+            const hud = document.getElementById('trainingHUD');
+            if (!hud) return;
+
+            if (!trainingActive) {
+                hud.classList.add('hidden');
+                return;
+            }
+
+            hud.classList.remove('hidden');
+
+            const climbPanel = document.getElementById('trainingHUDClimb');
+            const restPanel = document.getElementById('trainingHUDRest');
+            const timeoutPanel = document.getElementById('trainingHUDTimeout');
+
+            if (climbPanel) climbPanel.classList.add('hidden');
+            if (restPanel) restPanel.classList.add('hidden');
+            if (timeoutPanel) timeoutPanel.classList.add('hidden');
+
+            if (trainingState === 'climb') {
+                if (climbPanel) climbPanel.classList.remove('hidden');
+                
+                const rungLabel = document.getElementById('trainingRungLabel');
+                const targetGrade = document.getElementById('trainingTargetGrade');
+                const focusTags = document.getElementById('trainingFocusTags');
+
+                if (rungLabel) rungLabel.innerText = `Rung ${trainingRung}`;
+                if (targetGrade) targetGrade.innerText = fontGrades[trainingCurrentGradeIndex];
+                
+                if (focusTags) {
+                    focusTags.innerHTML = trainingFocusTags.map(t => 
+                        `<span class="bg-orange-500/20 text-orange-400 border border-orange-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-md">${t}</span>`
+                    ).join('');
+                }
+            } else if (trainingState === 'rest') {
+                if (restPanel) restPanel.classList.remove('hidden');
+
+                const nextGrade = document.getElementById('trainingNextGrade');
+                if (nextGrade) nextGrade.innerText = fontGrades[Math.min(fontGrades.length - 1, trainingCurrentGradeIndex + 1)];
+            } else if (trainingState === 'complete') {
+                if (timeoutPanel) timeoutPanel.classList.remove('hidden');
+
+                const peakDisplay = document.getElementById('trainingPeakDisplay');
+                if (peakDisplay) {
+                    const peakIdx = trainingCurrentGradeIndex - 1;
+                    if (peakIdx >= trainingStartGradeIndex) {
+                        peakDisplay.innerText = `${fontGrades[peakIdx]} (Rung ${trainingRung - 1})`;
+                    } else {
+                        peakDisplay.innerText = "no rungs";
+                    }
+                }
+            }
+        }
+
+        function updateTrainingSessionBanner() {
+            const banner = document.getElementById('trainingSessionBanner');
+            const card = document.getElementById('trainingLaunchCard');
+            if (!banner || !card) return;
+
+            if (trainingActive) {
+                banner.classList.remove('hidden');
+                card.classList.add('hidden');
+
+                const gradeBanner = document.getElementById('trainingBannerGrade');
+                if (gradeBanner) {
+                    if (trainingState === 'climb') {
+                        gradeBanner.innerText = fontGrades[trainingCurrentGradeIndex];
+                    } else if (trainingState === 'rest') {
+                        gradeBanner.innerText = `${fontGrades[trainingCurrentGradeIndex]} (Resting)`;
+                    } else if (trainingState === 'complete') {
+                        gradeBanner.innerText = "Completed";
+                    }
+                }
+            } else {
+                banner.classList.add('hidden');
+                card.classList.remove('hidden');
+            }
+        }
+
+        function restoreTrainingUI() {
+            updateTrainingHUD();
+            updateTrainingSessionBanner();
+
+            if (trainingActive) {
+                if (trainingState === 'climb') {
+                    const remaining = Math.max(0, Math.floor((trainingTimerEndEpoch - Date.now()) / 1000));
+                    if (remaining > 0) {
+                        startTrainingCountdown();
+                    } else {
+                        handleTrainingTimeout();
+                    }
+                } else if (trainingState === 'rest') {
+                    startTrainingRestStopwatch();
+                }
+            }
+        }
+
+        // Expose functions globally to be called from index.html onclick handlers
+        window.openTrainingConfig = openTrainingConfig;
+        window.closeTrainingConfig = closeTrainingConfig;
+        window.adjTrainingStartGrade = adjTrainingStartGrade;
+        window.setTrainingFocus = setTrainingFocus;
+        window.startTrainingMode = startTrainingMode;
+        window.startNextRung = startNextRung;
+        window.forfeitTraining = forfeitTraining;
+        window.endTraining = endTraining;
+
         function endSession() {
             if (sessionClimbs.length === 0) {
                 if (!confirm("You haven't logged any climbs. End session with 0 points?")) {
                     return;
                 }
+            }
+
+            if (trainingActive) {
+                if (trainingTimerInterval) clearInterval(trainingTimerInterval);
+                if (trainingRestInterval) clearInterval(trainingRestInterval);
+                trainingActive = false;
+                trainingState = 'climb';
+                trainingFocusTags = [];
+                const hud = document.getElementById('trainingHUD');
+                if (hud) hud.classList.add('hidden');
+                const banner = document.getElementById('trainingSessionBanner');
+                if (banner) banner.classList.add('hidden');
+                const card = document.getElementById('trainingLaunchCard');
+                if (card) card.classList.remove('hidden');
             }
 
             const durationSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
