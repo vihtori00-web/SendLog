@@ -132,8 +132,32 @@
 
                 <!-- Training Mode HUD (shown when training is active) -->
                 <div id="trainingHUD" class="hidden bg-neutral-900 border border-neutral-800 rounded-[2rem] overflow-hidden shadow-lg shrink-0">
+                    <!-- Prepare / Find Route State -->
+                    <div id="trainingHUDPrepare" class="hidden">
+                        <div class="flex items-center justify-between px-5 pt-4 pb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] font-black uppercase tracking-[0.2em] text-amber-500">🔍 Find Route</span>
+                                <span id="trainingPrepareRungLabel" class="text-[9px] font-black text-neutral-600 uppercase tracking-wider">Rung 1</span>
+                            </div>
+                            <button onclick="forfeitTraining()" class="text-[9px] font-black uppercase tracking-wider text-neutral-600 hover:text-red-400 active:scale-95 transition-all">End</button>
+                        </div>
+                        <div class="flex items-center justify-between px-5 pb-3">
+                            <div>
+                                <p class="text-[9px] font-black uppercase tracking-widest text-neutral-500 mb-1">Target Grade</p>
+                                <p id="trainingPrepareTargetGrade" class="text-4xl font-black text-orange-400 leading-none">6A</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[9px] font-black uppercase tracking-widest text-neutral-500 mb-1">Timer</p>
+                                <p class="text-lg font-black font-mono text-neutral-400 leading-none">5:00</p>
+                            </div>
+                        </div>
+                        <div id="trainingPrepareFocusTags" class="px-5 pb-3 flex gap-2 flex-wrap"></div>
+                        <div class="px-5 pb-4">
+                            <button onclick="startTrainingClimbTimer()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-black uppercase tracking-widest text-sm active:scale-95 transition-all shadow-lg shadow-amber-500/20">⏱️ Start 5m Timer</button>
+                        </div>
+                    </div>
                     <!-- Active Climb State -->
-                    <div id="trainingHUDClimb">
+                    <div id="trainingHUDClimb" class="hidden">
                         <div class="flex items-center justify-between px-5 pt-4 pb-2">
                             <div class="flex items-center gap-2">
                                 <span class="text-[9px] font-black uppercase tracking-[0.2em] text-orange-400">🏋️ Training</span>

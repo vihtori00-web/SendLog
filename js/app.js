@@ -1,4 +1,4 @@
-        const APP_VERSION = 'v7.5.7';
+        const APP_VERSION = 'v7.5.8';
 
         // =============================================
         // EARLY OAUTH REDIRECT INTERCEPTOR
@@ -672,7 +672,7 @@
 
         // -- LOGIC: INPUT --
         function adjGrade(dir) {
-            if (trainingActive && (trainingState === 'climb' || trainingState === 'rest')) {
+            if (trainingActive && (trainingState === 'prepare' || trainingState === 'climb' || trainingState === 'rest')) {
                 if ('vibrate' in navigator) navigator.vibrate(30);
                 const elGrade = document.getElementById('displayGrade');
                 elGrade.classList.add('text-orange-500', 'scale-105');
@@ -754,6 +754,11 @@
         }
 
         function logClimb() {
+            if (trainingActive && trainingState === 'prepare' && currentGradeIndex === trainingCurrentGradeIndex && (isTop || isFlash)) {
+                alert("Please start the 5-minute timer before logging your training send!");
+                return;
+            }
+
             if ('vibrate' in navigator) navigator.vibrate(50);
             const delta = currentGradeIndex - maxGradeIndex;
             const points = calculatePoints(delta, isFlash, isTop, tries);
@@ -1038,14 +1043,13 @@
             }
 
             trainingActive = true;
-            trainingState = 'climb';
+            trainingState = 'prepare';
             trainingStartGradeIndex = trainingConfigGradeIndex;
             trainingCurrentGradeIndex = trainingConfigGradeIndex;
             trainingRung = 1;
 
             const styles = analyzeHistoryStyles();
             trainingFocusTags = getTagsForRung(trainingFocus, trainingRung, styles.sortedTags);
-            trainingTimerEndEpoch = Date.now() + 5 * 60 * 1000;
 
             const overlay = document.getElementById('trainingConfigOverlay');
             if (overlay) overlay.classList.replace('flex', 'hidden');
@@ -1057,6 +1061,18 @@
             updateTrainingHUD();
             updateTrainingSessionBanner();
             switchTab('log');
+            saveActiveSession();
+        }
+
+        function startTrainingClimbTimer() {
+            if (!trainingActive || trainingState !== 'prepare') return;
+            if ('vibrate' in navigator) navigator.vibrate(50);
+            
+            trainingState = 'climb';
+            trainingTimerEndEpoch = Date.now() + 5 * 60 * 1000;
+            
+            updateTrainingHUD();
+            updateTrainingSessionBanner();
             startTrainingCountdown();
             saveActiveSession();
         }
@@ -1165,8 +1181,7 @@
 
             trainingRung++;
             trainingCurrentGradeIndex = Math.min(fontGrades.length - 1, trainingCurrentGradeIndex + 1);
-            trainingState = 'climb';
-            trainingTimerEndEpoch = Date.now() + 5 * 60 * 1000;
+            trainingState = 'prepare';
 
             const styles = analyzeHistoryStyles();
             trainingFocusTags = getTagsForRung(trainingFocus, trainingRung, styles.sortedTags);
@@ -1187,7 +1202,6 @@
 
             updateTrainingHUD();
             updateTrainingSessionBanner();
-            startTrainingCountdown();
             saveActiveSession();
         }
 
@@ -1240,12 +1254,29 @@
             const climbPanel = document.getElementById('trainingHUDClimb');
             const restPanel = document.getElementById('trainingHUDRest');
             const timeoutPanel = document.getElementById('trainingHUDTimeout');
+            const preparePanel = document.getElementById('trainingHUDPrepare');
 
             if (climbPanel) climbPanel.classList.add('hidden');
             if (restPanel) restPanel.classList.add('hidden');
             if (timeoutPanel) timeoutPanel.classList.add('hidden');
+            if (preparePanel) preparePanel.classList.add('hidden');
 
-            if (trainingState === 'climb') {
+            if (trainingState === 'prepare') {
+                if (preparePanel) preparePanel.classList.remove('hidden');
+
+                const rungLabel = document.getElementById('trainingPrepareRungLabel');
+                const targetGrade = document.getElementById('trainingPrepareTargetGrade');
+                const focusTags = document.getElementById('trainingPrepareFocusTags');
+
+                if (rungLabel) rungLabel.innerText = `Rung ${trainingRung}`;
+                if (targetGrade) targetGrade.innerText = fontGrades[trainingCurrentGradeIndex];
+
+                if (focusTags) {
+                    focusTags.innerHTML = trainingFocusTags.map(t => 
+                        `<span class="bg-orange-500/20 text-orange-400 border border-orange-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-md">${t}</span>`
+                    ).join('');
+                }
+            } else if (trainingState === 'climb') {
                 if (climbPanel) climbPanel.classList.remove('hidden');
                 
                 const rungLabel = document.getElementById('trainingRungLabel');
@@ -1291,13 +1322,20 @@
 
                 const gradeBanner = document.getElementById('trainingBannerGrade');
                 if (gradeBanner) {
-                    if (trainingState === 'climb') {
+                    if (trainingState === 'prepare') {
+                        gradeBanner.innerText = `${fontGrades[trainingCurrentGradeIndex]} (Prepare)`;
+                    } else if (trainingState === 'climb') {
                         gradeBanner.innerText = fontGrades[trainingCurrentGradeIndex];
                     } else if (trainingState === 'rest') {
                         gradeBanner.innerText = `${fontGrades[trainingCurrentGradeIndex]} (Resting)`;
                     } else if (trainingState === 'complete') {
                         gradeBanner.innerText = "Completed";
                     }
+                }
+
+                const timerBanner = document.getElementById('trainingBannerTimer');
+                if (timerBanner && trainingState === 'prepare') {
+                    timerBanner.innerText = "Ready";
                 }
             } else {
                 banner.classList.add('hidden');
@@ -1329,6 +1367,7 @@
         window.adjTrainingStartGrade = adjTrainingStartGrade;
         window.setTrainingFocus = setTrainingFocus;
         window.startTrainingMode = startTrainingMode;
+        window.startTrainingClimbTimer = startTrainingClimbTimer;
         window.startNextRung = startNextRung;
         window.forfeitTraining = forfeitTraining;
         window.endTraining = endTraining;
