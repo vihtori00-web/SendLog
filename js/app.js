@@ -1,4 +1,4 @@
-        const APP_VERSION = 'v7.5.6';
+        const APP_VERSION = 'v7.5.7';
 
         // =============================================
         // EARLY OAUTH REDIRECT INTERCEPTOR
@@ -905,12 +905,14 @@
             const antiStyleTagsEl = document.getElementById('antiStyleTags');
             
             if (bestStyleTagsEl) {
-                bestStyleTagsEl.innerHTML = styles.best.map(t => 
+                const bestPool = [styles.sortedTags[0], styles.sortedTags[1], styles.sortedTags[2], styles.sortedTags[3]];
+                bestStyleTagsEl.innerHTML = bestPool.map(t => 
                     `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-md">${t}</span>`
                 ).join('') || `<span class="text-[8px] text-neutral-600">none</span>`;
             }
             if (antiStyleTagsEl) {
-                antiStyleTagsEl.innerHTML = styles.anti.map(t => 
+                const antiPool = [styles.sortedTags[7], styles.sortedTags[6], styles.sortedTags[5], styles.sortedTags[4]];
+                antiStyleTagsEl.innerHTML = antiPool.map(t => 
                     `<span class="bg-red-500/20 text-red-400 border border-red-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-md">${t}</span>`
                 ).join('') || `<span class="text-[8px] text-neutral-600">none</span>`;
             }
@@ -1010,7 +1012,22 @@
             const best = [sortedTags[0], sortedTags[1]];
             const anti = [sortedTags[sortedTags.length - 2], sortedTags[sortedTags.length - 1]];
 
-            return { best, anti };
+            return { best, anti, sortedTags };
+        }
+
+        function getTagsForRung(focus, rung, sorted) {
+            if (!sorted || sorted.length < 8) return [];
+            if (focus === 'best') {
+                const bestPool = [sorted[0], sorted[1], sorted[2], sorted[3]];
+                const idx1 = (rung - 1) % 4;
+                const idx2 = rung % 4;
+                return [bestPool[idx1], bestPool[idx2]];
+            } else {
+                const antiPool = [sorted[7], sorted[6], sorted[5], sorted[4]];
+                const idx1 = (rung - 1) % 4;
+                const idx2 = rung % 4;
+                return [antiPool[idx1], antiPool[idx2]];
+            }
         }
 
         function startTrainingMode() {
@@ -1027,7 +1044,7 @@
             trainingRung = 1;
 
             const styles = analyzeHistoryStyles();
-            trainingFocusTags = trainingFocus === 'best' ? styles.best : styles.anti;
+            trainingFocusTags = getTagsForRung(trainingFocus, trainingRung, styles.sortedTags);
             trainingTimerEndEpoch = Date.now() + 5 * 60 * 1000;
 
             const overlay = document.getElementById('trainingConfigOverlay');
@@ -1150,6 +1167,9 @@
             trainingCurrentGradeIndex = Math.min(fontGrades.length - 1, trainingCurrentGradeIndex + 1);
             trainingState = 'climb';
             trainingTimerEndEpoch = Date.now() + 5 * 60 * 1000;
+
+            const styles = analyzeHistoryStyles();
+            trainingFocusTags = getTagsForRung(trainingFocus, trainingRung, styles.sortedTags);
 
             currentGradeIndex = trainingCurrentGradeIndex;
             const elGrade = document.getElementById('displayGrade');
